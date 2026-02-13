@@ -3,40 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holy Hymn Book</title>
+    <title>Kristheeya Keerthanangal | ക്രിസ്തീയ കീർത്തനങ്ങൾ </title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; background: #f5f5f5; }
-        h1 { text-align: center; color: #333; margin-bottom: 20px; }
-        .search-box { margin-bottom: 20px; }
-        #searchInput { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 5px; }
-        .container { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-        .song-list { background: white; padding: 15px; border-radius: 5px; height: 70vh; overflow-y: auto; }
-        .song-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .song-item small { color: #666; font-size: 13px; }
-        .song-item:hover { background: #f0f0f0; }
-        .song-item.active { background: #007bff; color: white; }
-        .song-item.active small { color: #e0e0e0; }
-        .song-display { background: white; padding: 20px; border-radius: 5px; height: 70vh; overflow-y: auto; }
-        .song-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #333; }
-        .song-lyrics { white-space: pre-wrap; line-height: 1.8; margin-bottom: 20px; }
-        .video-container { margin-top: 20px; }
-        iframe { width: 100%; height: 400px; border: none; border-radius: 5px; }
-        .no-song { text-align: center; color: #999; padding: 50px; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            padding: 20px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        h1 { 
+            text-align: center; 
+            color: white; 
+            margin-bottom: 30px; 
+            font-size: 2.5rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-box { 
+            margin-bottom: 25px; 
+            position: relative;
+        }
+        #searchInput { 
+            width: 100%; 
+            padding: 15px 20px; 
+            font-size: 16px; 
+            border: none;
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        #searchInput:focus {
+            outline: none;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            padding: 20px;
+        }
+        .container { 
+            display: grid; 
+            grid-template-columns: 350px 1fr; 
+            gap: 25px; 
+        }
+        .song-list { 
+            background: white; 
+            padding: 10px; 
+            border-radius: 12px; 
+            height: 75vh; 
+            overflow-y: auto; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .song-list::-webkit-scrollbar { width: 8px; }
+        .song-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .song-list::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .song-list::-webkit-scrollbar-thumb:hover { background: #555; }
+        .song-item { 
+            padding: 14px 16px; 
+            cursor: pointer; 
+            border-radius: 8px;
+            margin-bottom: 6px;
+            transition: all 0.2s ease;
+        }
+        .song-item:hover { 
+            background: #f8f9fa; 
+            transform: translateX(4px);
+        }
+        .song-item strong { 
+            color: #667eea; 
+            font-weight: 600;
+        }
+        .song-item small { 
+            color: #6c757d; 
+            font-size: 13px; 
+            display: block;
+            margin-top: 4px;
+        }
+        .song-item.active { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            transform: translateX(4px);
+        }
+        .song-item.active strong { color: white; }
+        .song-item.active small { color: rgba(255,255,255,0.9); }
+        .song-display { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 12px; 
+            height: 75vh; 
+            overflow-y: auto; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .song-display::-webkit-scrollbar { width: 8px; }
+        .song-display::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .song-display::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .song-title { 
+            font-size: 28px; 
+            font-weight: 600; 
+            margin-bottom: 20px; 
+            color: #2d3748;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        .song-lyrics { 
+            font-family: 'Crimson Text', serif;
+            white-space: pre-wrap; 
+            line-height: 2; 
+            margin-bottom: 30px;
+            font-size: 18px;
+            color: #4a5568;
+        }
+        .video-container { 
+            margin-top: 30px; 
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        iframe { 
+            width: 100%; 
+            height: 450px; 
+            border: none; 
+        }
+        .no-song { 
+            text-align: center; 
+            color: #a0aec0; 
+            padding: 80px 20px;
+            font-size: 18px;
+        }
         @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
-            .song-list { height: 300px; }
+            body { padding: 15px; }
+            h1 { font-size: 2rem; margin-bottom: 20px; }
+            .container { grid-template-columns: 1fr; gap: 20px; }
+            .song-list { height: 40vh; }
+            .song-display { padding: 20px; height: auto; min-height: 50vh; }
+            iframe { height: 250px; }
         }
     </style>
 </head>
 <body>
-    <h1>Holy Hymn Book</h1>
+    <h1>🎵 Holy Hymn Book</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search by song number or name...">
+        <input type="text" id="searchInput" placeholder="🔍 Search by song number or name...">
     </div>
     
-    <div class="container">
+    <div class="loading" id="loading">Loading hymns...</div>
+    
+    <div class="container" id="container" style="display: none;">
         <div class="song-list" id="songList"></div>
         <div class="song-display" id="songDisplay">
             <div class="no-song">Select a song to view lyrics and video</div>
@@ -52,10 +171,12 @@
             .then(res => res.json())
             .then(data => {
                 songs = data;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('container').style.display = 'grid';
                 displaySongList(songs);
             })
             .catch(err => {
-                document.getElementById('songList').innerHTML = '<p style="color: red;">Error loading songs. Make sure songs.json exists.</p>';
+                document.getElementById('loading').innerHTML = '<p style="color: white;">❌ Error loading songs. Make sure songs.json exists.</p>';
             });
 
         // Search functionality
@@ -72,9 +193,13 @@
         // Display song list
         function displaySongList(songList) {
             const listEl = document.getElementById('songList');
+            if (songList.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No songs found</p>';
+                return;
+            }
             listEl.innerHTML = songList.map(song => `
                 <div class="song-item" onclick="selectSong(${song.number})">
-                    <strong>#${song.number}</strong> - ${song.name}${song.name2 ? '<br><small>' + song.name2 + '</small>' : ''}
+                    <strong>#${song.number}</strong> ${song.name}${song.name2 ? '<small>' + song.name2 + '</small>' : ''}
                 </div>
             `).join('');
         }
@@ -99,6 +224,9 @@
                     </iframe>
                 </div>
             `;
+            
+            // Scroll to top of song display
+            document.getElementById('songDisplay').scrollTop = 0;
         }
     </script>
 </body>
