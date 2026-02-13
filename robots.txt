@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shibinj.github.io/Hymn_project/sitemap.xml
