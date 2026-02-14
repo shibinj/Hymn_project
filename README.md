@@ -132,13 +132,13 @@ Each hymn in collection JSON files follows this format:
 
 ### Worship Service Planner (Internal Tool)
 
-A smart tool for planning Sunday worship services with automatic song selection and learning capabilities.
+A smart tool for planning Sunday worship services with automatic song selection, learning capabilities, and cloud synchronization for collaborative access.
 
 **Access**: Open `worship-planner.html` in your browser (not linked from main site)
 
 **Features:**
 - **Auto-generates service order**: Opening, Bible Reading, Offertory, Qurbana (2 songs), Doxology
-- **Manual Birthday/Anniversary selection**: Enter song number or use smart suggestions
+- **Manual Birthday/Anniversary selection**: Enter song number or use smart suggestions (can be from hymns or conventions)
 - **Smart Learning**: Analyzes your history and suggests songs based on:
   - Most frequently chosen songs across all categories
   - Preferred song number ranges
@@ -146,25 +146,59 @@ A smart tool for planning Sunday worship services with automatic song selection 
   - 70% preference for frequently-used songs, 30% for variety
 - **Edit any song**: Click "✏️ Edit" button to manually change any auto-generated song
 - **Convention rotation**: Alternates between Maramon and Kottarakara for offertory
-- **Service history**: Tracks last 20 services in browser localStorage
+- **Cloud Sync**: GitHub Gist integration for collaborative access across devices
+- **Service history**: Tracks last 50 services with automatic cloud backup
 - **Date & Theme tracking**: Records service date and weekly theme
 - **Song search**: Search any song number to see last 5 times it was used
 - **Date range filter**: View services within specific date ranges
 - **WhatsApp sharing**: Share finalized service in formatted text to WhatsApp groups
+- **Mobile-friendly**: Responsive design works on phones, tablets, and desktops
 - **Print-ready**: Generate and print service sheets
+
+**Setup (One-time):**
+
+1. **Create GitHub Gist** (Admin does this once):
+   - Go to https://gist.github.com
+   - Create new **secret** gist
+   - Filename: `worship-service-history.json`
+   - Content: `[]`
+   - Copy Gist ID from URL (e.g., `abc123def456`)
+
+2. **Configure in Code** (Admin):
+   - Edit `worship-planner.html`
+   - Find: `const SHARED_GIST_ID = '';`
+   - Change to: `const SHARED_GIST_ID = 'abc123def456';` (your Gist ID)
+   - Save and push to GitHub
+
+3. **Team Members Setup** (Each person, one-time):
+   - Go to https://github.com/settings/tokens
+   - Click "Generate new token (classic)"
+   - Check only "gist" permission
+   - Copy the token
+   - Open worship planner - paste token when prompted
+   - Token is saved in browser (only enter once per device)
 
 **Usage:**
 1. Enter service date (defaults to today) and theme of the week
-2. Click "Generate New Service" - auto-selects all songs except Birthday/Anniversary
-3. Enter Birthday/Anniversary song manually or click smart suggestions (can be from hymns or conventions)
+2. Click "🎲 Generate New Service" - auto-selects all songs except Birthday/Anniversary
+3. Enter Birthday/Anniversary song manually or click smart suggestions
 4. Click "✏️ Edit" on any song to manually change it
-5. Click "💾 Save Service" to record (prevents repeats for 2 months)
+5. Click "💾 Save Service" to record and sync to cloud
 6. Click "📱 Share to WhatsApp" to send formatted message to your group
 7. Click "📜 View History" to:
    - See all past services with dates and themes
    - Search by song number to see when it was last used
    - Filter by date range
-8. Print or regenerate as needed
+8. Click "🔄 Sync Now" to manually refresh from cloud
+9. Print or regenerate as needed
+
+**Cloud Sync:**
+- Auto-syncs on page load
+- Auto-syncs after saving service
+- Auto-syncs every 5 minutes
+- Manual sync available anytime
+- Works offline, syncs when online
+- All team members see same data
 
 **Song Categories:**
 - Opening: Hymns 16-44, 429-430
@@ -181,6 +215,8 @@ The planner learns from every saved service:
 - Suggests frequently-used songs while maintaining variety
 - Prevents repeating songs within 2 months
 - Gets smarter with each saved service
+
+**Note:** Use normal browser mode (not InPrivate/Incognito) to keep your GitHub token saved. InPrivate mode will require re-entering the token each session.
 
 ### Adding/Editing Lyrics
 
