@@ -10,8 +10,8 @@ A comprehensive online collection of Malayalam Christian hymns, convention songs
 - **Kristheeya Keerthanangal** - Complete Malayalam Christian Hymn Book (504 hymns + Doxology)
 
 ### 🎪 Convention Songs
-- **Maramon Convention** - 2025, 2026 (Coming Soon)
-- **Kottarakara Convention** - 2025, 2026 (Coming Soon)
+- **Maramon Convention** - 2025 (16 songs), 2026 (16 songs)
+- **Kottarakara Convention** - 2025 (10 songs), 2026 (8 songs)
 
 ## Features
 
