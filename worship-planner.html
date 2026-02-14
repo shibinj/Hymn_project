@@ -839,7 +839,8 @@
                 songs: window.currentService.map(s => ({
                     number: s.song.number,
                     name: s.song.name,
-                    category: s.category
+                    category: s.category,
+                    collection: s.collection // Save collection info
                 }))
             };
 
@@ -938,9 +939,13 @@
                 });
                 const theme = service.theme || 'No theme';
                 
-                const songsHtml = service.songs.map(song => 
-                    `<div><strong>${categoryTitles[song.category] || song.category}:</strong> #${song.number} - ${song.name}</div>`
-                ).join('');
+                const songsHtml = service.songs.map(song => {
+                    const category = categoryTitles[song.category] || song.category;
+                    // Get collection info if available (for newer entries)
+                    const collectionInfo = (song.category === 'celebration' || song.category === 'offertory') && song.collection ? 
+                        ` <span style="color: #667eea;">(${song.collection})</span>` : '';
+                    return `<div><strong>${category}:</strong> #${song.number} - ${song.name}${collectionInfo}</div>`;
+                }).join('');
                 
                 // Find original index in serviceHistory
                 const originalIndex = serviceHistory.findIndex(s => s.date === service.date);
@@ -1233,6 +1238,13 @@
                 message += `#${item.song.number} - ${item.song.name}\n`;
                 if (item.song.name2) {
                     message += `${item.song.name2}\n`;
+                }
+                // Add collection info for Birthday/Anniversary and Offertory
+                if (item.category === 'celebration' || item.category === 'offertory') {
+                    const collectionDisplay = item.collection === 'Kristheeya Keerthanangal' ? 
+                        'Kristheeya Keerthanangal' : 
+                        item.collection.replace('maramon-', 'Maramon ').replace('kottarakara-', 'Kottarakara ');
+                    message += `(${collectionDisplay})\n`;
                 }
                 message += `\n`;
             });
