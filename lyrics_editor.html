@@ -103,7 +103,15 @@
     <h1>📝 Hymn Lyrics Editor</h1>
     
     <div class="stats">
-        <strong>Progress:</strong> <span id="progress">0/0</span> hymns have lyrics
+        <label for="collectionSelect"><strong>Collection:</strong></label>
+        <select id="collectionSelect" onchange="loadCollection()" style="padding: 5px 10px; margin-left: 10px; border-radius: 5px;">
+            <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
+            <option value="maramon-2025">Maramon Convention 2025</option>
+            <option value="maramon-2026">Maramon Convention 2026</option>
+            <option value="kottarakara-2025">Kottarakara Convention 2025</option>
+            <option value="kottarakara-2026">Kottarakara Convention 2026</option>
+        </select>
+        <span style="margin-left: 20px;"><strong>Progress:</strong> <span id="progress">0/0</span> hymns have lyrics</span>
     </div>
     
     <div class="container">
@@ -116,18 +124,28 @@
     <script>
         let songs = [];
         let currentSong = null;
+        let currentCollection = 'kristheeya-keerthanangal';
 
-        // Load songs
-        fetch('songs.json')
-            .then(res => res.json())
-            .then(data => {
-                songs = data;
-                displayHymnList();
-                updateStats();
-            })
-            .catch(err => {
-                alert('Error loading songs.json: ' + err.message);
-            });
+        function loadCollection() {
+            currentCollection = document.getElementById('collectionSelect').value;
+            const collectionFile = `data/${currentCollection}.json`;
+            
+            // Load songs
+            fetch(collectionFile)
+                .then(res => res.json())
+                .then(data => {
+                    songs = data;
+                    displayHymnList();
+                    updateStats();
+                    document.getElementById('editor').innerHTML = '<div class="no-selection">Select a hymn to edit lyrics</div>';
+                })
+                .catch(err => {
+                    alert('Error loading collection: ' + err.message);
+                });
+        }
+
+        // Load default collection on page load
+        loadCollection();
 
         function displayHymnList() {
             const listEl = document.getElementById('hymnList');
@@ -196,7 +214,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'songs_updated.json';
+            a.download = `${currentCollection}_updated.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
