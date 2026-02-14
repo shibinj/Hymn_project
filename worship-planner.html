@@ -27,8 +27,21 @@
         .print-btn:hover { background: #38a169; }
         .save-btn { background: #ed8936; }
         .save-btn:hover { background: #dd6b20; }
+        .history-btn { background: #805ad5; }
+        .history-btn:hover { background: #6b46c1; }
         .warning { color: #e53e3e; font-size: 12px; margin-top: 5px; }
         .recently-used { font-size: 12px; color: #718096; margin-top: 10px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; margin: 50px auto; padding: 30px; border-radius: 15px; max-width: 800px; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { font-size: 28px; cursor: pointer; color: #6c757d; }
+        .close-btn:hover { color: #2d3748; }
+        .history-item { background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+        .history-date { font-weight: 700; color: #2d3748; font-size: 16px; }
+        .history-theme { color: #667eea; font-size: 14px; margin: 5px 0; }
+        .history-songs { font-size: 13px; color: #4a5568; margin-top: 10px; }
+        .filter-section { background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .filter-section input { padding: 8px; border: 2px solid #e2e8f0; border-radius: 6px; margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -52,6 +65,7 @@
         <div class="controls">
             <button onclick="generateService()">🎲 Generate New Service</button>
             <button class="save-btn" onclick="saveService()">💾 Save Service</button>
+            <button class="history-btn" onclick="showHistory()">📜 View History</button>
             <button class="print-btn" onclick="window.print()">🖨️ Print</button>
             <select id="offertoryConvention">
                 <option value="alternate">Alternate Conventions</option>
@@ -65,6 +79,33 @@
         <div id="serviceOrder"></div>
         
         <div class="recently-used" id="recentlyUsed"></div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 Service History</h2>
+                <span class="close-btn" onclick="closeHistory()">&times;</span>
+            </div>
+            
+            <div class="filter-section">
+                <label><strong>Search by Song Number:</strong></label><br/>
+                <input type="text" id="searchSongNum" placeholder="Enter song number (e.g., 25 or DOX-I)" style="width: 200px;" />
+                <button onclick="searchBySong()">🔍 Search Song</button>
+                <button onclick="clearSearch()">Clear</button>
+            </div>
+            
+            <div class="filter-section">
+                <label><strong>Filter by Date Range:</strong></label><br/>
+                <input type="date" id="filterStartDate" placeholder="Start Date" />
+                <input type="date" id="filterEndDate" placeholder="End Date" />
+                <button onclick="filterHistory()">🔍 Filter</button>
+                <button onclick="clearFilter()">Clear</button>
+            </div>
+            
+            <div id="historyList"></div>
+        </div>
     </div>
 
     <script>
@@ -97,7 +138,40 @@
             );
         }
 
+        function getFrequentSongs(category, count = 5) {
+            // Get all songs from this category in history
+            const categoryHistory = serviceHistory
+                .flatMap(s => s.songs.filter(song => song.category === category))
+                .map(s => s.number);
+            
+            if (categoryHistory.length === 0) return [];
+            
+            // Count frequency
+            const frequency = {};
+            categoryHistory.forEach(num => {
+                frequency[num] = (frequency[num] || 0) + 1;
+            });
+            
+            // Return top picks (not recently used)
+            return Object.entries(frequency)
+                .sort((a, b) => b[1] - a[1])
+                .map(([num]) => isNaN(num) ? num : parseInt(num))
+                .filter(num => !wasRecentlyUsed(num, category))
+                .slice(0, count);
+        }
+
         function getRandomSong(numbers, category) {
+            // First try frequent picks from history
+            const frequentPicks = getFrequentSongs(category, 3);
+            const validFrequent = frequentPicks.filter(num => numbers.includes(num));
+            
+            if (validFrequent.length > 0 && Math.random() > 0.3) {
+                // 70% chance to use a frequent pick
+                const num = validFrequent[Math.floor(Math.random() * validFrequent.length)];
+                return hymns.find(s => s.number === num);
+            }
+            
+            // Otherwise pick randomly from available songs
             let availableSongs = numbers.filter(num => !wasRecentlyUsed(num, category));
             if (availableSongs.length === 0) availableSongs = numbers;
             
@@ -107,6 +181,15 @@
 
         function getRandomConventionSong(collection) {
             const songs = conventions[collection];
+            
+            // Check history for frequently used offertory songs from this collection
+            const frequentPicks = getFrequentSongs('offertory', 5);
+            const validFrequent = songs.filter(s => frequentPicks.includes(s.number));
+            
+            if (validFrequent.length > 0 && Math.random() > 0.3) {
+                return validFrequent[Math.floor(Math.random() * validFrequent.length)];
+            }
+            
             let availableSongs = songs.filter(s => !wasRecentlyUsed(s.number, 'offertory'));
             if (availableSongs.length === 0) availableSongs = songs;
             
@@ -115,6 +198,15 @@
 
         function getDoxology() {
             const doxSongs = hymns.filter(s => typeof s.number === 'string' && s.number.startsWith('DOX'));
+            
+            // Check for frequently used doxology
+            const frequentPicks = getFrequentSongs('doxology', 3);
+            const validFrequent = doxSongs.filter(s => frequentPicks.includes(s.number));
+            
+            if (validFrequent.length > 0 && Math.random() > 0.3) {
+                return validFrequent[Math.floor(Math.random() * validFrequent.length)];
+            }
+            
             let availableSongs = doxSongs.filter(s => !wasRecentlyUsed(s.number, 'doxology'));
             if (availableSongs.length === 0) availableSongs = doxSongs;
             
@@ -314,6 +406,175 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
         });
+
+        function showHistory() {
+            document.getElementById('historyModal').style.display = 'block';
+            displayFullHistory();
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        function displayFullHistory(filtered = null) {
+            const historyToShow = filtered || serviceHistory;
+            
+            if (historyToShow.length === 0) {
+                document.getElementById('historyList').innerHTML = '<p>No services saved yet.</p>';
+                return;
+            }
+            
+            const categoryTitles = {
+                'opening': 'Opening',
+                'bibleReading': 'Bible Reading',
+                'celebration': 'Birthday/Anniversary',
+                'offertory': 'Offertory',
+                'qurbana1': 'Qurbana 1',
+                'qurbana2': 'Qurbana 2',
+                'doxology': 'Doxology'
+            };
+            
+            const html = historyToShow.map(service => {
+                const date = new Date(service.date).toLocaleDateString('en-US', { 
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                });
+                const theme = service.theme || 'No theme';
+                
+                const songsHtml = service.songs.map(song => 
+                    `<div><strong>${categoryTitles[song.category] || song.category}:</strong> #${song.number} - ${song.name}</div>`
+                ).join('');
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-date">📅 ${date}</div>
+                        <div class="history-theme">📖 Theme: ${theme}</div>
+                        <div class="history-songs">${songsHtml}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('historyList').innerHTML = html;
+        }
+
+        function filterHistory() {
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            
+            if (!startDate && !endDate) {
+                displayFullHistory();
+                return;
+            }
+            
+            const start = startDate ? new Date(startDate).getTime() : 0;
+            const end = endDate ? new Date(endDate).getTime() + (24 * 60 * 60 * 1000) : Date.now();
+            
+            const filtered = serviceHistory.filter(service => 
+                service.date >= start && service.date <= end
+            );
+            
+            displayFullHistory(filtered);
+        }
+
+        function clearFilter() {
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            displayFullHistory();
+        }
+
+        function searchBySong() {
+            const songNum = document.getElementById('searchSongNum').value.trim();
+            
+            if (!songNum) {
+                alert('Please enter a song number');
+                return;
+            }
+            
+            // Find song in hymns or conventions
+            let songInfo = hymns.find(s => s.number == songNum);
+            let collection = 'Kristheeya Keerthanangal';
+            
+            if (!songInfo) {
+                for (const [collName, songs] of Object.entries(conventions)) {
+                    songInfo = songs.find(s => s.number == songNum);
+                    if (songInfo) {
+                        collection = collName;
+                        break;
+                    }
+                }
+            }
+            
+            if (!songInfo) {
+                document.getElementById('historyList').innerHTML = `<p style="color: #e53e3e;">❌ Song #${songNum} not found in any collection.</p>`;
+                return;
+            }
+            
+            // Find all services that used this song
+            const servicesWithSong = serviceHistory.filter(service => 
+                service.songs.some(s => s.number == songNum)
+            ).slice(0, 5); // Last 5 uses
+            
+            if (servicesWithSong.length === 0) {
+                document.getElementById('historyList').innerHTML = `
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #2d3748;">🎵 Song #${songNum} - ${songInfo.name}</h3>
+                        <p style="color: #667eea; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
+                        <p style="color: #6c757d; margin-top: 15px;">✅ This song has never been used in saved services.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const categoryTitles = {
+                'opening': 'Opening',
+                'bibleReading': 'Bible Reading',
+                'celebration': 'Birthday/Anniversary',
+                'offertory': 'Offertory',
+                'qurbana1': 'Qurbana 1',
+                'qurbana2': 'Qurbana 2',
+                'doxology': 'Doxology'
+            };
+            
+            const usageHtml = servicesWithSong.map(service => {
+                const date = new Date(service.date).toLocaleDateString('en-US', { 
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                });
+                const theme = service.theme || 'No theme';
+                const songUsage = service.songs.find(s => s.number == songNum);
+                const category = categoryTitles[songUsage.category] || songUsage.category;
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-date">📅 ${date}</div>
+                        <div class="history-theme">📖 Theme: ${theme}</div>
+                        <div style="margin-top: 10px; color: #667eea; font-weight: 600;">Used as: ${category}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('historyList').innerHTML = `
+                <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #2d3748;">🎵 Song #${songNum} - ${songInfo.name}</h3>
+                    ${songInfo.name2 ? `<p style="color: #6c757d;">${songInfo.name2}</p>` : ''}
+                    <p style="color: #667eea; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
+                    <p style="color: #6c757d; margin-top: 10px;">Used ${servicesWithSong.length} time(s) in last ${serviceHistory.length} services</p>
+                </div>
+                <h3 style="margin-bottom: 15px;">Last ${servicesWithSong.length} Usage(s):</h3>
+                ${usageHtml}
+            `;
+        }
+
+        function clearSearch() {
+            document.getElementById('searchSongNum').value = '';
+            displayFullHistory();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('historyModal');
+            if (event.target === modal) {
+                closeHistory();
+            }
+        };
 
         loadData().then(() => generateService());
     </script>
