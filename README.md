@@ -140,25 +140,47 @@ A smart tool for planning Sunday worship services with automatic song selection 
 - **Auto-generates service order**: Opening, Bible Reading, Offertory, Qurbana (2 songs), Doxology
 - **Manual Birthday/Anniversary selection**: Enter song number or use smart suggestions
 - **Smart Learning**: Analyzes your history and suggests songs based on:
-  - Most frequently chosen songs
+  - Most frequently chosen songs across all categories
   - Preferred song number ranges
   - Avoids songs used in last 2 months
+  - 70% preference for frequently-used songs, 30% for variety
+- **Edit any song**: Click "✏️ Edit" button to manually change any auto-generated song
 - **Convention rotation**: Alternates between Maramon and Kottarakara for offertory
 - **Service history**: Tracks last 20 services in browser localStorage
+- **Date & Theme tracking**: Records service date and weekly theme
+- **Song search**: Search any song number to see last 5 times it was used
+- **Date range filter**: View services within specific date ranges
+- **WhatsApp sharing**: Share finalized service in formatted text to WhatsApp groups
 - **Print-ready**: Generate and print service sheets
 
 **Usage:**
-1. Click "Generate New Service" - auto-selects all songs except Birthday/Anniversary
-2. Enter Birthday/Anniversary song manually or click smart suggestions
-3. Click "Save Service" to record (prevents repeats for 2 months)
-4. Print or regenerate as needed
+1. Enter service date (defaults to today) and theme of the week
+2. Click "Generate New Service" - auto-selects all songs except Birthday/Anniversary
+3. Enter Birthday/Anniversary song manually or click smart suggestions (can be from hymns or conventions)
+4. Click "✏️ Edit" on any song to manually change it
+5. Click "💾 Save Service" to record (prevents repeats for 2 months)
+6. Click "📱 Share to WhatsApp" to send formatted message to your group
+7. Click "📜 View History" to:
+   - See all past services with dates and themes
+   - Search by song number to see when it was last used
+   - Filter by date range
+8. Print or regenerate as needed
 
 **Song Categories:**
 - Opening: Hymns 16-44, 429-430
 - Bible Reading: Hymns 45-112, 237-265, 266-284, 351-371, 409-415, 431-437, 452-455
+- Birthday/Anniversary: Manual entry (any hymn or convention song)
 - Holy Qurbana: Hymns 166-212, 220-228, 233-241, 251-254, 266-274, 313-316, 441-500
-- Offertory: Convention songs (alternates weekly)
+- Offertory: Convention songs (alternates weekly between Maramon/Kottarakara)
 - Doxology: DOX-I to DOX-XIII
+
+**Learning System:**
+The planner learns from every saved service:
+- Tracks which songs you use most in each category
+- Identifies your preferred song number ranges
+- Suggests frequently-used songs while maintaining variety
+- Prevents repeating songs within 2 months
+- Gets smarter with each saved service
 
 ### Adding/Editing Lyrics
 
