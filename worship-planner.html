@@ -195,7 +195,7 @@
                 if (!gistToken && !tokenDismissed) {
                     // Show a less intrusive prompt
                     setTimeout(() => {
-                        const enableSync = confirm('🔄 Enable Cloud Sync?\n\nSync your worship services across all devices.\n\nClick OK to set up (requires GitHub token)\nClick Cancel to use locally only');
+                        const enableSync = confirm('🔄 Enable Cloud Sync?\n\nSync your worship services across all devices.\n\nClick OK to set up (requires GitHub token for editing)\nClick Cancel to view-only mode (no token needed)');
                         
                         if (enableSync) {
                             const token = prompt('Enter your GitHub Personal Access Token:\n\n1. Go to: https://github.com/settings/tokens\n2. Generate new token (classic)\n3. Check "gist" permission\n4. Copy and paste here\n\n(Stored locally in your browser only)');
@@ -206,13 +206,19 @@
                                 syncFromGist();
                             } else {
                                 localStorage.setItem('tokenPromptDismissed', 'true');
+                                updateSyncStatus('ℹ️ View-only mode. You can view history but cannot save services.');
+                                syncFromGist(); // Sync without token for read-only
                             }
                         } else {
                             localStorage.setItem('tokenPromptDismissed', 'true');
-                            updateSyncStatus('ℹ️ Using local storage only. Click "Setup Cloud Sync" to enable syncing.');
+                            updateSyncStatus('ℹ️ View-only mode. You can view history but cannot save services.');
+                            syncFromGist(); // Sync without token for read-only
                         }
                     }, 1000);
                 } else if (gistToken) {
+                    await syncFromGist();
+                } else {
+                    // No token but dismissed - still try to sync for read-only
                     await syncFromGist();
                 }
             } else if (gistId) {
@@ -233,7 +239,15 @@
             
             try {
                 updateSyncStatus('🔄 Syncing from cloud...');
-                const response = await fetch(`https://api.github.com/gists/${gistId}`);
+                
+                // Try with token first (if available)
+                const headers = gistToken ? {
+                    'Authorization': `token ${gistToken}`
+                } : {};
+                
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: headers
+                });
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch Gist');
@@ -538,7 +552,125 @@
         }
 
         function editSong(index) {
-            const currentSong = window.currentService[index].song;
+            const item = window.currentService[index];
+            const currentSong = item.song;
+            
+            // Special handling for Offertory - show collection selector
+            if (item.category === 'offertory') {
+                const collection = prompt(
+                    `Current: #${currentSong.number} - ${currentSong.name}\n\n` +
+                    `Choose collection:\n` +
+                    `1 = Maramon 2025\n` +
+                    `2 = Maramon 2026\n` +
+                    `3 = Kottarakara 2025\n` +
+                    `4 = Kottarakara 2026\n\n` +
+                    `Enter collection number (1-4):`
+                );
+                
+                if (!collection) return;
+                
+                const collectionMap = {
+                    '1': 'maramon-2025',
+                    '2': 'maramon-2026',
+                    '3': 'kottarakara-2025',
+                    '4': 'kottarakara-2026'
+                };
+                
+                const selectedCollection = collectionMap[collection];
+                if (!selectedCollection) {
+                    alert('Invalid collection number!');
+                    return;
+                }
+                
+                const songNum = prompt(`Enter song number from ${selectedCollection}:`);
+                if (!songNum) return;
+                
+                const song = conventions[selectedCollection].find(s => s.number == songNum);
+                if (song) {
+                    window.currentService[index].song = song;
+                    window.currentService[index].collection = selectedCollection;
+                    displayService(window.currentService);
+                } else {
+                    alert(`Song #${songNum} not found in ${selectedCollection}!`);
+                }
+                return;
+            }
+            
+            // Special handling for Doxology - convert number to DOX-Roman
+            if (item.category === 'doxology') {
+                const input = prompt(
+                    `Current: ${currentSong.number} - ${currentSong.name}\n\n` +
+                    `Enter doxology number:\n` +
+                    `- Type number (1-13) for DOX-I to DOX-XIII\n` +
+                    `- Or type full name (e.g., DOX-V):`
+                );
+                
+                if (!input) return;
+                
+                let doxNumber;
+                if (/^\d+$/.test(input)) {
+                    // Convert number to Roman
+                    const romanMap = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII'];
+                    const num = parseInt(input);
+                    if (num >= 1 && num <= 13) {
+                        doxNumber = `DOX-${romanMap[num]}`;
+                    }
+                } else {
+                    doxNumber = input.toUpperCase();
+                }
+                
+                if (doxNumber) {
+                    const song = hymns.find(s => s.number === doxNumber);
+                    if (song) {
+                        window.currentService[index].song = song;
+                        displayService(window.currentService);
+                    } else {
+                        alert(`Doxology ${doxNumber} not found!`);
+                    }
+                } else {
+                    alert('Invalid doxology number!');
+                }
+                return;
+            }
+            
+            // Birthday/Anniversary - search all collections
+            if (item.category === 'celebration') {
+                const input = prompt(
+                    `Current: #${currentSong.number} - ${currentSong.name}\n\n` +
+                    `Enter song number:\n` +
+                    `- From Kristheeya Keerthanangal (e.g., 220)\n` +
+                    `- From any Convention (e.g., 13, 80):\n\n` +
+                    `Note: System will search all collections`
+                );
+                
+                if (!input) return;
+                
+                // Search in hymns first
+                let song = hymns.find(s => s.number == input);
+                let collection = 'Kristheeya Keerthanangal';
+                
+                // If not found, search all conventions
+                if (!song) {
+                    for (const [collName, songs] of Object.entries(conventions)) {
+                        song = songs.find(s => s.number == input);
+                        if (song) {
+                            collection = collName;
+                            break;
+                        }
+                    }
+                }
+                
+                if (song) {
+                    window.currentService[index].song = song;
+                    window.currentService[index].collection = collection;
+                    displayService(window.currentService);
+                } else {
+                    alert(`Song #${input} not found in any collection!`);
+                }
+                return;
+            }
+            
+            // Default handling for other categories
             const newNum = prompt(`Current: #${currentSong.number} - ${currentSong.name}\n\nEnter new song number:`);
             
             if (newNum) {
@@ -576,7 +708,7 @@
             // Save to localStorage
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
             
-            // Sync to Gist if configured
+            // Sync to Gist if configured and token available
             if (gistId && gistToken) {
                 syncToGist().then(success => {
                     if (success) {
@@ -586,6 +718,9 @@
                     }
                     displayRecentlyUsed();
                 });
+            } else if (gistId && !gistToken) {
+                alert('⚠️ View-only mode: Cannot save to cloud.\n\nYour service is saved locally only.\n\nTo enable cloud saving, click "Setup Cloud Sync" and enter your GitHub token.');
+                displayRecentlyUsed();
             } else {
                 alert('✅ Service saved locally!');
                 displayRecentlyUsed();
@@ -700,18 +835,35 @@
                 return;
             }
             
-            // Find song in hymns or conventions
-            let songInfo = hymns.find(s => s.number == songNum);
-            let collection = 'Kristheeya Keerthanangal';
+            // Handle Doxology search - convert number to DOX-Roman
+            let searchNumbers = [songNum];
+            if (/^\d+$/.test(songNum)) {
+                const num = parseInt(songNum);
+                if (num >= 1 && num <= 13) {
+                    const romanMap = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII'];
+                    searchNumbers.push(`DOX-${romanMap[num]}`);
+                }
+            }
             
-            if (!songInfo) {
+            // Find song in hymns or conventions
+            let songInfo = null;
+            let collection = '';
+            
+            for (const searchNum of searchNumbers) {
+                songInfo = hymns.find(s => s.number == searchNum);
+                if (songInfo) {
+                    collection = 'Kristheeya Keerthanangal';
+                    break;
+                }
+                
                 for (const [collName, songs] of Object.entries(conventions)) {
-                    songInfo = songs.find(s => s.number == songNum);
+                    songInfo = songs.find(s => s.number == searchNum);
                     if (songInfo) {
                         collection = collName;
                         break;
                     }
                 }
+                if (songInfo) break;
             }
             
             if (!songInfo) {
@@ -719,15 +871,15 @@
                 return;
             }
             
-            // Find all services that used this song
+            // Find all services that used this song (check all search numbers)
             const servicesWithSong = serviceHistory.filter(service => 
-                service.songs.some(s => s.number == songNum)
+                service.songs.some(s => searchNumbers.includes(s.number.toString()))
             ).slice(0, 5); // Last 5 uses
             
             if (servicesWithSong.length === 0) {
                 document.getElementById('historyList').innerHTML = `
                     <div style="background: #f7fafc; padding: 20px; border-radius: 8px;">
-                        <h3 style="color: #2d3748;">🎵 Song #${songNum} - ${songInfo.name}</h3>
+                        <h3 style="color: #2d3748;">🎵 Song #${songInfo.number} - ${songInfo.name}</h3>
                         <p style="color: #667eea; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
                         <p style="color: #6c757d; margin-top: 15px;">✅ This song has never been used in saved services.</p>
                     </div>
@@ -750,7 +902,7 @@
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
                 });
                 const theme = service.theme || 'No theme';
-                const songUsage = service.songs.find(s => s.number == songNum);
+                const songUsage = service.songs.find(s => searchNumbers.includes(s.number.toString()));
                 const category = categoryTitles[songUsage.category] || songUsage.category;
                 
                 return `
@@ -764,7 +916,7 @@
             
             document.getElementById('historyList').innerHTML = `
                 <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h3 style="color: #2d3748;">🎵 Song #${songNum} - ${songInfo.name}</h3>
+                    <h3 style="color: #2d3748;">🎵 Song #${songInfo.number} - ${songInfo.name}</h3>
                     ${songInfo.name2 ? `<p style="color: #6c757d;">${songInfo.name2}</p>` : ''}
                     <p style="color: #667eea; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
                     <p style="color: #6c757d; margin-top: 10px;">Used ${servicesWithSong.length} time(s) in last ${serviceHistory.length} services</p>
@@ -798,19 +950,19 @@
             });
 
             const categoryTitles = {
-                'opening': '1️⃣ Opening Hymn',
-                'bibleReading': '2️⃣ Bible Reading',
-                'celebration': '3️⃣ Birthday/Anniversary',
-                'offertory': '4️⃣ Offertory',
-                'qurbana1': '5️⃣ Holy Qurbana - Song 1',
-                'qurbana2': '6️⃣ Holy Qurbana - Song 2',
-                'doxology': '7️⃣ Doxology'
+                'opening': '1. Opening Hymn',
+                'bibleReading': '2. Bible Reading',
+                'celebration': '3. Birthday/Anniversary',
+                'offertory': '4. Offertory',
+                'qurbana1': '5. Holy Qurbana - Song 1',
+                'qurbana2': '6. Holy Qurbana - Song 2',
+                'doxology': '7. Doxology'
             };
 
-            let message = `🎵 *WORSHIP SERVICE SONGS*\n\n`;
-            message += `📅 *Date:* ${date}\n`;
-            message += `📖 *Theme:* ${serviceTheme}\n\n`;
-            message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+            let message = `*WORSHIP SERVICE SONGS*\n\n`;
+            message += `Date: ${date}\n`;
+            message += `Theme: ${serviceTheme}\n\n`;
+            message += `------------------------\n\n`;
 
             window.currentService.forEach(item => {
                 const title = categoryTitles[item.category] || item.title;
@@ -822,8 +974,8 @@
                 message += `\n`;
             });
 
-            message += `━━━━━━━━━━━━━━━━━━━━\n`;
-            message += `🙏 Let us worship together in spirit and truth`;
+            message += `------------------------\n`;
+            message += `Let us worship together in spirit and truth`;
 
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
