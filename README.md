@@ -49,6 +49,7 @@ Hymn_project/
 ├── index.html              # Landing page with all collections
 ├── viewer.html             # Hymn viewer (loads different collections)
 ├── lyrics_editor.html      # Admin interface for adding/editing lyrics
+├── worship-planner.html    # Worship service song planner (internal tool)
 ├── data/
 │   ├── kristheeya-keerthanangal.json  # Main hymn book
 │   ├── maramon-2025.json              # Maramon Convention 2025
@@ -128,6 +129,36 @@ Each hymn in collection JSON files follows this format:
 - Doxology hymns: DOX-I, DOX-II, ... DOX-XIII (Roman numerals)
 
 ## Managing Collections
+
+### Worship Service Planner (Internal Tool)
+
+A smart tool for planning Sunday worship services with automatic song selection and learning capabilities.
+
+**Access**: Open `worship-planner.html` in your browser (not linked from main site)
+
+**Features:**
+- **Auto-generates service order**: Opening, Bible Reading, Offertory, Qurbana (2 songs), Doxology
+- **Manual Birthday/Anniversary selection**: Enter song number or use smart suggestions
+- **Smart Learning**: Analyzes your history and suggests songs based on:
+  - Most frequently chosen songs
+  - Preferred song number ranges
+  - Avoids songs used in last 2 months
+- **Convention rotation**: Alternates between Maramon and Kottarakara for offertory
+- **Service history**: Tracks last 20 services in browser localStorage
+- **Print-ready**: Generate and print service sheets
+
+**Usage:**
+1. Click "Generate New Service" - auto-selects all songs except Birthday/Anniversary
+2. Enter Birthday/Anniversary song manually or click smart suggestions
+3. Click "Save Service" to record (prevents repeats for 2 months)
+4. Print or regenerate as needed
+
+**Song Categories:**
+- Opening: Hymns 16-44, 429-430
+- Bible Reading: Hymns 45-112, 237-265, 266-284, 351-371, 409-415, 431-437, 452-455
+- Holy Qurbana: Hymns 166-212, 220-228, 233-241, 251-254, 266-274, 313-316, 441-500
+- Offertory: Convention songs (alternates weekly)
+- Doxology: DOX-I to DOX-XIII
 
 ### Adding/Editing Lyrics
 
