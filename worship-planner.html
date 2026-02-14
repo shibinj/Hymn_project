@@ -29,6 +29,8 @@
         .save-btn:hover { background: #dd6b20; }
         .history-btn { background: #805ad5; }
         .history-btn:hover { background: #6b46c1; }
+        .whatsapp-btn { background: #25d366; }
+        .whatsapp-btn:hover { background: #1da851; }
         .warning { color: #e53e3e; font-size: 12px; margin-top: 5px; }
         .recently-used { font-size: 12px; color: #718096; margin-top: 10px; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
@@ -65,6 +67,7 @@
         <div class="controls">
             <button onclick="generateService()">🎲 Generate New Service</button>
             <button class="save-btn" onclick="saveService()">💾 Save Service</button>
+            <button class="whatsapp-btn" onclick="shareToWhatsApp()">📱 Share to WhatsApp</button>
             <button class="history-btn" onclick="showHistory()">📜 View History</button>
             <button class="print-btn" onclick="window.print()">🖨️ Print</button>
             <select id="offertoryConvention">
@@ -566,6 +569,56 @@
         function clearSearch() {
             document.getElementById('searchSongNum').value = '';
             displayFullHistory();
+        }
+
+        function shareToWhatsApp() {
+            if (!window.currentService || !window.currentService[2].song) {
+                alert('Please complete the service (including Birthday/Anniversary song) before sharing!');
+                return;
+            }
+
+            const serviceDate = document.getElementById('serviceDate').value;
+            const serviceTheme = document.getElementById('serviceTheme').value;
+
+            if (!serviceDate || !serviceTheme) {
+                alert('Please enter service date and theme before sharing!');
+                return;
+            }
+
+            const date = new Date(serviceDate).toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+
+            const categoryTitles = {
+                'opening': '1️⃣ Opening Hymn',
+                'bibleReading': '2️⃣ Bible Reading',
+                'celebration': '3️⃣ Birthday/Anniversary',
+                'offertory': '4️⃣ Offertory',
+                'qurbana1': '5️⃣ Holy Qurbana - Song 1',
+                'qurbana2': '6️⃣ Holy Qurbana - Song 2',
+                'doxology': '7️⃣ Doxology'
+            };
+
+            let message = `🎵 *WORSHIP SERVICE SONGS*\n\n`;
+            message += `📅 *Date:* ${date}\n`;
+            message += `📖 *Theme:* ${serviceTheme}\n\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            window.currentService.forEach(item => {
+                const title = categoryTitles[item.category] || item.title;
+                message += `${title}\n`;
+                message += `#${item.song.number} - ${item.song.name}\n`;
+                if (item.song.name2) {
+                    message += `${item.song.name2}\n`;
+                }
+                message += `\n`;
+            });
+
+            message += `━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `🙏 Let us worship together in spirit and truth`;
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
         }
 
         // Close modal when clicking outside
