@@ -577,6 +577,11 @@
                 const recentWarning = wasRecentlyUsed(item.song.number, item.category) ? 
                     '<div class="warning">⚠️ Used in last 2 months</div>' : '';
                 
+                // For Birthday/Anniversary, show collection info and edit with dropdown
+                const editButton = item.category === 'celebration' ? 
+                    `<button onclick="editCelebrationSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>` :
+                    `<button onclick="editSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>`;
+                
                 return `
                     <div class="service-section">
                         <div class="section-title">${item.title}</div>
@@ -584,7 +589,7 @@
                             <span class="song-number">#${item.song.number}</span>
                             <span class="song-name">${item.song.name}${item.song.name2 ? ' - ' + item.song.name2 : ''}</span>
                             <span class="song-collection">${item.collection}</span>
-                            <button onclick="editSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>
+                            ${editButton}
                         </div>
                         ${recentWarning}
                     </div>
@@ -718,6 +723,57 @@
             
             if (newNum) {
                 setManualSong(index, newNum);
+            }
+        }
+
+        function editCelebrationSong(index) {
+            const item = window.currentService[index];
+            const currentSong = item.song;
+            
+            // Show collection selector
+            const collection = prompt(
+                `Current: #${currentSong.number} - ${currentSong.name}\nFrom: ${item.collection}\n\n` +
+                `Choose collection:\n` +
+                `1 = Kristheeya Keerthanangal\n` +
+                `2 = Maramon 2025\n` +
+                `3 = Maramon 2026\n` +
+                `4 = Kottarakara 2025\n` +
+                `5 = Kottarakara 2026\n\n` +
+                `Enter collection number (1-5):`
+            );
+            
+            if (!collection) return;
+            
+            const collectionMap = {
+                '1': 'kristheeya-keerthanangal',
+                '2': 'maramon-2025',
+                '3': 'maramon-2026',
+                '4': 'kottarakara-2025',
+                '5': 'kottarakara-2026'
+            };
+            
+            const selectedCollection = collectionMap[collection];
+            if (!selectedCollection) {
+                alert('Invalid collection number!');
+                return;
+            }
+            
+            const songNum = prompt(`Enter song number from ${selectedCollection}:`);
+            if (!songNum) return;
+            
+            let song;
+            if (selectedCollection === 'kristheeya-keerthanangal') {
+                song = hymns.find(s => s.number == songNum);
+            } else {
+                song = conventions[selectedCollection].find(s => s.number == songNum);
+            }
+            
+            if (song) {
+                window.currentService[index].song = song;
+                window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                displayService(window.currentService);
+            } else {
+                alert(`Song #${songNum} not found in ${selectedCollection}!`);
             }
         }
 
