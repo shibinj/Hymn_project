@@ -539,7 +539,28 @@
                 window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                 displayService(window.currentService);
             } else {
-                alert(`Song #${songNum} not found in ${selectedCollection}!`);
+                // Song not found - offer to create custom entry
+                const customName = prompt(
+                    `Song #${songNum} not found in ${selectedCollection}.\n\n` +
+                    `Would you like to add it manually?\n\n` +
+                    `Enter song name (or click Cancel to try again):`
+                );
+                
+                if (customName && customName.trim()) {
+                    // Create custom song object
+                    const customSong = {
+                        number: songNum,
+                        name: customName.trim(),
+                        name2: '',
+                        youtubeId: ''
+                    };
+                    
+                    window.currentService[index].song = customSong;
+                    window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                    displayService(window.currentService);
+                    
+                    alert('✅ Custom song added!\n\nNote: This is a temporary entry and won\'t be added to the collection permanently.');
+                }
             }
         }
 
@@ -773,7 +794,28 @@
                 window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                 displayService(window.currentService);
             } else {
-                alert(`Song #${songNum} not found in ${selectedCollection}!`);
+                // Song not found - offer to create custom entry
+                const customName = prompt(
+                    `Song #${songNum} not found in ${selectedCollection}.\n\n` +
+                    `Would you like to add it manually?\n\n` +
+                    `Enter song name (or click Cancel to try again):`
+                );
+                
+                if (customName && customName.trim()) {
+                    // Create custom song object
+                    const customSong = {
+                        number: songNum,
+                        name: customName.trim(),
+                        name2: '',
+                        youtubeId: ''
+                    };
+                    
+                    window.currentService[index].song = customSong;
+                    window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                    displayService(window.currentService);
+                    
+                    alert('✅ Custom song added!\n\nNote: This is a temporary entry and won\'t be added to the collection permanently.');
+                }
             }
         }
 
