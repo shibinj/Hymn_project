@@ -36,6 +36,19 @@
         <h1>🎵 Worship Service Planner</h1>
         <p class="subtitle">Generate random song selections for Sunday worship</p>
         
+        <div class="service-info" style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">📅 Service Date</label>
+                    <input type="date" id="serviceDate" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">📖 Theme of the Week</label>
+                    <input type="text" id="serviceTheme" placeholder="Enter theme..." style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
+                </div>
+            </div>
+        </div>
+        
         <div class="controls">
             <button onclick="generateService()">🎲 Generate New Service</button>
             <button class="save-btn" onclick="saveService()">💾 Save Service</button>
@@ -136,18 +149,6 @@
             displayService(window.currentService);
         }
 
-        function setManualSong(index, songNum) {
-            const song = hymns.find(s => s.number == songNum) || 
-                         Object.values(conventions).flat().find(s => s.number == songNum);
-            
-            if (song) {
-                window.currentService[index].song = song;
-                displayService(window.currentService);
-            } else {
-                alert('Song not found!');
-            }
-        }
-
         function getSuggestedCelebrationSongs() {
             // Analyze history to find patterns
             const celebrationHistory = serviceHistory
@@ -155,7 +156,7 @@
                 .map(s => s.number);
             
             if (celebrationHistory.length === 0) {
-                // Default suggestions if no history
+                // Default suggestions from both hymns and conventions
                 return [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250];
             }
             
@@ -169,18 +170,45 @@
             const topPicks = Object.entries(frequency)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5)
-                .map(([num]) => parseInt(num));
+                .map(([num]) => isNaN(num) ? num : parseInt(num));
             
-            // Find similar range songs (not recently used)
-            const avgNum = celebrationHistory.reduce((a, b) => a + b, 0) / celebrationHistory.length;
+            // Find similar range songs (not recently used) from hymns
+            const numericHistory = celebrationHistory.filter(n => !isNaN(n));
+            const avgNum = numericHistory.length > 0 ? 
+                numericHistory.reduce((a, b) => a + b, 0) / numericHistory.length : 200;
+            
             const rangeSongs = hymns
                 .filter(s => typeof s.number === 'number' && 
                             Math.abs(s.number - avgNum) < 50 &&
                             !wasRecentlyUsed(s.number, 'celebration'))
                 .map(s => s.number)
-                .slice(0, 5);
+                .slice(0, 3);
             
-            return [...new Set([...topPicks, ...rangeSongs])].slice(0, 8);
+            // Add some convention songs
+            const conventionSuggestions = Object.values(conventions)
+                .flat()
+                .filter(s => !wasRecentlyUsed(s.number, 'celebration'))
+                .slice(0, 2)
+                .map(s => s.number);
+            
+            return [...new Set([...topPicks, ...rangeSongs, ...conventionSuggestions])].slice(0, 8);
+        }
+
+        function setManualSong(index, songNum) {
+            // Search in hymns first
+            let song = hymns.find(s => s.number == songNum);
+            
+            // If not found, search in all conventions
+            if (!song) {
+                song = Object.values(conventions).flat().find(s => s.number == songNum);
+            }
+            
+            if (song) {
+                window.currentService[index].song = song;
+                displayService(window.currentService);
+            } else {
+                alert('Song not found!');
+            }
         }
 
         function displayService(service) {
@@ -188,7 +216,8 @@
                 if (item.manual && !item.song) {
                     const suggestions = getSuggestedCelebrationSongs();
                     const suggestionButtons = suggestions.map(num => {
-                        const song = hymns.find(s => s.number === num);
+                        const song = hymns.find(s => s.number === num) || 
+                                     Object.values(conventions).flat().find(s => s.number === num);
                         return song ? `<button onclick="setManualSong(${index}, ${num})" style="font-size: 12px; padding: 6px 12px; margin: 2px;">#${num}</button>` : '';
                     }).join('');
                     
@@ -216,6 +245,7 @@
                             <span class="song-number">#${item.song.number}</span>
                             <span class="song-name">${item.song.name}${item.song.name2 ? ' - ' + item.song.name2 : ''}</span>
                             <span class="song-collection">${item.collection}</span>
+                            <button onclick="editSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>
                         </div>
                         ${recentWarning}
                     </div>
@@ -225,14 +255,32 @@
             document.getElementById('serviceOrder').innerHTML = html;
         }
 
+        function editSong(index) {
+            const currentSong = window.currentService[index].song;
+            const newNum = prompt(`Current: #${currentSong.number} - ${currentSong.name}\n\nEnter new song number:`);
+            
+            if (newNum) {
+                setManualSong(index, newNum);
+            }
+        }
+
         function saveService() {
             if (!window.currentService || !window.currentService[2].song) {
                 alert('Please set Birthday/Anniversary song before saving!');
                 return;
             }
 
+            const serviceDate = document.getElementById('serviceDate').value;
+            const serviceTheme = document.getElementById('serviceTheme').value;
+
+            if (!serviceDate || !serviceTheme) {
+                alert('Please enter service date and theme!');
+                return;
+            }
+
             const service = {
-                date: Date.now(),
+                date: new Date(serviceDate).getTime(),
+                theme: serviceTheme,
                 songs: window.currentService.map(s => ({
                     number: s.song.number,
                     name: s.song.name,
@@ -253,12 +301,19 @@
             
             const recent = serviceHistory.slice(0, 5).map(s => {
                 const date = new Date(s.date).toLocaleDateString();
+                const theme = s.theme || 'No theme';
                 const songs = s.songs.map(song => `#${song.number}`).join(', ');
-                return `<div><strong>${date}:</strong> ${songs}</div>`;
-            }).join('');
+                return `<div><strong>${date}</strong> - ${theme}<br/><span style="font-size: 11px;">${songs}</span></div>`;
+            }).join('<hr style="margin: 10px 0; border: none; border-top: 1px solid #e2e8f0;">');
             
             document.getElementById('recentlyUsed').innerHTML = `<h3>Recently Used Services:</h3>${recent}`;
         }
+
+        // Set today's date by default
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('serviceDate').value = today;
+        });
 
         loadData().then(() => generateService());
     </script>
