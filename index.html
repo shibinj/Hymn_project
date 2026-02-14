@@ -389,25 +389,30 @@
                 listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No songs found</p>';
                 return;
             }
-            listEl.innerHTML = songList.map(song => `
-                <div class="song-item" onclick="selectSong(${song.number})">
-                    <strong>#${song.number}</strong> ${song.name}${song.name2 ? '<small>' + song.name2 + '</small>' : ''}
-                </div>
-            `).join('');
+            listEl.innerHTML = songList.map(song => {
+                const displayNumber = typeof song.number === 'string' ? song.number : `#${song.number}`;
+                return `
+                    <div class="song-item" onclick="selectSong('${song.number}')">
+                        <strong>${displayNumber}</strong> ${song.name}${song.name2 ? '<small>' + song.name2 + '</small>' : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
         // Select and display song
         function selectSong(number) {
-            currentSong = songs.find(s => s.number === number);
+            currentSong = songs.find(s => s.number == number);
             if (!currentSong) return;
 
             // Highlight selected
             document.querySelectorAll('.song-item').forEach(item => item.classList.remove('active'));
             event.target.closest('.song-item').classList.add('active');
 
+            const displayNumber = typeof currentSong.number === 'string' ? currentSong.number : `#${currentSong.number}`;
+
             // Display song with share buttons
             document.getElementById('songDisplay').innerHTML = `
-                <div class="song-title">#${currentSong.number} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
+                <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
                 <div class="share-buttons">
                     <button class="share-btn whatsapp" onclick="shareWhatsApp()">📱 WhatsApp</button>
                     <button class="share-btn facebook" onclick="shareFacebook()">📘 Facebook</button>
