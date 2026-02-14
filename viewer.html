@@ -305,8 +305,8 @@
         <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
     </div>
     
-    <h1>🎵 Kristheeya Keerthanangal | ക്രിസ്തീയ കീർത്തനങ്ങൾ</h1>
-    <div class="subtitle">Malayalam Christian Hymns with Lyrics & Videos</div>
+    <h1 id="pageTitle">🎵 Holy Hymns</h1>
+    <div class="subtitle" id="pageSubtitle">Loading...</div>
     
     <div class="search-box">
         <input type="text" id="searchInput" placeholder="🔍 Search by song number or name...">
@@ -362,6 +362,36 @@
         const urlParams = new URLSearchParams(window.location.search);
         const collection = urlParams.get('collection') || 'kristheeya-keerthanangal';
         const collectionFile = `data/${collection}.json`;
+        
+        // Collection titles
+        const collectionTitles = {
+            'kristheeya-keerthanangal': {
+                title: '🎵 ക്രിസ്തീയ കീർത്തനങ്ങൾ',
+                subtitle: 'Kristheeya Keerthanangal - Malayalam Christian Hymns'
+            },
+            'maramon-2025': {
+                title: '🎤 Maramon Convention 2025',
+                subtitle: 'മാരാമൺ കൺവെൻഷൻ 2025'
+            },
+            'maramon-2026': {
+                title: '🎤 Maramon Convention 2026',
+                subtitle: 'മാരാമൺ കൺവെൻഷൻ 2026'
+            },
+            'kottarakara-2025': {
+                title: '⛪ Kottarakara Convention 2025',
+                subtitle: 'കോട്ടാരക്കര കൺവെൻഷൻ 2025'
+            },
+            'kottarakara-2026': {
+                title: '⛪ Kottarakara Convention 2026',
+                subtitle: 'കോട്ടാരക്കര കൺവെൻഷൻ 2026'
+            }
+        };
+        
+        // Set page title
+        const collectionInfo = collectionTitles[collection] || collectionTitles['kristheeya-keerthanangal'];
+        document.getElementById('pageTitle').textContent = collectionInfo.title;
+        document.getElementById('pageSubtitle').textContent = collectionInfo.subtitle;
+        document.title = collectionInfo.title + ' | Holy Hymns';
         
         // Load songs from JSON
         fetch(collectionFile)
