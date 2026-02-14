@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hymn Lyrics Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        h1 { margin-bottom: 20px; color: #333; }
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        .hymn-list {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            height: 80vh;
+            overflow-y: auto;
+        }
+        .hymn-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        .hymn-item:hover { background: #f0f0f0; }
+        .hymn-item.active { background: #007bff; color: white; }
+        .hymn-item.has-lyrics { border-left: 4px solid #28a745; }
+        .hymn-item.no-lyrics { border-left: 4px solid #dc3545; }
+        .editor {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor h2 { margin-bottom: 15px; color: #333; }
+        textarea {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+            line-height: 1.8;
+        }
+        .buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+        .save-btn:hover { background: #218838; }
+        .download-btn {
+            background: #007bff;
+            color: white;
+        }
+        .download-btn:hover { background: #0056b3; }
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+        }
+        .clear-btn:hover { background: #c82333; }
+        .stats {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .no-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 Hymn Lyrics Editor</h1>
+    
+    <div class="stats">
+        <strong>Progress:</strong> <span id="progress">0/0</span> hymns have lyrics
+    </div>
+    
+    <div class="container">
+        <div class="hymn-list" id="hymnList"></div>
+        <div class="editor" id="editor">
+            <div class="no-selection">Select a hymn to edit lyrics</div>
+        </div>
+    </div>
+
+    <script>
+        let songs = [];
+        let currentSong = null;
+
+        // Load songs
+        fetch('songs.json')
+            .then(res => res.json())
+            .then(data => {
+                songs = data;
+                displayHymnList();
+                updateStats();
+            })
+            .catch(err => {
+                alert('Error loading songs.json: ' + err.message);
+            });
+
+        function displayHymnList() {
+            const listEl = document.getElementById('hymnList');
+            listEl.innerHTML = songs.map(song => {
+                const hasLyrics = song.lyrics && song.lyrics.trim().length > 0;
+                const className = hasLyrics ? 'has-lyrics' : 'no-lyrics';
+                return `
+                    <div class="hymn-item ${className}" onclick="selectHymn(${song.number})">
+                        <strong>#${song.number}</strong> - ${song.name}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectHymn(number) {
+            currentSong = songs.find(s => s.number === number);
+            if (!currentSong) return;
+
+            // Highlight selected
+            document.querySelectorAll('.hymn-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.hymn-item').classList.add('active');
+
+            // Show editor
+            document.getElementById('editor').innerHTML = `
+                <h2>#${currentSong.number} - ${currentSong.name}</h2>
+                <textarea id="lyricsInput" placeholder="Enter lyrics in Malayalam...">${currentSong.lyrics || ''}</textarea>
+                <div class="buttons">
+                    <button class="save-btn" onclick="saveLyrics()">💾 Save</button>
+                    <button class="clear-btn" onclick="clearLyrics()">🗑️ Clear</button>
+                    <button class="download-btn" onclick="downloadJSON()">⬇️ Download JSON</button>
+                </div>
+            `;
+        }
+
+        function saveLyrics() {
+            if (!currentSong) return;
+            
+            const lyrics = document.getElementById('lyricsInput').value;
+            currentSong.lyrics = lyrics;
+            
+            // Update in songs array
+            const index = songs.findIndex(s => s.number === currentSong.number);
+            if (index !== -1) {
+                songs[index].lyrics = lyrics;
+            }
+            
+            // Update display
+            displayHymnList();
+            updateStats();
+            
+            alert('✓ Lyrics saved! Don\'t forget to download the updated JSON.');
+        }
+
+        function clearLyrics() {
+            if (confirm('Clear lyrics for this hymn?')) {
+                document.getElementById('lyricsInput').value = '';
+            }
+        }
+
+        function downloadJSON() {
+            const dataStr = JSON.stringify(songs, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'songs_updated.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function updateStats() {
+            const withLyrics = songs.filter(s => s.lyrics && s.lyrics.trim().length > 0).length;
+            document.getElementById('progress').textContent = `${withLyrics}/${songs.length}`;
+        }
+    </script>
+</body>
+</html>
