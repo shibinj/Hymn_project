@@ -134,25 +134,28 @@
             listEl.innerHTML = songs.map(song => {
                 const hasLyrics = song.lyrics && song.lyrics.trim().length > 0;
                 const className = hasLyrics ? 'has-lyrics' : 'no-lyrics';
+                const displayNumber = typeof song.number === 'string' ? song.number : `#${song.number}`;
                 return `
-                    <div class="hymn-item ${className}" onclick="selectHymn(${song.number})">
-                        <strong>#${song.number}</strong> - ${song.name}
+                    <div class="hymn-item ${className}" onclick="selectHymn('${song.number}')">
+                        <strong>${displayNumber}</strong> - ${song.name}
                     </div>
                 `;
             }).join('');
         }
 
         function selectHymn(number) {
-            currentSong = songs.find(s => s.number === number);
+            currentSong = songs.find(s => s.number == number);
             if (!currentSong) return;
 
             // Highlight selected
             document.querySelectorAll('.hymn-item').forEach(item => item.classList.remove('active'));
             event.target.closest('.hymn-item').classList.add('active');
 
+            const displayNumber = typeof currentSong.number === 'string' ? currentSong.number : `#${currentSong.number}`;
+            
             // Show editor
             document.getElementById('editor').innerHTML = `
-                <h2>#${currentSong.number} - ${currentSong.name}</h2>
+                <h2>${displayNumber} - ${currentSong.name}</h2>
                 <textarea id="lyricsInput" placeholder="Enter lyrics in Malayalam...">${currentSong.lyrics || ''}</textarea>
                 <div class="buttons">
                     <button class="save-btn" onclick="saveLyrics()">💾 Save</button>
@@ -169,7 +172,7 @@
             currentSong.lyrics = lyrics;
             
             // Update in songs array
-            const index = songs.findIndex(s => s.number === currentSong.number);
+            const index = songs.findIndex(s => s.number == currentSong.number);
             if (index !== -1) {
                 songs[index].lyrics = lyrics;
             }
