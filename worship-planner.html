@@ -52,7 +52,7 @@
         <p class="subtitle">Generate random song selections for Sunday worship</p>
         
         <div class="service-info" style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">📅 Service Date</label>
                     <input type="date" id="serviceDate" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
@@ -61,7 +61,12 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">📖 Theme of the Week</label>
                     <input type="text" id="serviceTheme" placeholder="Enter theme..." style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
                 </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">🔗 GitHub Gist ID <span style="font-size: 11px; font-weight: normal; color: #6c757d;">(optional)</span></label>
+                    <input type="text" id="gistId" placeholder="Enter Gist ID..." style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
+                </div>
             </div>
+            <div id="syncStatus" style="margin-top: 10px; font-size: 12px; color: #6c757d;"></div>
         </div>
         
         <div class="controls">
@@ -70,6 +75,8 @@
             <button class="whatsapp-btn" onclick="shareToWhatsApp()">📱 Share to WhatsApp</button>
             <button class="history-btn" onclick="showHistory()">📜 View History</button>
             <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+            <button onclick="setupGist()" style="background: #4299e1;">⚙️ Setup Cloud Sync</button>
+            <button onclick="syncFromGist()" style="background: #48bb78;">🔄 Sync Now</button>
             <select id="offertoryConvention">
                 <option value="alternate">Alternate Conventions</option>
                 <option value="maramon-2025">Maramon 2025</option>
@@ -115,7 +122,9 @@
         let hymns = [];
         let conventions = {};
         let lastConvention = 'kottarakara';
-        let serviceHistory = JSON.parse(localStorage.getItem('serviceHistory') || '[]');
+        let serviceHistory = [];
+        let gistId = localStorage.getItem('gistId') || '';
+        let gistToken = localStorage.getItem('gistToken') || '';
 
         // Song categories
         const categories = {
@@ -130,7 +139,109 @@
             conventions['maramon-2026'] = await fetch('data/maramon-2026.json').then(r => r.json());
             conventions['kottarakara-2025'] = await fetch('data/kottarakara-2025.json').then(r => r.json());
             conventions['kottarakara-2026'] = await fetch('data/kottarakara-2026.json').then(r => r.json());
+            
+            // Load Gist ID from localStorage
+            if (gistId) {
+                document.getElementById('gistId').value = gistId;
+                await syncFromGist();
+            } else {
+                // Fallback to localStorage
+                serviceHistory = JSON.parse(localStorage.getItem('serviceHistory') || '[]');
+            }
+            
             displayRecentlyUsed();
+        }
+
+        async function syncFromGist() {
+            if (!gistId) return;
+            
+            try {
+                updateSyncStatus('🔄 Syncing from cloud...');
+                const response = await fetch(`https://api.github.com/gists/${gistId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Gist');
+                }
+                
+                const gist = await response.json();
+                const file = gist.files['worship-service-history.json'];
+                
+                if (file) {
+                    serviceHistory = JSON.parse(file.content);
+                    localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+                    updateSyncStatus(`✅ Synced ${serviceHistory.length} services from cloud`);
+                } else {
+                    updateSyncStatus('⚠️ No data found in Gist');
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+                updateSyncStatus('❌ Sync failed - using local data');
+                serviceHistory = JSON.parse(localStorage.getItem('serviceHistory') || '[]');
+            }
+        }
+
+        async function syncToGist() {
+            if (!gistId || !gistToken) {
+                return false;
+            }
+            
+            try {
+                updateSyncStatus('🔄 Saving to cloud...');
+                
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${gistToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'worship-service-history.json': {
+                                content: JSON.stringify(serviceHistory, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update Gist');
+                }
+                
+                updateSyncStatus(`✅ Saved to cloud (${serviceHistory.length} services)`);
+                return true;
+            } catch (error) {
+                console.error('Sync error:', error);
+                updateSyncStatus('❌ Cloud save failed - saved locally only');
+                return false;
+            }
+        }
+
+        function updateSyncStatus(message) {
+            document.getElementById('syncStatus').textContent = message;
+        }
+
+        function setupGist() {
+            const newGistId = document.getElementById('gistId').value.trim();
+            
+            if (!newGistId) {
+                alert('Please enter a Gist ID');
+                return;
+            }
+            
+            const token = prompt('Enter your GitHub Personal Access Token (with gist permission):\n\nThis will be stored locally in your browser.');
+            
+            if (!token) {
+                return;
+            }
+            
+            gistId = newGistId;
+            gistToken = token;
+            
+            localStorage.setItem('gistId', gistId);
+            localStorage.setItem('gistToken', gistToken);
+            
+            alert('✅ GitHub Gist configured! Data will now sync automatically.');
+            syncFromGist();
         }
 
         function wasRecentlyUsed(songNum, category) {
@@ -384,11 +495,25 @@
             };
 
             serviceHistory.unshift(service);
-            serviceHistory = serviceHistory.slice(0, 20); // Keep last 20 services
+            serviceHistory = serviceHistory.slice(0, 50); // Keep last 50 services
+            
+            // Save to localStorage
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
             
-            alert('✅ Service saved!');
-            displayRecentlyUsed();
+            // Sync to Gist if configured
+            if (gistId && gistToken) {
+                syncToGist().then(success => {
+                    if (success) {
+                        alert('✅ Service saved and synced to cloud!');
+                    } else {
+                        alert('✅ Service saved locally (cloud sync failed)');
+                    }
+                    displayRecentlyUsed();
+                });
+            } else {
+                alert('✅ Service saved locally!');
+                displayRecentlyUsed();
+            }
         }
 
         function displayRecentlyUsed() {
@@ -404,10 +529,17 @@
             document.getElementById('recentlyUsed').innerHTML = `<h3>Recently Used Services:</h3>${recent}`;
         }
 
-        // Set today's date by default
+        // Set today's date by default and setup auto-sync
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
+            
+            // Auto-sync every 5 minutes if Gist is configured
+            if (gistId && gistToken) {
+                setInterval(() => {
+                    syncFromGist();
+                }, 5 * 60 * 1000);
+            }
         });
 
         function showHistory() {
@@ -619,6 +751,60 @@
 
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
+        }
+
+        function exportHistory() {
+            if (serviceHistory.length === 0) {
+                alert('No service history to export!');
+                return;
+            }
+
+            const dataStr = JSON.stringify(serviceHistory, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `worship-service-history-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`✅ Exported ${serviceHistory.length} services!`);
+        }
+
+        function importHistory(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(importedData)) {
+                        alert('❌ Invalid file format!');
+                        return;
+                    }
+
+                    // Merge with existing history (avoid duplicates by date)
+                    const existingDates = new Set(serviceHistory.map(s => s.date));
+                    const newServices = importedData.filter(s => !existingDates.has(s.date));
+                    
+                    serviceHistory = [...serviceHistory, ...newServices]
+                        .sort((a, b) => b.date - a.date)
+                        .slice(0, 50); // Keep last 50 services
+                    
+                    localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+                    
+                    alert(`✅ Imported ${newServices.length} new services!\nTotal services: ${serviceHistory.length}`);
+                    displayRecentlyUsed();
+                } catch (error) {
+                    alert('❌ Error reading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
         }
 
         // Close modal when clicking outside
