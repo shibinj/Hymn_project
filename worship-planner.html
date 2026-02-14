@@ -123,7 +123,11 @@
         let conventions = {};
         let lastConvention = 'kottarakara';
         let serviceHistory = [];
-        let gistId = localStorage.getItem('gistId') || '';
+        
+        // CONFIGURE THIS: Your GitHub Gist ID (leave empty to disable cloud sync)
+        const SHARED_GIST_ID = 'db9382e61d3f976d88eb0c9d0a643b7d'; // Paste your Gist ID here, e.g., 'abc123def456'
+        
+        let gistId = SHARED_GIST_ID || localStorage.getItem('gistId') || '';
         let gistToken = localStorage.getItem('gistToken') || '';
 
         // Song categories
@@ -140,8 +144,26 @@
             conventions['kottarakara-2025'] = await fetch('data/kottarakara-2025.json').then(r => r.json());
             conventions['kottarakara-2026'] = await fetch('data/kottarakara-2026.json').then(r => r.json());
             
-            // Load Gist ID from localStorage
-            if (gistId) {
+            // Auto-configure Gist ID if set in code
+            if (SHARED_GIST_ID) {
+                gistId = SHARED_GIST_ID;
+                document.getElementById('gistId').value = gistId;
+                document.getElementById('gistId').disabled = true;
+                
+                // Prompt for token if not set
+                if (!gistToken) {
+                    const token = prompt('🔐 Enter your GitHub Personal Access Token to enable cloud sync:\n\n1. Go to: https://github.com/settings/tokens\n2. Generate new token (classic)\n3. Check "gist" permission\n4. Copy and paste here\n\n(This is stored locally in your browser only)');
+                    
+                    if (token) {
+                        gistToken = token;
+                        localStorage.setItem('gistToken', gistToken);
+                    }
+                }
+                
+                if (gistToken) {
+                    await syncFromGist();
+                }
+            } else if (gistId) {
                 document.getElementById('gistId').value = gistId;
                 await syncFromGist();
             } else {
