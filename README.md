@@ -7,11 +7,12 @@ A comprehensive online collection of Malayalam Christian hymns with lyrics and Y
 ## Features
 
 ### 🎵 Core Functionality
-- **Complete Hymn Collection** - Browse all Malayalam Christian hymns with numbers
+- **Complete Hymn Collection** - Browse all Malayalam Christian hymns (504 hymns + Doxology)
 - **Search** - Find hymns by number or name (supports Malayalam and English)
 - **Lyrics Display** - Full lyrics in Malayalam with elegant typography
-- **YouTube Integration** - Embedded videos for each hymn
+- **YouTube Integration** - Embedded videos for each hymn (no suggestions/distractions)
 - **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
+- **Doxology Section** - Special section for doxology hymns (DOX-I to DOX-XIII)
 
 ### 🎨 User Experience
 - **Dark Mode** - Toggle between light and dark themes (preference saved)
@@ -25,7 +26,7 @@ A comprehensive online collection of Malayalam Christian hymns with lyrics and Y
 - **Print Friendly** - Print lyrics for offline use
 
 ### 🔍 SEO & Analytics
-- **Google Analytics** - Track visitor statistics
+- **Google Analytics** - Track visitor statistics (ID: G-7RV9BCEP13)
 - **SEO Optimized** - Meta tags, structured data, and Open Graph tags
 - **Google Search Console** - Verified and indexed
 - **Sitemap** - XML sitemap for search engines
@@ -35,14 +36,17 @@ A comprehensive online collection of Malayalam Christian hymns with lyrics and Y
 
 ```
 Hymn_project/
-├── index.html          # Main application
-├── songs.json          # Hymn data (number, name, lyrics, YouTube ID)
-├── scrape_hymns.py     # Python script to scrape hymn data
-├── sitemap.xml         # SEO sitemap
-├── robots.txt          # Search engine instructions
-├── favicon.ico         # Site icon
-├── .gitignore          # Git ignore rules (excludes *.py)
-└── README.md           # This file
+├── index.html              # Main application
+├── songs.json              # Hymn data (number, name, lyrics, YouTube ID)
+├── lyrics_editor.html      # Admin interface for adding/editing lyrics
+├── scrape_hymns.py         # Python script to scrape hymn data
+├── add_dox_manual.py       # Script to add doxology hymns from YouTube playlist
+├── reorder_songs.py        # Script to sort hymns (regular + DOX)
+├── sitemap.xml             # SEO sitemap
+├── robots.txt              # Search engine instructions
+├── favicon.ico             # Site icon
+├── .gitignore              # Git ignore rules (excludes *.py)
+└── README.md               # This file
 ```
 
 ## Technology Stack
@@ -58,7 +62,7 @@ Hymn_project/
 ### Prerequisites
 - Git
 - Web browser
-- (Optional) Python 3 for scraping
+- (Optional) Python 3 for data management scripts
 
 ### Local Development
 
@@ -94,13 +98,52 @@ Each hymn in `songs.json` follows this format:
 
 ```json
 {
-  "number": 1,
+  "number": 1,                    // or "DOX-I" for doxology
   "name": "Hymn name in Malayalam",
   "name2": "Alternate name (optional)",
   "lyrics": "Full lyrics in Malayalam",
   "youtubeId": "YouTube video ID"
 }
 ```
+
+**Hymn Numbering:**
+- Regular hymns: 1-504 (numeric)
+- Doxology hymns: DOX-I, DOX-II, ... DOX-XIII (Roman numerals)
+
+## Managing Hymn Data
+
+### Adding/Editing Lyrics
+
+Use the built-in lyrics editor:
+
+1. Open `lyrics_editor.html` in your browser
+2. Click any hymn from the list
+3. Add or edit lyrics in the text area
+4. Click "Save" to update
+5. Click "Download JSON" to get the updated file
+6. Replace `songs.json` with the downloaded file
+
+**Color coding:**
+- 🟢 Green border = Has lyrics
+- 🔴 Red border = No lyrics
+
+### Reordering Hymns
+
+To sort hymns (regular hymns first, then doxology):
+
+```bash
+python3 reorder_songs.py
+```
+
+### Adding Doxology Hymns
+
+To add doxology hymns from a YouTube playlist:
+
+1. Extract playlist data using browser console
+2. Save as `dox_videos.json`
+3. Run: `python3 add_dox_manual.py`
+
+See script comments for detailed instructions.
 
 ## Browser Support
 
@@ -130,6 +173,11 @@ Each hymn in `songs.json` follows this format:
 - **Twitter**: Shares with title
 - **Print**: Opens browser print dialog
 
+### YouTube Integration
+- Clean embed (no suggestions or branding)
+- Parameters: `rel=0`, `modestbranding=1`, `showinfo=0`
+- Prevents distracting related videos
+
 ## SEO Implementation
 
 - Meta description and keywords
@@ -150,6 +198,18 @@ Metrics tracked:
 - Geographic location
 - Device types
 - Real-time visitors
+
+## Custom Domain Setup
+
+To add a custom domain (e.g., keerthanangal.com):
+
+1. Buy domain from registrar
+2. Add DNS records (A records + CNAME)
+3. Create `CNAME` file in repo with your domain
+4. Enable in GitHub Pages settings
+5. Enable HTTPS
+
+See README section "Custom Domain" for detailed DNS configuration.
 
 ## Contributing
 
