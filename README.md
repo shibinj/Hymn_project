@@ -1,13 +1,22 @@
-# ക്രിസ്തീയ കീർത്തനങ്ങൾ | Malayalam Christian Hymns
+# ക്രിസ്തീയ കീർത്തനങ്ങൾ | Holy Hymns
 
-A comprehensive online collection of Malayalam Christian hymns with lyrics and YouTube videos.
+A comprehensive online collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and YouTube videos.
 
 🌐 **Live Site**: [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
+
+## Collections
+
+### 📖 Hymn Books
+- **Kristheeya Keerthanangal** - Complete Malayalam Christian Hymn Book (504 hymns + Doxology)
+
+### 🎪 Convention Songs
+- **Maramon Convention** - 2025, 2026 (Coming Soon)
+- **Kottarakara Convention** - 2025, 2026 (Coming Soon)
 
 ## Features
 
 ### 🎵 Core Functionality
-- **Complete Hymn Collection** - Browse all Malayalam Christian hymns (504 hymns + Doxology)
+- **Multiple Collections** - Browse different hymn books and convention songs
 - **Search** - Find hymns by number or name (supports Malayalam and English)
 - **Lyrics Display** - Full lyrics in Malayalam with elegant typography
 - **YouTube Integration** - Embedded videos for each hymn (no suggestions/distractions)
@@ -15,6 +24,7 @@ A comprehensive online collection of Malayalam Christian hymns with lyrics and Y
 - **Doxology Section** - Special section for doxology hymns (DOX-I to DOX-XIII)
 
 ### 🎨 User Experience
+- **Landing Page** - Organized collections by category
 - **Dark Mode** - Toggle between light and dark themes (preference saved)
 - **Beautiful UI** - Modern gradient design with smooth animations
 - **Easy Navigation** - Click any hymn to view lyrics and video
@@ -36,9 +46,16 @@ A comprehensive online collection of Malayalam Christian hymns with lyrics and Y
 
 ```
 Hymn_project/
-├── index.html              # Main application
-├── songs.json              # Hymn data (number, name, lyrics, YouTube ID)
+├── index.html              # Landing page with all collections
+├── viewer.html             # Hymn viewer (loads different collections)
 ├── lyrics_editor.html      # Admin interface for adding/editing lyrics
+├── data/
+│   ├── kristheeya-keerthanangal.json  # Main hymn book
+│   ├── maramon-2025.json              # Maramon Convention 2025
+│   ├── maramon-2026.json              # Maramon Convention 2026
+│   ├── kottarakara-2025.json          # Kottarakara Convention 2025
+│   └── kottarakara-2026.json          # Kottarakara Convention 2026
+├── songs.json              # Backward compatibility (main hymn book)
 ├── scrape_hymns.py         # Python script to scrape hymn data
 ├── add_dox_manual.py       # Script to add doxology hymns from YouTube playlist
 ├── reorder_songs.py        # Script to sort hymns (regular + DOX)
@@ -94,7 +111,7 @@ git push origin main
 
 ## Data Structure
 
-Each hymn in `songs.json` follows this format:
+Each hymn in collection JSON files follows this format:
 
 ```json
 {
@@ -110,22 +127,29 @@ Each hymn in `songs.json` follows this format:
 - Regular hymns: 1-504 (numeric)
 - Doxology hymns: DOX-I, DOX-II, ... DOX-XIII (Roman numerals)
 
-## Managing Hymn Data
+## Managing Collections
 
 ### Adding/Editing Lyrics
 
 Use the built-in lyrics editor:
 
 1. Open `lyrics_editor.html` in your browser
-2. Click any hymn from the list
-3. Add or edit lyrics in the text area
-4. Click "Save" to update
-5. Click "Download JSON" to get the updated file
-6. Replace `songs.json` with the downloaded file
+2. Select collection from dropdown
+3. Click any hymn from the list
+4. Add or edit lyrics in the text area
+5. Click "Save" to update
+6. Click "Download JSON" to get the updated file
+7. Replace the file in `data/` folder
 
 **Color coding:**
 - 🟢 Green border = Has lyrics
 - 🔴 Red border = No lyrics
+
+### Adding New Collections
+
+1. Create new JSON file in `data/` folder (e.g., `data/new-collection.json`)
+2. Add section card in `index.html`
+3. Add option in lyrics editor dropdown (`lyrics_editor.html`)
 
 ### Reordering Hymns
 
@@ -154,6 +178,12 @@ See script comments for detailed instructions.
 - Mobile browsers (iOS Safari, Chrome Mobile)
 
 ## Features Breakdown
+
+### Landing Page
+- Organized collections by category
+- Beautiful card-based design
+- Footer with disclaimer and links
+- Direct navigation to collections
 
 ### Dark Mode
 - Automatic theme switching
@@ -209,7 +239,7 @@ To add a custom domain (e.g., keerthanangal.com):
 4. Enable in GitHub Pages settings
 5. Enable HTTPS
 
-See README section "Custom Domain" for detailed DNS configuration.
+See online guides for detailed DNS configuration.
 
 ## Contributing
 
@@ -219,6 +249,10 @@ This is a community resource. To contribute:
 2. Create a feature branch
 3. Make your changes
 4. Submit a pull request
+
+## Disclaimer
+
+This website is a non-commercial community resource created for the Malayalam Christian community. All hymns and songs are traditional worship content. YouTube videos are embedded from their original sources. If you are a copyright holder and have concerns, please contact us.
 
 ## License
 

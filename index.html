@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html lang="ml">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="E5y7IUSrWB-JDbrB8h3NCEqLZN0KTAsJzBlqWWKqDJE" />
-    <title>Kristheeya Keerthanangal | ക്രിസ്തീയ കീർത്തനങ്ങൾ </title>
+    <title>Holy Hymns | Malayalam Christian Songs Collection</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos.">
+    <meta name="keywords" content="Malayalam Christian hymns, ക്രിസ്തീയ കീർത്തനങ്ങൾ, Maramon convention songs, Kottarakara convention, worship songs">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Holy Hymns | Malayalam Christian Songs">
+    <meta property="og:description" content="Complete collection of Malayalam Christian hymns and convention songs">
+    <meta property="og:url" content="https://shibinj.github.io/Hymn_project/">
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7RV9BCEP13"></script>
@@ -22,415 +31,210 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        :root {
-            --bg-gradient-start: #667eea;
-            --bg-gradient-end: #764ba2;
-            --card-bg: white;
-            --text-primary: #2d3748;
-            --text-secondary: #4a5568;
-            --text-muted: #6c757d;
-            --border-color: #f1f1f1;
-            --accent-color: #667eea;
-        }
-        
-        body.dark-mode {
-            --bg-gradient-start: #1a202c;
-            --bg-gradient-end: #2d3748;
-            --card-bg: #2d3748;
-            --text-primary: #e2e8f0;
-            --text-secondary: #cbd5e0;
-            --text-muted: #a0aec0;
-            --border-color: #4a5568;
-            --accent-color: #9f7aea;
-        }
-        
         body { 
             font-family: 'Inter', sans-serif; 
-            padding: 20px; 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            transition: all 0.3s ease;
-        }
-        
-        .header-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .dark-mode-toggle {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .dark-mode-toggle:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        h1 { 
-            text-align: center; 
-            color: white; 
-            margin-bottom: 10px; 
-            font-size: 2.5rem;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-        }
-        
-        .search-box { 
-            margin-bottom: 25px; 
-            position: relative;
-        }
-        
-        #searchInput { 
-            width: 100%; 
-            padding: 15px 20px; 
-            font-size: 16px; 
-            border: none;
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            background: var(--card-bg);
-            color: var(--text-primary);
-        }
-        
-        #searchInput:focus {
-            outline: none;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            transform: translateY(-2px);
-        }
-        
-        .loading {
-            text-align: center;
-            color: white;
-            font-size: 18px;
             padding: 20px;
         }
         
-        .container { 
-            display: grid; 
-            grid-template-columns: 350px 1fr; 
-            gap: 25px; 
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
-        .song-list { 
-            background: var(--card-bg); 
-            padding: 10px; 
-            border-radius: 12px; 
-            height: 75vh; 
-            overflow-y: auto; 
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
         
-        .song-list::-webkit-scrollbar { width: 8px; }
-        .song-list::-webkit-scrollbar-track { background: var(--border-color); border-radius: 10px; }
-        .song-list::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-        .song-list::-webkit-scrollbar-thumb:hover { background: #555; }
-        
-        .song-item { 
-            padding: 14px 16px; 
-            cursor: pointer; 
-            border-radius: 8px;
-            margin-bottom: 6px;
-            transition: all 0.2s ease;
-            color: var(--text-primary);
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
         
-        .song-item:hover { 
-            background: var(--border-color); 
-            transform: translateX(4px);
+        .section-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
         }
         
-        .song-item strong { 
-            color: var(--accent-color); 
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .section-desc {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        
+        .section-count {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+            color: #667eea;
             font-weight: 600;
         }
         
-        .song-item small { 
-            color: var(--text-muted); 
-            font-size: 13px; 
-            display: block;
-            margin-top: 4px;
+        .category-header {
+            color: white;
+            font-size: 1.8rem;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
         }
         
-        .song-item.active { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; 
-            transform: translateX(4px);
-        }
-        
-        .song-item.active strong { color: white; }
-        .song-item.active small { color: rgba(255,255,255,0.9); }
-        
-        .song-display { 
-            background: var(--card-bg); 
-            padding: 35px; 
-            border-radius: 12px; 
-            height: 75vh; 
-            overflow-y: auto; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-        
-        .song-display::-webkit-scrollbar { width: 8px; }
-        .song-display::-webkit-scrollbar-track { background: var(--border-color); border-radius: 10px; }
-        .song-display::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-        
-        .song-title { 
-            font-size: 28px; 
-            font-weight: 600; 
-            margin-bottom: 20px; 
-            color: var(--text-primary);
-            padding-bottom: 15px;
-            border-bottom: 3px solid var(--accent-color);
-        }
-        
-        .share-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .share-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .share-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .share-btn.whatsapp { background: #25D366; color: white; }
-        .share-btn.facebook { background: #1877F2; color: white; }
-        .share-btn.twitter { background: #1DA1F2; color: white; }
-        .share-btn.print { background: #6c757d; color: white; }
-        
-        .song-lyrics { 
-            font-family: 'Crimson Text', serif;
-            white-space: pre-wrap; 
-            line-height: 2; 
-            margin-bottom: 30px;
-            font-size: 18px;
-            color: var(--text-secondary);
-        }
-        
-        .video-container { 
-            margin-top: 30px; 
+        footer {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 40px 20px;
+            margin-top: 60px;
             border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
         }
         
-        iframe { 
-            width: 100%; 
-            height: 450px; 
-            border: none; 
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
         }
         
-        .no-song { 
-            text-align: center; 
-            color: var(--text-muted); 
-            padding: 80px 20px;
-            font-size: 18px;
+        .disclaimer {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
         }
         
-        /* Print Styles */
-        @media print {
-            body {
-                background: white !important;
-                padding: 0;
-            }
-            .header-controls, .search-box, .song-list, .share-buttons, .video-container, .dark-mode-toggle {
-                display: none !important;
-            }
-            .container {
-                display: block !important;
-            }
-            .song-display {
-                box-shadow: none !important;
-                height: auto !important;
-                padding: 20px !important;
-            }
-            .song-title {
-                color: black !important;
-                border-bottom-color: black !important;
-            }
-            .song-lyrics {
-                color: black !important;
-                font-size: 16px !important;
-            }
-            h1, .subtitle {
-                color: black !important;
-            }
+        .disclaimer h3 {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links {
+            margin: 20px 0;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            opacity: 0.9;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            text-decoration: underline;
         }
         
         @media (max-width: 768px) {
-            body { padding: 15px; }
-            h1 { font-size: 2rem; margin-bottom: 10px; }
-            .subtitle { font-size: 0.9rem; }
-            .container { grid-template-columns: 1fr; gap: 20px; }
-            .song-list { height: 40vh; }
-            .song-display { padding: 20px; height: auto; min-height: 50vh; }
-            iframe { height: 250px; }
-            .share-buttons { justify-content: center; }
+            h1 { font-size: 2rem; }
+            .sections { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="header-controls">
-        <div></div>
-        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-    </div>
-    
-    <h1>🎵 Kristheeya Keerthanangal | ക്രിസ്തീയ കീർത്തനങ്ങൾ</h1>
-    <div class="subtitle">Malayalam Christian Hymns with Lyrics & Videos</div>
-    
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="🔍 Search by song number or name...">
-    </div>
-    
-    <div class="loading" id="loading">Loading hymns...</div>
-    
-    <div class="container" id="container" style="display: none;">
-        <div class="song-list" id="songList"></div>
-        <div class="song-display" id="songDisplay">
-            <div class="no-song">Select a song to view lyrics and video</div>
+    <div class="container">
+        <header>
+            <h1>🎵 Holy Hymns</h1>
+            <p class="subtitle">Malayalam Christian Songs & Worship Collection</p>
+        </header>
+        
+        <h2 class="category-header">📖 Hymn Books</h2>
+        <div class="sections">
+            <a href="viewer.html?collection=kristheeya-keerthanangal" class="section-card">
+                <div class="section-icon">📕</div>
+                <h3 class="section-title">ക്രിസ്തീയ കീർത്തനങ്ങൾ</h3>
+                <p class="section-desc">Kristheeya Keerthanangal - Complete Malayalam Christian Hymn Book with 504 hymns and doxology</p>
+                <div class="section-count">504+ Hymns</div>
+            </a>
         </div>
-    </div>
-
-    <script>
-        let songs = [];
-        let currentSong = null;
-
-        // Dark mode toggle
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            document.querySelector('.dark-mode-toggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
-
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            document.querySelector('.dark-mode-toggle').textContent = '☀️ Light Mode';
-        }
-
-        // Share functions
-        function shareWhatsApp() {
-            const text = `${currentSong.name}\n\n${currentSong.lyrics}\n\nWatch: https://youtube.com/watch?v=${currentSong.youtubeId}\n\nMore hymns: https://shibinj.github.io/Hymn_project/`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function shareFacebook() {
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://shibinj.github.io/Hymn_project/')}`, '_blank');
-        }
-
-        function shareTwitter() {
-            const text = `${currentSong.name} - Malayalam Christian Hymn`;
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://shibinj.github.io/Hymn_project/')}`, '_blank');
-        }
-
-        function printSong() {
-            window.print();
-        }
-
-        // Load songs from JSON
-        fetch('songs.json')
-            .then(res => res.json())
-            .then(data => {
-                songs = data;
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('container').style.display = 'grid';
-                displaySongList(songs);
-            })
-            .catch(err => {
-                document.getElementById('loading').innerHTML = '<p style="color: white;">❌ Error loading songs. Make sure songs.json exists.</p>';
-            });
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = songs.filter(song => 
-                song.number.toString().includes(query) || 
-                song.name.toLowerCase().includes(query) ||
-                (song.name2 && song.name2.toLowerCase().includes(query))
-            );
-            displaySongList(filtered);
-        });
-
-        // Display song list
-        function displaySongList(songList) {
-            const listEl = document.getElementById('songList');
-            if (songList.length === 0) {
-                listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No songs found</p>';
-                return;
-            }
-            listEl.innerHTML = songList.map(song => {
-                const displayNumber = typeof song.number === 'string' ? song.number : `#${song.number}`;
-                return `
-                    <div class="song-item" onclick="selectSong('${song.number}')">
-                        <strong>${displayNumber}</strong> ${song.name}${song.name2 ? '<small>' + song.name2 + '</small>' : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Select and display song
-        function selectSong(number) {
-            currentSong = songs.find(s => s.number == number);
-            if (!currentSong) return;
-
-            // Highlight selected
-            document.querySelectorAll('.song-item').forEach(item => item.classList.remove('active'));
-            event.target.closest('.song-item').classList.add('active');
-
-            const displayNumber = typeof currentSong.number === 'string' ? currentSong.number : `#${currentSong.number}`;
-
-            // Display song with share buttons
-            document.getElementById('songDisplay').innerHTML = `
-                <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
-                <div class="share-buttons">
-                    <button class="share-btn whatsapp" onclick="shareWhatsApp()">📱 WhatsApp</button>
-                    <button class="share-btn facebook" onclick="shareFacebook()">📘 Facebook</button>
-                    <button class="share-btn twitter" onclick="shareTwitter()">🐦 Twitter</button>
-                    <button class="share-btn print" onclick="printSong()">🖨️ Print</button>
-                </div>
-                <div class="song-lyrics">${currentSong.lyrics}</div>
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/${currentSong.youtubeId}?rel=0&modestbranding=1&showinfo=0&controls=1&disablekb=1" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                    </iframe>
-                </div>
-            `;
+        
+        <h2 class="category-header">🎪 Maramon Convention Songs</h2>
+        <div class="sections">
+            <a href="viewer.html?collection=maramon-2025" class="section-card">
+                <div class="section-icon">🎤</div>
+                <h3 class="section-title">Maramon Convention 2025</h3>
+                <p class="section-desc">Songs from Maramon Convention 2025</p>
+                <div class="section-count">Coming Soon</div>
+            </a>
             
-            // Scroll to top of song display
-            document.getElementById('songDisplay').scrollTop = 0;
-        }
-    </script>
+            <a href="viewer.html?collection=maramon-2026" class="section-card">
+                <div class="section-icon">🎤</div>
+                <h3 class="section-title">Maramon Convention 2026</h3>
+                <p class="section-desc">Songs from Maramon Convention 2026</p>
+                <div class="section-count">Coming Soon</div>
+            </a>
+        </div>
+        
+        <h2 class="category-header">⛪ Kottarakara Convention Songs</h2>
+        <div class="sections">
+            <a href="viewer.html?collection=kottarakara-2025" class="section-card">
+                <div class="section-icon">🎶</div>
+                <h3 class="section-title">Kottarakara Convention 2025</h3>
+                <p class="section-desc">Songs from Kottarakara Convention 2025</p>
+                <div class="section-count">Coming Soon</div>
+            </a>
+            
+            <a href="viewer.html?collection=kottarakara-2026" class="section-card">
+                <div class="section-icon">🎶</div>
+                <h3 class="section-title">Kottarakara Convention 2026</h3>
+                <p class="section-desc">Songs from Kottarakara Convention 2026</p>
+                <div class="section-count">Coming Soon</div>
+            </a>
+        </div>
+        
+        <footer>
+            <div class="footer-content">
+                <div class="disclaimer">
+                    <h3>📋 Disclaimer</h3>
+                    <p>This website is a non-commercial community resource created for the Malayalam Christian community. All hymns and songs are traditional worship content. YouTube videos are embedded from their original sources. If you are a copyright holder and have concerns, please contact us.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="https://github.com/shibinj/Hymn_project" target="_blank">GitHub</a>
+                    <a href="mailto:your-email@example.com">Contact</a>
+                    <a href="lyrics_editor.html">Admin</a>
+                </div>
+                
+                <p style="margin-top: 20px; opacity: 0.8;">
+                    Made with ❤️ for the Malayalam Christian community<br>
+                    © 2026 Holy Hymns | All Rights Reserved
+                </p>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>
