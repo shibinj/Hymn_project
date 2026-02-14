@@ -953,11 +953,16 @@
                 // Only show edit/delete for today or future dates
                 const isFutureOrToday = serviceDate >= today;
                 const actionButtons = isFutureOrToday ? `
-                    <div style="display: flex; gap: 5px;">
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                         <button onclick="loadServiceForEdit(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>
                         <button onclick="deleteService(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #e53e3e;">🗑️ Delete</button>
+                        <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
                     </div>
-                ` : '';
+                ` : `
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
+                    </div>
+                `;
                 
                 return `
                     <div class="history-item">
@@ -1068,6 +1073,55 @@
             alert('✅ Service deleted!');
             displayFullHistory();
             displayRecentlyUsed();
+        }
+
+        function shareServiceFromHistory(index) {
+            if (index < 0 || index >= serviceHistory.length) {
+                alert('Service not found!');
+                return;
+            }
+            
+            const service = serviceHistory[index];
+            const date = new Date(service.date).toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            const theme = service.theme || 'No theme';
+            
+            const categoryTitles = {
+                'opening': '1. Opening Hymn',
+                'bibleReading': '2. Bible Reading',
+                'celebration': '3. Birthday/Anniversary',
+                'offertory': '4. Offertory',
+                'qurbana1': '5. Holy Qurbana - Song 1',
+                'qurbana2': '6. Holy Qurbana - Song 2',
+                'doxology': '7. Doxology'
+            };
+
+            let message = `*WORSHIP SERVICE SONGS*\n\n`;
+            message += `Date: ${date}\n`;
+            message += `Theme: ${theme}\n\n`;
+            message += `------------------------\n\n`;
+
+            service.songs.forEach(song => {
+                const title = categoryTitles[song.category] || song.category;
+                message += `${title}\n`;
+                message += `#${song.number} - ${song.name}\n`;
+                
+                // Add collection info for Birthday/Anniversary and Offertory
+                if ((song.category === 'celebration' || song.category === 'offertory') && song.collection) {
+                    const collectionDisplay = song.collection === 'Kristheeya Keerthanangal' ? 
+                        'Kristheeya Keerthanangal' : 
+                        song.collection.replace('maramon-', 'Maramon ').replace('kottarakara-', 'Kottarakara ');
+                    message += `(${collectionDisplay})\n`;
+                }
+                message += `\n`;
+            });
+
+            message += `------------------------\n`;
+            message += `Let us worship together in spirit and truth`;
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
         }
 
         function filterHistory() {
