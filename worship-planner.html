@@ -493,17 +493,53 @@
         function setManualSong(index, songNum) {
             // Search in hymns first
             let song = hymns.find(s => s.number == songNum);
+            let collection = 'Kristheeya Keerthanangal';
             
             // If not found, search in all conventions
             if (!song) {
-                song = Object.values(conventions).flat().find(s => s.number == songNum);
+                for (const [collName, songs] of Object.entries(conventions)) {
+                    song = songs.find(s => s.number == songNum);
+                    if (song) {
+                        collection = collName;
+                        break;
+                    }
+                }
             }
             
             if (song) {
                 window.currentService[index].song = song;
+                window.currentService[index].collection = collection;
                 displayService(window.currentService);
             } else {
                 alert('Song not found!');
+            }
+        }
+
+        function setManualSongWithCollection(index) {
+            const collectionSelect = document.getElementById(`celebrationCollection${index}`);
+            const songNumInput = document.getElementById(`manual${index}`);
+            
+            const selectedCollection = collectionSelect.value;
+            const songNum = songNumInput.value;
+            
+            if (!songNum) {
+                alert('Please enter a song number!');
+                return;
+            }
+            
+            let song;
+            if (selectedCollection === 'kristheeya-keerthanangal') {
+                song = hymns.find(s => s.number == songNum);
+            } else {
+                song = conventions[selectedCollection].find(s => s.number == songNum);
+            }
+            
+            if (song) {
+                window.currentService[index].song = song;
+                window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                displayService(window.currentService);
+            } else {
+                alert(`Song #${songNum} not found in ${selectedCollection}!`);
             }
         }
 
@@ -522,8 +558,15 @@
                             <div class="section-title">${item.title}</div>
                             <div class="song-item">
                                 <div class="manual-input">
-                                    <input type="number" id="manual${index}" placeholder="Song #" />
-                                    <button onclick="setManualSong(${index}, document.getElementById('manual${index}').value)">Set Song</button>
+                                    <select id="celebrationCollection${index}" style="flex: 1; min-width: 150px;">
+                                        <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
+                                        <option value="maramon-2025">Maramon 2025</option>
+                                        <option value="maramon-2026">Maramon 2026</option>
+                                        <option value="kottarakara-2025">Kottarakara 2025</option>
+                                        <option value="kottarakara-2026">Kottarakara 2026</option>
+                                    </select>
+                                    <input type="number" id="manual${index}" placeholder="Song #" style="width: 80px;" />
+                                    <button onclick="setManualSongWithCollection(${index})">Set Song</button>
                                 </div>
                             </div>
                             ${suggestions.length > 0 ? `<div style="margin-top: 10px; font-size: 12px; color: #718096;">💡 Smart Suggestions: ${suggestionButtons}</div>` : ''}
@@ -702,7 +745,14 @@
                 }))
             };
 
-            serviceHistory.unshift(service);
+            // Check if we're editing an existing service
+            if (window.editingServiceIndex !== undefined) {
+                serviceHistory[window.editingServiceIndex] = service;
+                delete window.editingServiceIndex;
+            } else {
+                serviceHistory.unshift(service);
+            }
+            
             serviceHistory = serviceHistory.slice(0, 50); // Keep last 50 services
             
             // Save to localStorage
@@ -780,8 +830,12 @@
                 'doxology': 'Doxology'
             };
             
-            const html = historyToShow.map(service => {
-                const date = new Date(service.date).toLocaleDateString('en-US', { 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Start of today
+            
+            const html = historyToShow.map((service, idx) => {
+                const serviceDate = new Date(service.date);
+                const date = serviceDate.toLocaleDateString('en-US', { 
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
                 });
                 const theme = service.theme || 'No theme';
@@ -790,16 +844,127 @@
                     `<div><strong>${categoryTitles[song.category] || song.category}:</strong> #${song.number} - ${song.name}</div>`
                 ).join('');
                 
+                // Find original index in serviceHistory
+                const originalIndex = serviceHistory.findIndex(s => s.date === service.date);
+                
+                // Only show edit/delete for today or future dates
+                const isFutureOrToday = serviceDate >= today;
+                const actionButtons = isFutureOrToday ? `
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="loadServiceForEdit(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>
+                        <button onclick="deleteService(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #e53e3e;">🗑️ Delete</button>
+                    </div>
+                ` : '';
+                
                 return `
                     <div class="history-item">
-                        <div class="history-date">📅 ${date}</div>
-                        <div class="history-theme">📖 Theme: ${theme}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div>
+                                <div class="history-date">📅 ${date}</div>
+                                <div class="history-theme">📖 Theme: ${theme}</div>
+                            </div>
+                            ${actionButtons}
+                        </div>
                         <div class="history-songs">${songsHtml}</div>
                     </div>
                 `;
             }).join('');
             
             document.getElementById('historyList').innerHTML = html;
+        }
+
+        function loadServiceForEdit(index) {
+            if (index < 0 || index >= serviceHistory.length) {
+                alert('Service not found!');
+                return;
+            }
+            
+            const service = serviceHistory[index];
+            
+            // Confirm before loading
+            const date = new Date(service.date).toLocaleDateString();
+            if (!confirm(`Load service from ${date} for editing?\n\nThis will replace your current service plan.`)) {
+                return;
+            }
+            
+            // Set date and theme
+            document.getElementById('serviceDate').value = new Date(service.date).toISOString().split('T')[0];
+            document.getElementById('serviceTheme').value = service.theme || '';
+            
+            // Reconstruct service with full song objects
+            window.currentService = service.songs.map(savedSong => {
+                // Find the full song object
+                let song = hymns.find(s => s.number == savedSong.number);
+                let collection = 'Kristheeya Keerthanangal';
+                
+                if (!song) {
+                    for (const [collName, songs] of Object.entries(conventions)) {
+                        song = songs.find(s => s.number == savedSong.number);
+                        if (song) {
+                            collection = collName;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!song) {
+                    // Fallback if song not found
+                    song = { number: savedSong.number, name: savedSong.name };
+                }
+                
+                const categoryTitles = {
+                    'opening': '1. Opening Hymn',
+                    'bibleReading': '2. Song for Bible Reading',
+                    'celebration': '3. Birthday/Anniversary Song',
+                    'offertory': '4. Offertory Song',
+                    'qurbana1': '5. Holy Qurbana - Song 1',
+                    'qurbana2': '6. Holy Qurbana - Song 2',
+                    'doxology': '7. Doxology'
+                };
+                
+                return {
+                    title: categoryTitles[savedSong.category],
+                    song: song,
+                    collection: collection,
+                    category: savedSong.category,
+                    manual: savedSong.category === 'celebration'
+                };
+            });
+            
+            // Store the index for updating later
+            window.editingServiceIndex = index;
+            
+            // Close modal and display
+            closeHistory();
+            displayService(window.currentService);
+            
+            alert('✏️ Service loaded for editing!\n\nMake your changes and click "Save Service" to update.');
+        }
+
+        function deleteService(index) {
+            if (index < 0 || index >= serviceHistory.length) {
+                alert('Service not found!');
+                return;
+            }
+            
+            const service = serviceHistory[index];
+            const date = new Date(service.date).toLocaleDateString();
+            
+            if (!confirm(`Delete service from ${date}?\n\nThis cannot be undone.`)) {
+                return;
+            }
+            
+            serviceHistory.splice(index, 1);
+            localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+            
+            // Sync to cloud if available
+            if (gistId && gistToken) {
+                syncToGist();
+            }
+            
+            alert('✅ Service deleted!');
+            displayFullHistory();
+            displayRecentlyUsed();
         }
 
         function filterHistory() {
