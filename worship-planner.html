@@ -189,24 +189,39 @@
                 document.getElementById('gistId').value = gistId;
                 document.getElementById('gistId').disabled = true;
                 
-                // Prompt for token if not set
-                if (!gistToken) {
-                    const token = prompt('🔐 Enter your GitHub Personal Access Token to enable cloud sync:\n\n1. Go to: https://github.com/settings/tokens\n2. Generate new token (classic)\n3. Check "gist" permission\n4. Copy and paste here\n\n(This is stored locally in your browser only)');
-                    
-                    if (token) {
-                        gistToken = token;
-                        localStorage.setItem('gistToken', gistToken);
-                    }
-                }
+                // Only prompt for token if not already dismissed
+                const tokenDismissed = localStorage.getItem('tokenPromptDismissed');
                 
-                if (gistToken) {
+                if (!gistToken && !tokenDismissed) {
+                    // Show a less intrusive prompt
+                    setTimeout(() => {
+                        const enableSync = confirm('🔄 Enable Cloud Sync?\n\nSync your worship services across all devices.\n\nClick OK to set up (requires GitHub token)\nClick Cancel to use locally only');
+                        
+                        if (enableSync) {
+                            const token = prompt('Enter your GitHub Personal Access Token:\n\n1. Go to: https://github.com/settings/tokens\n2. Generate new token (classic)\n3. Check "gist" permission\n4. Copy and paste here\n\n(Stored locally in your browser only)');
+                            
+                            if (token) {
+                                gistToken = token;
+                                localStorage.setItem('gistToken', gistToken);
+                                syncFromGist();
+                            } else {
+                                localStorage.setItem('tokenPromptDismissed', 'true');
+                            }
+                        } else {
+                            localStorage.setItem('tokenPromptDismissed', 'true');
+                            updateSyncStatus('ℹ️ Using local storage only. Click "Setup Cloud Sync" to enable syncing.');
+                        }
+                    }, 1000);
+                } else if (gistToken) {
                     await syncFromGist();
                 }
             } else if (gistId) {
                 document.getElementById('gistId').value = gistId;
                 await syncFromGist();
-            } else {
-                // Fallback to localStorage
+            }
+            
+            // Always load local data as fallback
+            if (serviceHistory.length === 0) {
                 serviceHistory = JSON.parse(localStorage.getItem('serviceHistory') || '[]');
             }
             

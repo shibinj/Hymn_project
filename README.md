@@ -132,7 +132,7 @@ Each hymn in collection JSON files follows this format:
 
 ### Worship Service Planner (Internal Tool)
 
-A smart tool for planning Sunday worship services with automatic song selection, learning capabilities, and cloud synchronization for collaborative access.
+A smart tool for planning Sunday worship services with automatic song selection, learning capabilities, and optional cloud synchronization for collaborative access.
 
 **Access**: Open `worship-planner.html` in your browser (not linked from main site)
 
@@ -146,8 +146,8 @@ A smart tool for planning Sunday worship services with automatic song selection,
   - 70% preference for frequently-used songs, 30% for variety
 - **Edit any song**: Click "✏️ Edit" button to manually change any auto-generated song
 - **Convention rotation**: Alternates between Maramon and Kottarakara for offertory
-- **Cloud Sync**: GitHub Gist integration for collaborative access across devices
-- **Service history**: Tracks last 50 services with automatic cloud backup
+- **Cloud Sync (Optional)**: GitHub Gist integration for collaborative access across devices
+- **Service history**: Tracks last 50 services (cloud or local storage)
 - **Date & Theme tracking**: Records service date and weekly theme
 - **Song search**: Search any song number to see last 5 times it was used
 - **Date range filter**: View services within specific date ranges
@@ -155,7 +155,11 @@ A smart tool for planning Sunday worship services with automatic song selection,
 - **Mobile-friendly**: Responsive design works on phones, tablets, and desktops
 - **Print-ready**: Generate and print service sheets
 
-**Setup (One-time):**
+**Quick Start (No Setup Required):**
+
+Simply open `worship-planner.html` and start using it! All features work with local browser storage. Cloud sync is optional.
+
+**Cloud Sync Setup (Optional - For Team Collaboration):**
 
 1. **Create GitHub Gist** (Admin does this once):
    - Go to https://gist.github.com
@@ -171,28 +175,30 @@ A smart tool for planning Sunday worship services with automatic song selection,
    - Save and push to GitHub
 
 3. **Team Members Setup** (Each person, one-time):
+   - Open worship planner
+   - Click OK when prompted "Enable Cloud Sync?"
    - Go to https://github.com/settings/tokens
-   - Click "Generate new token (classic)"
-   - Check only "gist" permission
-   - Copy the token
-   - Open worship planner - paste token when prompted
+   - Generate new token (classic) with "gist" permission
+   - Paste token when prompted
    - Token is saved in browser (only enter once per device)
+
+**Alternative:** Click Cancel on the prompt to use local storage only. You can enable sync later by clicking "⚙️ Setup Cloud Sync" button.
 
 **Usage:**
 1. Enter service date (defaults to today) and theme of the week
 2. Click "🎲 Generate New Service" - auto-selects all songs except Birthday/Anniversary
 3. Enter Birthday/Anniversary song manually or click smart suggestions
 4. Click "✏️ Edit" on any song to manually change it
-5. Click "💾 Save Service" to record and sync to cloud
+5. Click "💾 Save Service" to record (syncs to cloud if enabled)
 6. Click "📱 Share to WhatsApp" to send formatted message to your group
 7. Click "📜 View History" to:
    - See all past services with dates and themes
    - Search by song number to see when it was last used
    - Filter by date range
-8. Click "🔄 Sync Now" to manually refresh from cloud
+8. Click "🔄 Sync Now" to manually refresh from cloud (if enabled)
 9. Print or regenerate as needed
 
-**Cloud Sync:**
+**Cloud Sync Features (When Enabled):**
 - Auto-syncs on page load
 - Auto-syncs after saving service
 - Auto-syncs every 5 minutes
@@ -216,7 +222,11 @@ The planner learns from every saved service:
 - Prevents repeating songs within 2 months
 - Gets smarter with each saved service
 
-**Note:** Use normal browser mode (not InPrivate/Incognito) to keep your GitHub token saved. InPrivate mode will require re-entering the token each session.
+**Notes:** 
+- Works perfectly without cloud sync using browser localStorage
+- Use normal browser mode (not InPrivate/Incognito) to persist data
+- Cloud sync is optional and can be enabled/disabled anytime
+- Share the planner with anyone - they choose whether to sync or not
 
 ### Adding/Editing Lyrics
 
