@@ -486,7 +486,8 @@
                 { title: '4. Offertory Song', song: getRandomConventionSong(offertoryConvention), collection: offertoryConvention, category: 'offertory' },
                 { title: '5. Holy Qurbana - Song 1', song: getRandomSong(categories.qurbana, 'qurbana1'), collection: 'Kristheeya Keerthanangal', category: 'qurbana1' },
                 { title: '6. Holy Qurbana - Song 2', song: getRandomSong(categories.qurbana, 'qurbana2'), collection: 'Kristheeya Keerthanangal', category: 'qurbana2' },
-                { title: '7. Doxology', song: getDoxology(), collection: 'Doxology', category: 'doxology' }
+                { title: '7. Holy Qurbana - Song 3 (Optional)', song: null, collection: 'Kristheeya Keerthanangal', category: 'qurbana3', optional: true },
+                { title: '8. Doxology', song: getDoxology(), collection: 'Doxology', category: 'doxology' }
             ];
 
             displayService(window.currentService);
@@ -611,35 +612,77 @@
             }
         }
 
+        function setOptionalSong(index) {
+            const songNum = document.getElementById(`optional${index}`).value;
+            
+            if (!songNum) {
+                alert('Please enter a song number!');
+                return;
+            }
+            
+            const song = hymns.find(s => s.number == songNum);
+            
+            if (song) {
+                window.currentService[index].song = song;
+                displayService(window.currentService);
+            } else {
+                alert(`Song #${songNum} not found in Kristheeya Keerthanangal!`);
+            }
+        }
+
+        function removeOptionalSong(index) {
+            window.currentService[index].song = null;
+            displayService(window.currentService);
+        }
+
         function displayService(service) {
             const html = service.map((item, index) => {
-                if (item.manual && !item.song) {
-                    const suggestions = getSuggestedCelebrationSongs();
-                    const suggestionButtons = suggestions.map(num => {
-                        const song = hymns.find(s => s.number === num) || 
-                                     Object.values(conventions).flat().find(s => s.number === num);
-                        return song ? `<button onclick="setManualSong(${index}, ${num})" style="font-size: 12px; padding: 6px 12px; margin: 2px;">#${num}</button>` : '';
-                    }).join('');
+                // Handle optional fields (no song set)
+                if ((item.manual || item.optional) && !item.song) {
+                    // For manual celebration song
+                    if (item.manual) {
+                        const suggestions = getSuggestedCelebrationSongs();
+                        const suggestionButtons = suggestions.map(num => {
+                            const song = hymns.find(s => s.number === num) || 
+                                         Object.values(conventions).flat().find(s => s.number === num);
+                            return song ? `<button onclick="setManualSong(${index}, ${num})" style="font-size: 12px; padding: 6px 12px; margin: 2px;">#${num}</button>` : '';
+                        }).join('');
+                        
+                        return `
+                            <div class="service-section">
+                                <div class="section-title">${item.title}</div>
+                                <div class="song-item">
+                                    <div class="manual-input">
+                                        <select id="celebrationCollection${index}" style="flex: 1; min-width: 150px;">
+                                            <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
+                                            <option value="maramon-2025">Maramon 2025</option>
+                                            <option value="maramon-2026">Maramon 2026</option>
+                                            <option value="kottarakara-2025">Kottarakara 2025</option>
+                                            <option value="kottarakara-2026">Kottarakara 2026</option>
+                                        </select>
+                                        <input type="number" id="manual${index}" placeholder="Song #" style="width: 80px;" />
+                                        <button onclick="setManualSongWithCollection(${index})">Set Song</button>
+                                    </div>
+                                </div>
+                                ${suggestions.length > 0 ? `<div style="margin-top: 10px; font-size: 12px; color: #718096;">💡 Smart Suggestions: ${suggestionButtons}</div>` : ''}
+                            </div>
+                        `;
+                    }
                     
-                    return `
-                        <div class="service-section">
-                            <div class="section-title">${item.title}</div>
-                            <div class="song-item">
-                                <div class="manual-input">
-                                    <select id="celebrationCollection${index}" style="flex: 1; min-width: 150px;">
-                                        <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
-                                        <option value="maramon-2025">Maramon 2025</option>
-                                        <option value="maramon-2026">Maramon 2026</option>
-                                        <option value="kottarakara-2025">Kottarakara 2025</option>
-                                        <option value="kottarakara-2026">Kottarakara 2026</option>
-                                    </select>
-                                    <input type="number" id="manual${index}" placeholder="Song #" style="width: 80px;" />
-                                    <button onclick="setManualSongWithCollection(${index})">Set Song</button>
+                    // For optional fields (like Qurbana 3)
+                    if (item.optional) {
+                        return `
+                            <div class="service-section">
+                                <div class="section-title">${item.title}</div>
+                                <div class="song-item">
+                                    <div class="manual-input">
+                                        <input type="number" id="optional${index}" placeholder="Song # (leave blank to skip)" style="flex: 1; min-width: 100px;" />
+                                        <button onclick="setOptionalSong(${index})">Add Song</button>
+                                    </div>
                                 </div>
                             </div>
-                            ${suggestions.length > 0 ? `<div style="margin-top: 10px; font-size: 12px; color: #718096;">💡 Smart Suggestions: ${suggestionButtons}</div>` : ''}
-                        </div>
-                    `;
+                        `;
+                    }
                 }
                 
                 const recentWarning = wasRecentlyUsed(item.song.number, item.category) ? 
@@ -648,6 +691,8 @@
                 // For Birthday/Anniversary, show collection info and edit with dropdown
                 const editButton = item.category === 'celebration' ? 
                     `<button onclick="editCelebrationSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>` :
+                    item.optional ?
+                    `<button onclick="removeOptionalSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #e53e3e;">✖️ Remove</button>` :
                     `<button onclick="editSong(${index})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>`;
                 
                 return `
@@ -883,12 +928,14 @@
             const service = {
                 date: new Date(serviceDate).getTime(),
                 theme: serviceTheme,
-                songs: window.currentService.map(s => ({
-                    number: s.song.number,
-                    name: s.song.name,
-                    category: s.category,
-                    collection: s.collection // Save collection info
-                }))
+                songs: window.currentService
+                    .filter(s => s.song !== null) // Exclude optional songs that are not set
+                    .map(s => ({
+                        number: s.song.number,
+                        name: s.song.name,
+                        category: s.category,
+                        collection: s.collection // Save collection info
+                    }))
             };
 
             // Check if we're editing an existing service
@@ -1085,6 +1132,7 @@
                 'offertory': 'Offertory',
                 'qurbana1': 'Qurbana 1',
                 'qurbana2': 'Qurbana 2',
+                'qurbana3': 'Qurbana 3',
                 'doxology': 'Doxology'
             };
             
@@ -1186,7 +1234,8 @@
                     'offertory': '4. Offertory Song',
                     'qurbana1': '5. Holy Qurbana - Song 1',
                     'qurbana2': '6. Holy Qurbana - Song 2',
-                    'doxology': '7. Doxology'
+                    'qurbana3': '7. Holy Qurbana - Song 3',
+                    'doxology': '8. Doxology'
                 };
                 
                 return {
@@ -1253,7 +1302,8 @@
                 'offertory': '4. Offertory',
                 'qurbana1': '5. Holy Qurbana - Song 1',
                 'qurbana2': '6. Holy Qurbana - Song 2',
-                'doxology': '7. Doxology'
+                'qurbana3': '7. Holy Qurbana - Song 3',
+                'doxology': '8. Doxology'
             };
 
             let message = `*WORSHIP SERVICE SONGS*\n\n`;
@@ -1375,6 +1425,7 @@
                 'offertory': 'Offertory',
                 'qurbana1': 'Qurbana 1',
                 'qurbana2': 'Qurbana 2',
+                'qurbana3': 'Qurbana 3',
                 'doxology': 'Doxology'
             };
             
@@ -1437,7 +1488,8 @@
                 'offertory': '4. Offertory',
                 'qurbana1': '5. Holy Qurbana - Song 1',
                 'qurbana2': '6. Holy Qurbana - Song 2',
-                'doxology': '7. Doxology'
+                'qurbana3': '7. Holy Qurbana - Song 3',
+                'doxology': '8. Doxology'
             };
 
             let message = `*WORSHIP SERVICE SONGS*\n\n`;
@@ -1445,7 +1497,10 @@
             message += `Theme: ${serviceTheme}\n\n`;
             message += `------------------------\n\n`;
 
-            window.currentService.forEach(item => {
+            // Filter out optional songs that are not set
+            const songsToShare = window.currentService.filter(item => item.song !== null);
+            
+            songsToShare.forEach(item => {
                 const title = categoryTitles[item.category] || item.title;
                 message += `${title}\n`;
                 message += `#${item.song.number} - ${item.song.name}\n`;
