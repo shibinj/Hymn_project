@@ -357,10 +357,29 @@
         
         <!-- Attendance Tab -->
         <div id="attendance" class="tab-content active">
+            <!-- Authentication Section -->
+            <div id="authSection" style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <h3 style="color: #856404; margin-bottom: 15px;">🔒 Authentication Required</h3>
+                <p style="margin-bottom: 15px; color: #856404;">Enter your GitHub username to mark or edit attendance:</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="githubUsername" placeholder="GitHub username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;">
+                    <button onclick="authenticate()" style="background: #ffc107; color: #856404; font-weight: 600;">Verify & Unlock</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 12px; color: #856404;">
+                    💡 View-only mode: You can view past attendance without authentication.
+                </p>
+            </div>
+            
+            <!-- Authenticated User Info -->
+            <div id="authInfo" style="display: none; background: #d4edda; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                <span style="color: #155724; font-weight: 600;">✅ Authenticated as: <span id="currentUserName"></span></span>
+                <button onclick="logout()" style="background: #dc3545; color: white; padding: 8px 15px; margin-left: 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">Logout</button>
+            </div>
+            
             <div class="date-selector">
                 <label>📅 Select Date:</label>
                 <input type="date" id="attendanceDate" onchange="loadAttendanceForDate()">
-                <button class="save-btn" onclick="saveAttendance()">💾 Save Attendance</button>
+                <button class="save-btn" onclick="saveAttendance()" id="saveBtn" disabled style="opacity: 0.5; cursor: not-allowed;">💾 Save Attendance</button>
                 <span id="syncStatus" style="margin-left: 15px; font-size: 12px; color: #6c757d;"></span>
             </div>
             </div>
@@ -544,6 +563,9 @@
             
             container.innerHTML = memberList.map(name => {
                 const status = attendanceData[date]?.[name] || '';
+                const disabled = !isAuthenticated ? 'disabled' : '';
+                const opacity = !isAuthenticated ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                
                 return `
                     <div class="member-row">
                         <div class="member-name">${name}</div>
@@ -551,8 +573,8 @@
                             ${status || '-'}
                         </div>
                         <div style="display: flex; gap: 5px;">
-                            <button class="attendance-btn" style="flex: 1; background: #48bb78; color: white; border: none; cursor: pointer;" onclick="markAttendance('${name}', 'P')">P</button>
-                            <button class="attendance-btn" style="flex: 1; background: #f56565; color: white; border: none; cursor: pointer;" onclick="markAttendance('${name}', 'A')">A</button>
+                            <button class="attendance-btn" style="flex: 1; background: #48bb78; color: white; border: none; ${opacity}" onclick="markAttendance('${name}', 'P')" ${disabled}>P</button>
+                            <button class="attendance-btn" style="flex: 1; background: #f56565; color: white; border: none; ${opacity}" onclick="markAttendance('${name}', 'A')" ${disabled}>A</button>
                         </div>
                     </div>
                 `;
@@ -560,6 +582,11 @@
         }
         
         function markAttendance(memberName, status) {
+            if (!isAuthenticated) {
+                alert('🔒 Authentication required!\n\nPlease login to mark attendance.');
+                return;
+            }
+            
             const date = document.getElementById('attendanceDate').value;
             if (!attendanceData[date]) {
                 attendanceData[date] = {};
@@ -576,6 +603,11 @@
         }
         
         function saveAttendance() {
+            if (!isAuthenticated) {
+                alert('🔒 Authentication required!\n\nPlease login to save attendance.');
+                return;
+            }
+            
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
             
             // Sync to cloud if configured
@@ -719,6 +751,89 @@
             } catch (error) {
                 return false;
             }
+        }
+        
+        // Authentication functions
+        async function authenticate() {
+            const username = document.getElementById('githubUsername').value.trim();
+            
+            if (!username) {
+                alert('Please enter your GitHub username!');
+                return;
+            }
+            
+            // Check if whitelist is configured
+            if (!ENCRYPTED_WHITELIST) {
+                alert('⚠️ Whitelist not configured!\n\nAdmin: Please generate and set the encrypted whitelist.');
+                return;
+            }
+            
+            // Show loading
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Verifying...';
+            btn.disabled = true;
+            
+            try {
+                // Decrypt whitelist
+                const whitelist = await decryptWhitelist();
+                
+                // Check if user is in whitelist
+                if (!whitelist.includes(username.toLowerCase())) {
+                    alert('❌ Access Denied!\n\nYour GitHub username is not authorized.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // Verify user exists on GitHub
+                const userExists = await verifyGitHubUser(username);
+                if (!userExists) {
+                    alert('❌ GitHub user not found!\n\nPlease check your username.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // Grant access
+                isAuthenticated = true;
+                currentUser = username;
+                
+                // Update UI
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('authInfo').style.display = 'block';
+                document.getElementById('currentUserName').textContent = username;
+                document.getElementById('saveBtn').disabled = false;
+                document.getElementById('saveBtn').style.opacity = '1';
+                document.getElementById('saveBtn').style.cursor = 'pointer';
+                
+                // Re-render attendance with edit buttons enabled
+                renderAttendance();
+                
+                alert(`✅ Welcome, ${username}!\n\nYou can now mark and edit attendance.`);
+            } catch (error) {
+                alert('❌ Authentication failed!\n\nPlease try again.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        function logout() {
+            isAuthenticated = false;
+            currentUser = null;
+            
+            // Update UI
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('authInfo').style.display = 'none';
+            document.getElementById('githubUsername').value = '';
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('saveBtn').style.opacity = '0.5';
+            document.getElementById('saveBtn').style.cursor = 'not-allowed';
+            
+            // Re-render attendance in view-only mode
+            renderAttendance();
+            
+            alert('✅ Logged out successfully!');
         }
         
         function renderMemberLists() {
