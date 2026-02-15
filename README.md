@@ -143,10 +143,12 @@ Hymn_project/
    {
      "female": ["Name 1", "Name 2", ...],
      "male": ["Name 3", "Name 4", ...],
-     "absentees": ["Name 5", "Name 6", ...]
+     "occasional": ["Name 5", "Name 6", ...]
    }
    ```
 2. Refresh the page to load updated members
+
+**Note:** "Occasional" members are regular members who attend when available (e.g., students/workers abroad).
 
 **Cloud Sync Setup (Optional):**
 1. Create GitHub Gist: `choir-attendance-data.json`
@@ -226,7 +228,7 @@ Hymn_project/
 - Print support
 
 ### Choir Attendance Tracker
-- Three member categories: Female, Male, Long-term Absentees
+- Three member categories: Female, Male, Occasional Attendees
 - Quick P/A marking
 - Quarterly reports (Q1-Q4)
 - Yearly reports

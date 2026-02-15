@@ -9,7 +9,7 @@ A web-based attendance tracking system for church choirs with cloud sync and com
 ## Features
 
 ### 📝 Attendance Management
-- **Three Member Categories**: Female, Male, and Long-term Absentees
+- **Three Member Categories**: Female, Male, and Occasional Attendees
 - **Quick Marking**: Simple P (Present) / A (Absent) buttons
 - **Date Selector**: Mark attendance for any Saturday/Sunday
 - **Visual Status**: Color-coded attendance indicators
@@ -18,7 +18,7 @@ A web-based attendance tracking system for church choirs with cloud sync and com
 ### 👥 Member Management
 - **JSON File Storage**: Members stored in `data/choir-members.json`
 - **Easy Editing**: Edit member list in any text editor
-- **Three Categories**: Female, Male, Absentees
+- **Three Categories**: Female, Male, Occasional Attendees
 - **Simple Format**: Plain JSON array structure
 - **No Authentication**: Just edit the file and refresh
 
@@ -58,7 +58,7 @@ A web-based attendance tracking system for church choirs with cloud sync and com
    {
      "female": ["Name 1", "Name 2", "Name 3"],
      "male": ["Name 4", "Name 5", "Name 6"],
-     "absentees": ["Name 7", "Name 8"]
+     "occasional": ["Name 7", "Name 8"]
    }
    ```
 3. Save file

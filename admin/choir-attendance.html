@@ -400,13 +400,13 @@
             </div>
             <div id="maleAttendance"></div>
             
-            <div class="section-header">📋 Long-term Absentees (8)</div>
+            <div class="section-header">🌍 Occasional Attendees (6)</div>
             <div class="attendance-grid">
                 <div class="grid-header">Name</div>
                 <div class="grid-header">Status</div>
                 <div class="grid-header">Action</div>
             </div>
-            <div id="absenteeAttendance"></div>
+            <div id="occasionalAttendance"></div>
         </div>
         
         <!-- Quarterly Report Tab -->
@@ -455,7 +455,7 @@
                 <pre style="background: white; padding: 15px; border-radius: 5px; margin: 10px 0; overflow-x: auto; font-size: 13px;">{
   "female": ["Name 1", "Name 2", ...],
   "male": ["Name 3", "Name 4", ...],
-  "absentees": ["Name 5", "Name 6", ...]
+  "occasional": ["Name 5", "Name 6", ...]
 }</pre>
                 <p style="margin-top: 15px; line-height: 1.6; font-size: 14px; color: #666;">
                     💡 <strong>Tip:</strong> After editing the file, refresh this page to see the updated member list.
@@ -474,8 +474,8 @@
                 <div class="section-header">👨 Male Members</div>
                 <div id="maleList" class="member-list"></div>
                 
-                <div class="section-header">📋 Long-term Absentees</div>
-                <div id="absenteeList" class="member-list"></div>
+                <div class="section-header">🌍 Occasional Attendees</div>
+                <div id="occasionalList" class="member-list"></div>
             </div>
         </div>
     </div>
@@ -498,7 +498,7 @@
         let members = {
             female: [],
             male: [],
-            absentees: []
+            occasional: []
         };
         
         // Load members from JSON file
@@ -554,7 +554,7 @@
         function renderAttendance() {
             renderSection('femaleAttendance', members.female);
             renderSection('maleAttendance', members.male);
-            renderSection('absenteeAttendance', members.absentees);
+            renderSection('occasionalAttendance', members.occasional);
         }
         
         function renderSection(containerId, memberList) {
@@ -636,7 +636,7 @@
             };
             
             const months = quarterMonths[quarter];
-            const allMembers = [...members.female, ...members.male, ...members.absentees];
+            const allMembers = [...members.female, ...members.male, ...members.occasional];
             
             const report = allMembers.map(name => {
                 let present = 0, absent = 0, total = 0;
@@ -662,7 +662,7 @@
         
         function generateYearlyReport() {
             const year = document.getElementById('yearSelect').value;
-            const allMembers = [...members.female, ...members.male, ...members.absentees];
+            const allMembers = [...members.female, ...members.male, ...members.occasional];
             
             const report = allMembers.map(name => {
                 let present = 0, absent = 0, total = 0;
@@ -839,7 +839,7 @@
         function renderMemberLists() {
             renderMemberList('femaleList', members.female, 'female');
             renderMemberList('maleList', members.male, 'male');
-            renderMemberList('absenteeList', members.absentees, 'absentees');
+            renderMemberList('occasionalList', members.occasional, 'occasional');
         }
         
         function renderMemberList(containerId, memberList, category) {
