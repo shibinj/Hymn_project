@@ -940,6 +940,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
+            populateTheme(today);
+            
+            // Auto-populate theme when date changes
+            document.getElementById('serviceDate').addEventListener('change', (e) => {
+                populateTheme(e.target.value);
+            });
             
             // Auto-sync every 5 minutes if Gist is configured
             if (gistId && gistToken) {
@@ -948,6 +954,112 @@
                 }, 5 * 60 * 1000);
             }
         });
+
+        // Weekly themes for 2026 (add more years as needed)
+        const weeklyThemes = {
+            '2026': {
+                // Specific dates (holidays, special services) - checked first
+                exact: [
+                    { date: '2026-01-01', theme: 'New Year - New Beginnings in Christ' },
+                    { date: '2026-04-03', theme: 'Good Friday - The Cross' },
+                    { date: '2026-04-05', theme: 'Easter Sunday - Resurrection' },
+                    { date: '2026-05-14', theme: 'Ascension Day' },
+                    { date: '2026-12-24', theme: 'Christmas Eve - The Birth of Jesus' },
+                    { date: '2026-12-25', theme: 'Christmas Day - Emmanuel' },
+                    { date: '2026-12-31', theme: 'Watch Night - Year End Thanksgiving' },
+                ],
+                // Weekly themes (Sunday-Saturday)
+                weekly: [
+                    { start: '2026-01-04', theme: 'Faith and Trust' },
+                    { start: '2026-01-11', theme: 'Prayer and Worship' },
+                    { start: '2026-01-18', theme: 'Love and Compassion' },
+                    { start: '2026-01-25', theme: 'Forgiveness and Grace' },
+                    { start: '2026-02-01', theme: 'Hope and Encouragement' },
+                    { start: '2026-02-08', theme: 'Thanksgiving and Praise' },
+                    { start: '2026-02-15', theme: 'Holiness and Sanctification' },
+                    { start: '2026-02-22', theme: 'Stewardship and Service' },
+                    { start: '2026-03-01', theme: 'Lent - Repentance' },
+                    { start: '2026-03-08', theme: 'Lent - Sacrifice' },
+                    { start: '2026-03-15', theme: 'Lent - Humility' },
+                    { start: '2026-03-22', theme: 'Lent - Preparation' },
+                    { start: '2026-03-29', theme: 'Palm Sunday - Hosanna' },
+                    { start: '2026-04-12', theme: 'Victory in Christ' },
+                    { start: '2026-04-19', theme: 'New Life in Christ' },
+                    { start: '2026-04-26', theme: 'Joy and Celebration' },
+                    { start: '2026-05-03', theme: 'The Good Shepherd' },
+                    { start: '2026-05-10', theme: 'Family and Unity' },
+                    { start: '2026-05-17', theme: 'Pentecost - Holy Spirit' },
+                    { start: '2026-05-24', theme: 'Power of the Spirit' },
+                    { start: '2026-05-31', theme: 'Gifts of the Spirit' },
+                    { start: '2026-06-07', theme: 'Fruit of the Spirit' },
+                    { start: '2026-06-14', theme: 'Discipleship' },
+                    { start: '2026-06-21', theme: 'Mission and Evangelism' },
+                    { start: '2026-06-28', theme: 'Witness and Testimony' },
+                    { start: '2026-07-05', theme: 'Kingdom of God' },
+                    { start: '2026-07-12', theme: 'Righteousness and Justice' },
+                    { start: '2026-07-19', theme: 'Mercy and Kindness' },
+                    { start: '2026-07-26', theme: 'Wisdom and Understanding' },
+                    { start: '2026-08-02', theme: 'Strength and Courage' },
+                    { start: '2026-08-09', theme: 'Peace and Rest' },
+                    { start: '2026-08-16', theme: 'Patience and Perseverance' },
+                    { start: '2026-08-23', theme: 'Faithfulness' },
+                    { start: '2026-08-30', theme: 'Obedience and Surrender' },
+                    { start: '2026-09-06', theme: 'Stewardship' },
+                    { start: '2026-09-13', theme: 'Generosity and Giving' },
+                    { start: '2026-09-20', theme: 'Service and Ministry' },
+                    { start: '2026-09-27', theme: 'Community and Fellowship' },
+                    { start: '2026-10-04', theme: 'Harvest and Blessing' },
+                    { start: '2026-10-11', theme: 'Healing and Restoration' },
+                    { start: '2026-10-18', theme: 'Deliverance and Freedom' },
+                    { start: '2026-10-25', theme: 'Protection and Provision' },
+                    { start: '2026-11-01', theme: 'Remembrance and Heritage' },
+                    { start: '2026-11-08', theme: 'Gratitude and Contentment' },
+                    { start: '2026-11-15', theme: 'Humility and Meekness' },
+                    { start: '2026-11-22', theme: 'Thanksgiving' },
+                    { start: '2026-11-29', theme: 'Advent - Hope' },
+                    { start: '2026-12-06', theme: 'Advent - Peace' },
+                    { start: '2026-12-13', theme: 'Advent - Joy' },
+                    { start: '2026-12-20', theme: 'Advent - Love' },
+                    { start: '2026-12-27', theme: 'Year End - Reflection' },
+                ]
+            }
+        };
+
+        function populateTheme(dateStr) {
+            if (!dateStr) return;
+            
+            const selectedDate = new Date(dateStr);
+            const year = selectedDate.getFullYear().toString();
+            
+            if (!weeklyThemes[year]) {
+                document.getElementById('serviceTheme').value = '';
+                return;
+            }
+            
+            const themes = weeklyThemes[year];
+            let matchedTheme = '';
+            
+            // First, check for exact date match (holidays, special services)
+            const exactMatch = themes.exact.find(t => t.date === dateStr);
+            if (exactMatch) {
+                document.getElementById('serviceTheme').value = exactMatch.theme;
+                return;
+            }
+            
+            // Then check weekly themes
+            for (let i = 0; i < themes.weekly.length; i++) {
+                const weekStart = new Date(themes.weekly[i].start);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                
+                if (selectedDate >= weekStart && selectedDate <= weekEnd) {
+                    matchedTheme = themes.weekly[i].theme;
+                    break;
+                }
+            }
+            
+            document.getElementById('serviceTheme').value = matchedTheme;
+        }
 
         function showHistory() {
             document.getElementById('historyModal').style.display = 'block';
