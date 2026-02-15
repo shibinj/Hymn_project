@@ -50,9 +50,8 @@ This project provides:
 #### ✅ Choir Attendance Tracker
 - Track member attendance (Saturday/Sunday)
 - Quarterly and yearly reports
-- GitHub username authentication
-- Cloud sync via GitHub Gist
-- Member management (add/edit/remove)
+- Cloud sync via GitHub Gist (attendance only)
+- Member list stored in JSON file
 - Attendance percentage tracking
 - Mobile responsive
 
@@ -88,7 +87,8 @@ Hymn_project/
 │   ├── maramon-2025.json
 │   ├── maramon-2026.json
 │   ├── kottarakara-2025.json
-│   └── kottarakara-2026.json
+│   ├── kottarakara-2026.json
+│   └── choir-members.json      # Choir member list
 │
 ├── archive/                    # Old/unused files
 ├── README.md                   # This file
@@ -137,21 +137,28 @@ Hymn_project/
 
 ### Choir Attendance Tracker
 
-**Authentication Setup:**
-1. Open `admin/generate-whitelist.html`
-2. Add authorized GitHub usernames
-3. Generate encrypted whitelist
-4. Update in `admin/choir-attendance.html`:
-   ```javascript
-   const ENCRYPTED_WHITELIST = 'your_encrypted_data';
-   const WHITELIST_KEY = 'your_secret_key';
+**Member List Setup:**
+1. Edit `data/choir-members.json`:
+   ```json
+   {
+     "female": ["Name 1", "Name 2", ...],
+     "male": ["Name 3", "Name 4", ...],
+     "absentees": ["Name 5", "Name 6", ...]
+   }
    ```
+2. Refresh the page to load updated members
 
 **Cloud Sync Setup (Optional):**
 1. Create GitHub Gist: `choir-attendance-data.json`
-2. Update Gist ID and token in code
+2. Content: `{}`
+3. Get Gist ID and GitHub token
+4. Update in `admin/choir-attendance.html`:
+   ```javascript
+   const SHARED_GIST_ID = 'your_gist_id';
+   const SHARED_GIST_TOKEN = 'your_token';
+   ```
 
-**Detailed guides available in `admin/docs/`**
+**Note:** Only attendance data syncs to Gist. Member names are stored in the JSON file.
 
 ---
 
@@ -195,7 +202,7 @@ Hymn_project/
 
 ### Admin Tools
 - **Worship Planner**: Optional cloud sync with GitHub token
-- **Choir Attendance**: GitHub username authentication
+- **Choir Attendance**: Member list in JSON file, attendance syncs to Gist
 - **Lyrics Editor**: No authentication (internal use)
 
 ### Data Storage
@@ -224,9 +231,8 @@ Hymn_project/
 - Quarterly reports (Q1-Q4)
 - Yearly reports
 - Attendance percentage with color coding
-- Member management (add/edit/remove)
-- GitHub authentication
-- Cloud sync across devices
+- Member list stored in JSON file (easy to edit)
+- Cloud sync for attendance data only
 
 ---
 
@@ -269,9 +275,9 @@ Hymn_project/
 ### For Choir Directors
 ✅ Track attendance easily
 ✅ Generate reports
-✅ Manage members
-✅ Cloud sync across devices
-✅ GitHub authentication
+✅ Edit members in JSON file
+✅ Cloud sync for attendance
+✅ Simple member management
 
 ### For Congregation
 ✅ Browse 500+ hymns
@@ -287,7 +293,7 @@ Hymn_project/
 ### Recent Changes (Feb 2026)
 - ✅ Reorganized project structure
 - ✅ Created admin dashboard
-- ✅ Added GitHub authentication for choir attendance
+- ✅ Simplified choir attendance (members in JSON file)
 - ✅ Improved mobile responsiveness
 - ✅ Added cloud sync to both admin tools
 - ✅ Pre-populated worship themes for 2026
