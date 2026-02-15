@@ -691,31 +691,34 @@
             const container = document.getElementById(containerId);
             
             const html = `
-                <h2 style="margin-bottom: 20px;">${title}</h2>
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Member Name</th>
-                            <th>Present</th>
-                            <th>Absent</th>
-                            <th>Total Days</th>
-                            <th>Attendance %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.map(row => `
-                            <tr>
-                                <td>${row.name}</td>
-                                <td>${row.present}</td>
-                                <td>${row.absent}</td>
-                                <td>${row.total}</td>
-                                <td class="percentage ${row.percentage >= 75 ? 'good' : row.percentage >= 50 ? 'warning' : 'poor'}">
-                                    ${row.percentage}%
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                <h2 style="margin-bottom: 20px; color: #2d3748;">${title}</h2>
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    ${data.map(row => {
+                        const presentWidth = row.total > 0 ? (row.present / row.total * 100) : 0;
+                        const absentWidth = row.total > 0 ? (row.absent / row.total * 100) : 0;
+                        const color = row.percentage >= 75 ? '#48bb78' : row.percentage >= 50 ? '#ed8936' : '#f56565';
+                        
+                        return `
+                            <div style="margin-bottom: 20px; padding: 15px; background: #f7fafc; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-weight: 600; color: #2d3748;">${row.name}</span>
+                                    <span style="font-weight: 600; color: ${color}; font-size: 16px;">${row.percentage}%</span>
+                                </div>
+                                <div style="font-size: 12px; color: #6c757d; margin-bottom: 8px;">
+                                    Present: ${row.present} | Absent: ${row.absent} | Total: ${row.total} days
+                                </div>
+                                <div style="display: flex; height: 30px; background: #e2e8f0; border-radius: 5px; overflow: hidden;">
+                                    <div style="width: ${presentWidth}%; background: #48bb78; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;">
+                                        ${row.present > 0 ? row.present : ''}
+                                    </div>
+                                    <div style="width: ${absentWidth}%; background: #f56565; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;">
+                                        ${row.absent > 0 ? row.absent : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
             `;
             
             container.innerHTML = html;
