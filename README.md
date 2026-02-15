@@ -132,11 +132,16 @@ Each hymn in collection JSON files follows this format:
 
 ### Worship Service Planner (Internal Tool)
 
-A smart tool for planning Sunday worship services with automatic song selection, learning capabilities, and optional cloud synchronization for collaborative access.
+A smart tool for planning Sunday worship services with automatic song selection, learning capabilities, pre-populated themes, and optional cloud synchronization for collaborative access.
 
 **Access**: Open `worship-planner.html` in your browser (not linked from main site)
 
 **Features:**
+- **Pre-populated themes**: Automatically fills theme based on selected date
+  - 52 weekly themes for the entire year
+  - Special dates (Christmas, Good Friday, New Year, etc.) on any weekday
+  - Covers liturgical calendar (Lent, Easter, Pentecost, Advent)
+  - Users can still edit themes manually if needed
 - **Auto-generates service order**: Opening, Bible Reading, Offertory, Qurbana (2 songs), Doxology
 - **Manual Birthday/Anniversary selection**: Enter song number or use smart suggestions (can be from hymns or conventions)
 - **Smart Learning**: Analyzes your history and suggests songs based on:
@@ -148,7 +153,7 @@ A smart tool for planning Sunday worship services with automatic song selection,
 - **Convention rotation**: Alternates between Maramon and Kottarakara for offertory
 - **Cloud Sync (Optional)**: GitHub Gist integration for collaborative access across devices
 - **Service history**: Tracks last 50 services (cloud or local storage)
-- **Date & Theme tracking**: Records service date and weekly theme
+- **Date & Theme tracking**: Records service date and weekly theme (auto-populated)
 - **Song search**: Search any song number to see last 5 times it was used
 - **Date range filter**: View services within specific date ranges
 - **WhatsApp sharing**: Share finalized service in formatted text to WhatsApp groups
@@ -185,18 +190,21 @@ Simply open `worship-planner.html` and start using it! All features work with lo
 **Alternative:** Click Cancel on the prompt to use local storage only. You can enable sync later by clicking "⚙️ Setup Cloud Sync" button.
 
 **Usage:**
-1. Enter service date (defaults to today) and theme of the week
-2. Click "🎲 Generate New Service" - auto-selects all songs except Birthday/Anniversary
-3. Enter Birthday/Anniversary song manually or click smart suggestions
-4. Click "✏️ Edit" on any song to manually change it
-5. Click "💾 Save Service" to record (syncs to cloud if enabled)
-6. Click "📱 Share to WhatsApp" to send formatted message to your group
-7. Click "📜 View History" to:
+1. Enter service date (defaults to today) - theme auto-fills based on date
+   - Exact date themes: Christmas, Good Friday, New Year, Easter, etc.
+   - Weekly themes: Regular Sunday themes (also apply to weekdays in that week)
+2. Edit theme manually if needed (optional)
+3. Click "🎲 Generate New Service" - auto-selects all songs except Birthday/Anniversary
+4. Enter Birthday/Anniversary song manually or click smart suggestions
+5. Click "✏️ Edit" on any song to manually change it
+6. Click "💾 Save Service" to record (syncs to cloud if enabled)
+7. Click "📱 Share to WhatsApp" to send formatted message to your group
+8. Click "📜 View History" to:
    - See all past services with dates and themes
    - Search by song number to see when it was last used
    - Filter by date range
-8. Click "🔄 Sync Now" to manually refresh from cloud (if enabled)
-9. Print or regenerate as needed
+9. Click "🔄 Sync Now" to manually refresh from cloud (if enabled)
+10. Print or regenerate as needed
 
 **Cloud Sync Features (When Enabled):**
 - Auto-syncs on page load
