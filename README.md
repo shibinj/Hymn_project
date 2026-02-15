@@ -142,7 +142,7 @@ A smart tool for planning Sunday worship services with automatic song selection,
   - Special dates (Christmas, Good Friday, New Year, etc.) on any weekday
   - Covers liturgical calendar (Lent, Easter, Pentecost, Advent)
   - Users can still edit themes manually if needed
-- **Auto-generates service order**: Opening, Bible Reading, Offertory, Qurbana (2 songs), Doxology
+- **Auto-generates service order**: Opening, Bible Reading, Offertory, Qurbana (2 songs), Optional Qurbana 3, Doxology
 - **Manual Birthday/Anniversary selection**: Enter song number or use smart suggestions (can be from hymns or conventions)
 - **Smart Learning**: Analyzes your history and suggests songs based on:
   - Most frequently chosen songs across all categories
@@ -194,17 +194,18 @@ Simply open `worship-planner.html` and start using it! All features work with lo
    - Exact date themes: Christmas, Good Friday, New Year, Easter, etc.
    - Weekly themes: Regular Sunday themes (also apply to weekdays in that week)
 2. Edit theme manually if needed (optional)
-3. Click "🎲 Generate New Service" - auto-selects all songs except Birthday/Anniversary
+3. Click "🎲 Generate New Service" - auto-selects all songs except Birthday/Anniversary and optional Qurbana 3
 4. Enter Birthday/Anniversary song manually or click smart suggestions
-5. Click "✏️ Edit" on any song to manually change it
-6. Click "💾 Save Service" to record (syncs to cloud if enabled)
-7. Click "📱 Share to WhatsApp" to send formatted message to your group
-8. Click "📜 View History" to:
+5. (Optional) Add Holy Qurbana Song 3 if needed for longer services
+6. Click "✏️ Edit" on any song to manually change it
+7. Click "💾 Save Service" to record (syncs to cloud if enabled)
+8. Click "📱 Share to WhatsApp" to send formatted message to your group
+9. Click "📜 View History" to:
    - See all past services with dates and themes
    - Search by song number to see when it was last used
    - Filter by date range
-9. Click "🔄 Sync Now" to manually refresh from cloud (if enabled)
-10. Print or regenerate as needed
+10. Click "🔄 Sync Now" to manually refresh from cloud (if enabled)
+11. Print or regenerate as needed
 
 **Cloud Sync Features (When Enabled):**
 - Auto-syncs on page load
@@ -219,6 +220,7 @@ Simply open `worship-planner.html` and start using it! All features work with lo
 - Bible Reading: Hymns 45-112, 237-265, 266-284, 351-371, 409-415, 431-437, 452-455
 - Birthday/Anniversary: Manual entry (any hymn or convention song)
 - Holy Qurbana: Hymns 166-212, 220-228, 233-241, 251-254, 266-274, 313-316, 441-500
+- Holy Qurbana 3 (Optional): Manual entry if needed (any Qurbana hymn)
 - Offertory: Convention songs (alternates weekly between Maramon/Kottarakara)
 - Doxology: DOX-I to DOX-XIII
 
