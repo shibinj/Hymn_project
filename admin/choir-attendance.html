@@ -380,6 +380,7 @@
                 <label>📅 Select Date:</label>
                 <input type="date" id="attendanceDate" onchange="loadAttendanceForDate()">
                 <button class="save-btn" onclick="saveAttendance()" id="saveBtn" disabled style="opacity: 0.5; cursor: not-allowed;">💾 Save Attendance</button>
+                <button class="save-btn" onclick="manualSync()" style="background: #667eea; margin-left: 10px;">☁️ Sync to Cloud</button>
                 <span id="syncStatus" style="margin-left: 15px; font-size: 12px; color: #6c757d;"></span>
             </div>
             
@@ -483,6 +484,7 @@
         // Cloud Sync Configuration (Admin: Set these values once)
         const SHARED_GIST_ID = 'ac89975338bf079cff3f169477e3cce1'; // Admin: Set your Gist ID here
         const SHARED_GIST_TOKEN = ''; // Admin: Set your GitHub token here (optional - for write access)
+        // IMPORTANT: Never commit your token to Git! Set it locally only.
         
         // Encrypted GitHub Username Whitelist (Admin: Generate using generate-whitelist.html)
         const ENCRYPTED_WHITELIST = 'FnYwNwoKBgcYfW8='; // Admin: Paste encrypted whitelist here
@@ -610,18 +612,35 @@
             
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
             
-            // Sync to cloud if configured
+            // Always try to sync to cloud if configured
             if (gistId && gistToken) {
+                updateSyncStatus('⬆️ Saving & syncing...');
                 syncToGist().then(success => {
                     if (success) {
                         alert('✅ Attendance saved and synced to cloud!');
                     } else {
-                        alert('✅ Attendance saved locally (cloud sync failed)');
+                        alert('⚠️ Attendance saved locally, but cloud sync failed.\n\nCheck your Gist ID and token configuration.');
                     }
                 });
             } else {
-                alert('✅ Attendance saved locally!');
+                alert('⚠️ Attendance saved locally only!\n\nCloud sync is not configured.\n\nTo enable cloud sync:\n1. Set SHARED_GIST_TOKEN in the code\n2. Make sure SHARED_GIST_ID is correct');
             }
+        }
+        
+        function manualSync() {
+            if (!gistId || !gistToken) {
+                alert('⚠️ Cloud sync not configured!\n\nPlease set:\n• SHARED_GIST_ID\n• SHARED_GIST_TOKEN\n\nin the code (lines 485-486)');
+                return;
+            }
+            
+            updateSyncStatus('⬆️ Syncing to cloud...');
+            syncToGist().then(success => {
+                if (success) {
+                    alert('✅ Successfully synced to cloud!');
+                } else {
+                    alert('❌ Cloud sync failed!\n\nCheck:\n• Gist ID is correct\n• Token has gist permission\n• Internet connection');
+                }
+            });
         }
         
         function generateQuarterlyReport() {
@@ -899,10 +918,13 @@
                     updateSyncStatus(`✅ Synced ${new Date().toLocaleTimeString()}`);
                     return true;
                 } else {
+                    const errorData = await response.json();
+                    console.error('Sync failed:', errorData);
                     updateSyncStatus('❌ Sync failed');
                     return false;
                 }
             } catch (error) {
+                console.error('Sync error:', error);
                 updateSyncStatus('❌ Sync error');
                 return false;
             }
