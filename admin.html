@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>KTR MTC Choir - Admin Page</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        
+        header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        h1 { 
+            color: #2d3748; 
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .card-description {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .card-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .section-header {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        footer {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            header { padding: 20px; }
+            h1 { font-size: 24px; }
+            .subtitle { font-size: 14px; }
+            .grid { grid-template-columns: 1fr; gap: 15px; }
+            .card { padding: 20px; }
+            .card-icon { font-size: 36px; }
+            .card-title { font-size: 18px; }
+            .section-header { font-size: 20px; margin: 30px 0 15px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 KTR MTC Choir - Admin Page</h1>
+            <p class="subtitle">Worship Planning & Choir Management Tools</p>
+        </header>
+        
+        <div class="section-header">📋 Planning & Management</div>
+        <div class="grid">
+            <a href="worship-planner.html" class="card">
+                <div class="card-icon">📝</div>
+                <div class="card-title">Worship Service Planner</div>
+                <div class="card-description">
+                    Plan Sunday worship services with auto-generated song selections, smart learning, and cloud sync.
+                </div>
+                <span class="card-badge">Internal Tool</span>
+            </a>
+            
+            <a href="choir-attendance.html" class="card">
+                <div class="card-icon">✅</div>
+                <div class="card-title">Choir Attendance Tracker</div>
+                <div class="card-description">
+                    Track choir member attendance with quarterly/yearly reports and GitHub authentication.
+                </div>
+                <span class="card-badge">Admin Only</span>
+            </a>
+        </div>
+        
+        <div class="section-header">🎼 Hymn Resources</div>
+        <div class="grid">
+            <a href="index.html" class="card">
+                <div class="card-icon">📖</div>
+                <div class="card-title">Holy Hymns Collection</div>
+                <div class="card-description">
+                    Browse Malayalam Christian hymns, convention songs with lyrics and YouTube videos.
+                </div>
+                <span class="card-badge">Public</span>
+            </a>
+            
+            <a href="viewer.html?collection=kristheeya-keerthanangal" class="card">
+                <div class="card-icon">📕</div>
+                <div class="card-title">Kristheeya Keerthanangal</div>
+                <div class="card-description">
+                    Complete Malayalam Christian Hymn Book with 504 hymns and doxology.
+                </div>
+                <span class="card-badge">Public</span>
+            </a>
+            
+            <a href="lyrics-editor.html" class="card">
+                <div class="card-icon">✏️</div>
+                <div class="card-title">Lyrics Editor</div>
+                <div class="card-description">
+                    Add or edit lyrics for hymns and convention songs across all collections.
+                </div>
+                <span class="card-badge">Admin Only</span>
+            </a>
+        </div>
+        
+        <div class="section-header">🔧 Utilities</div>
+        <div class="grid">
+            <a href="generate-whitelist.html" class="card">
+                <div class="card-icon">🔐</div>
+                <div class="card-title">Whitelist Generator</div>
+                <div class="card-description">
+                    Generate encrypted GitHub username whitelist for choir attendance authentication.
+                </div>
+                <span class="card-badge">Setup Tool</span>
+            </a>
+            
+            <a href="generate-password-hash.html" class="card">
+                <div class="card-icon">🔒</div>
+                <div class="card-title">Password Hash Generator</div>
+                <div class="card-description">
+                    Generate SHA-256 password hashes for secure authentication (legacy tool).
+                </div>
+                <span class="card-badge">Setup Tool</span>
+            </a>
+        </div>
+        
+        <footer>
+            <p><strong>KTR MTC Choir</strong></p>
+            <p style="margin-top: 10px; font-size: 14px; opacity: 0.9;">
+                Made with ❤️ for the Malayalam Christian community
+            </p>
+            <p style="margin-top: 10px; font-size: 12px; opacity: 0.8;">
+                <a href="https://shibinj.github.io/Hymn_project/" style="color: white; text-decoration: none;">
+                    Visit Holy Hymns Website
+                </a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
