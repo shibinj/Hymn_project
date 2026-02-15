@@ -91,10 +91,10 @@ let members = {
 
 ### Step 2: Change Admin Password
 
-Find this line (around line 245):
+Find this line (around line 462):
 
 ```javascript
-const ADMIN_PASSWORD = 'choir2026';
+const ADMIN_PASSWORD = 'choir2026'; // Admin: Change this password
 ```
 
 Change to your secure password:
@@ -102,6 +102,8 @@ Change to your secure password:
 ```javascript
 const ADMIN_PASSWORD = 'YourSecurePassword123';
 ```
+
+**Note**: This is now grouped with other configuration settings (Gist ID and Token) at the top of the script section.
 
 ### Step 3: Import Existing Attendance Data (Optional)
 
@@ -230,6 +232,12 @@ location.reload();
 - Select gender (Female/Male)
 - Select status (Active/Long-term Absentee)
 - Click "➕ Add Member"
+
+**Edit Member:**
+- Click "✏️ Edit" next to member name
+- Enter new name
+- Attendance history is automatically updated with new name
+- Member list is re-sorted alphabetically
 
 **Remove Member:**
 - Click "🗑️ Remove" next to member name

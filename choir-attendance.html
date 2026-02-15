@@ -459,12 +459,10 @@
         // Cloud Sync Configuration (Admin: Set these values once)
         const SHARED_GIST_ID = 'ac89975338bf079cff3f169477e3cce1'; // Admin: Set your Gist ID here
         const SHARED_GIST_TOKEN = ''; // Admin: Set your GitHub token here (optional - for write access)
+        const ADMIN_PASSWORD = 'choir2026'; // Admin: Change this password
         
         let gistId = SHARED_GIST_ID;
         let gistToken = SHARED_GIST_TOKEN;
-        
-        // Default password (change this!)
-        const ADMIN_PASSWORD = 'choir2026';
         let isAuthenticated = false;
         
         // Default member list (update with your actual members from Excel)
@@ -706,9 +704,44 @@
             container.innerHTML = memberList.map((name, index) => `
                 <div class="member-item">
                     <span>${name}</span>
-                    <button onclick="removeMember('${category}', ${index})">🗑️ Remove</button>
+                    <div>
+                        <button onclick="editMember('${category}', ${index})" style="background: #667eea; margin-right: 5px;">✏️ Edit</button>
+                        <button onclick="removeMember('${category}', ${index})">🗑️ Remove</button>
+                    </div>
                 </div>
             `).join('');
+        }
+        
+        function editMember(category, index) {
+            const currentName = members[category][index];
+            const newName = prompt(`Edit member name:\n\nCurrent: ${currentName}\n\nEnter new name:`, currentName);
+            
+            if (newName && newName.trim() && newName.trim() !== currentName) {
+                // Update attendance data with new name
+                Object.keys(attendanceData).forEach(date => {
+                    if (attendanceData[date][currentName]) {
+                        attendanceData[date][newName.trim()] = attendanceData[date][currentName];
+                        delete attendanceData[date][currentName];
+                    }
+                });
+                
+                // Update member name
+                members[category][index] = newName.trim();
+                members[category].sort();
+                
+                // Save changes
+                localStorage.setItem('choirMembers', JSON.stringify(members));
+                localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+                
+                // Sync to cloud if configured
+                if (gistId && gistToken) {
+                    syncToGist();
+                }
+                
+                renderMemberLists();
+                renderAttendance();
+                alert('✅ Member name updated successfully!');
+            }
         }
         
         function addMember() {
