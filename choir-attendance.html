@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Choir Attendance Tracker</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 10px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            padding: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+        }
+        
+        h1 { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+            font-size: 24px; 
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .date-selector {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .date-selector label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .date-selector input, .date-selector select {
+            padding: 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+        
+        .section-header {
+            background: #667eea;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+        
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: 200px repeat(2, 80px);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .grid-header {
+            font-weight: 600;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 6px;
+        }
+        
+        .member-row {
+            display: contents;
+        }
+        
+        .member-name {
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .attendance-btn {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .attendance-btn.present {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+        
+        .attendance-btn.absent {
+            background: #f56565;
+            color: white;
+            border-color: #f56565;
+        }
+        
+        .save-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .save-btn:hover {
+            background: #5568d3;
+        }
+        
+        .report-controls {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .report-controls select {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .report-table th, .report-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .report-table th {
+            background: #f7fafc;
+            font-weight: 600;
+        }
+        
+        .report-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .percentage {
+            font-weight: 600;
+        }
+        
+        .percentage.good {
+            color: #48bb78;
+        }
+        
+        .percentage.warning {
+            color: #ed8936;
+        }
+        
+        .percentage.poor {
+            color: #f56565;
+        }
+        
+        .member-list {
+            margin-top: 20px;
+        }
+        
+        .member-item {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .member-item button {
+            padding: 6px 12px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .add-member {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .add-member input {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-right: 10px;
+            flex: 1;
+        }
+        
+        .add-member select {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+        
+        .add-member button {
+            padding: 10px 20px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .auth-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .auth-section input {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+        
+        .auth-section button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .sync-section {
+            background: #e6f7ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1890ff;
+        }
+        
+        .sync-section input {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-right: 10px;
+            width: 300px;
+        }
+        
+        .sync-section button {
+            padding: 10px 20px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .sync-status {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .container { padding: 15px; }
+            h1 { font-size: 20px; }
+            .attendance-grid { grid-template-columns: 150px repeat(2, 60px); gap: 3px; }
+            .tab { padding: 8px 12px; font-size: 12px; }
+            .report-table { font-size: 12px; }
+            .report-table th, .report-table td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Choir Attendance Tracker</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('attendance')">📝 Mark Attendance</button>
+            <button class="tab" onclick="switchTab('quarterly')">📊 Quarterly Report</button>
+            <button class="tab" onclick="switchTab('yearly')">📈 Yearly Report</button>
+            <button class="tab" onclick="switchTab('manage')">⚙️ Manage Members</button>
+        </div>
+        
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content active">
+            <div class="date-selector">
+                <label>📅 Select Date:</label>
+                <input type="date" id="attendanceDate" onchange="loadAttendanceForDate()">
+                <button class="save-btn" onclick="saveAttendance()">💾 Save Attendance</button>
+                <span id="syncStatus" style="margin-left: 15px; font-size: 12px; color: #6c757d;"></span>
+            </div>
+            </div>
+            
+            <div class="section-header">👩 Female Members (17)</div>
+            <div class="attendance-grid">
+                <div class="grid-header">Name</div>
+                <div class="grid-header">Status</div>
+                <div class="grid-header">Action</div>
+            </div>
+            <div id="femaleAttendance"></div>
+            
+            <div class="section-header">👨 Male Members (11)</div>
+            <div class="attendance-grid">
+                <div class="grid-header">Name</div>
+                <div class="grid-header">Status</div>
+                <div class="grid-header">Action</div>
+            </div>
+            <div id="maleAttendance"></div>
+            
+            <div class="section-header">📋 Long-term Absentees (8)</div>
+            <div class="attendance-grid">
+                <div class="grid-header">Name</div>
+                <div class="grid-header">Status</div>
+                <div class="grid-header">Action</div>
+            </div>
+            <div id="absenteeAttendance"></div>
+        </div>
+        
+        <!-- Quarterly Report Tab -->
+        <div id="quarterly" class="tab-content">
+            <div class="report-controls">
+                <label>Select Quarter:</label>
+                <select id="quarterSelect" onchange="generateQuarterlyReport()">
+                    <option value="Q1">Q1 (Jan-Mar)</option>
+                    <option value="Q2">Q2 (Apr-Jun)</option>
+                    <option value="Q3">Q3 (Jul-Sep)</option>
+                    <option value="Q4">Q4 (Oct-Dec)</option>
+                </select>
+                <select id="quarterYear" onchange="generateQuarterlyReport()">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+            <div id="quarterlyReport"></div>
+        </div>
+        
+        <!-- Yearly Report Tab -->
+        <div id="yearly" class="tab-content">
+            <div class="report-controls">
+                <label>Select Year:</label>
+                <select id="yearSelect" onchange="generateYearlyReport()">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+            <div id="yearlyReport"></div>
+        </div>
+        
+        <!-- Manage Members Tab -->
+        <div id="manage" class="tab-content">
+            <div class="auth-section">
+                <strong>🔒 Authorization Required</strong>
+                <p style="margin: 10px 0; font-size: 13px;">Enter password to manage members:</p>
+                <input type="password" id="authPassword" placeholder="Enter password">
+                <button onclick="authenticate()">Unlock</button>
+            </div>
+            
+            <div id="memberManagement" style="display: none;">
+                <div class="add-member">
+                    <h3 style="margin-bottom: 10px;">Add New Member</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="newMemberName" placeholder="Member Name">
+                        <select id="newMemberGender">
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                        <select id="newMemberStatus">
+                            <option value="active">Active</option>
+                            <option value="absentee">Long-term Absentee</option>
+                        </select>
+                        <button onclick="addMember()">➕ Add Member</button>
+                    </div>
+                </div>
+                
+                <div class="section-header">👩 Female Members</div>
+                <div id="femaleList" class="member-list"></div>
+                
+                <div class="section-header">👨 Male Members</div>
+                <div id="maleList" class="member-list"></div>
+                
+                <div class="section-header">📋 Long-term Absentees</div>
+                <div id="absenteeList" class="member-list"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Cloud Sync Configuration (Admin: Set these values once)
+        const SHARED_GIST_ID = 'ac89975338bf079cff3f169477e3cce1'; // Admin: Set your Gist ID here
+        const SHARED_GIST_TOKEN = ''; // Admin: Set your GitHub token here (optional - for write access)
+        
+        let gistId = SHARED_GIST_ID;
+        let gistToken = SHARED_GIST_TOKEN;
+        
+        // Default password (change this!)
+        const ADMIN_PASSWORD = 'choir2026';
+        let isAuthenticated = false;
+        
+        // Default member list (update with your actual members from Excel)
+        let members = {
+            female: [
+                'Member F1', 'Member F2', 'Member F3', 'Member F4', 'Member F5',
+                'Member F6', 'Member F7', 'Member F8', 'Member F9', 'Member F10',
+                'Member F11', 'Member F12', 'Member F13', 'Member F14', 'Member F15',
+                'Member F16', 'Member F17'
+            ],
+            male: [
+                'Member M1', 'Member M2', 'Member M3', 'Member M4', 'Member M5',
+                'Member M6', 'Member M7', 'Member M8', 'Member M9', 'Member M10',
+                'Member M11'
+            ],
+            absentee: [
+                'Absentee 1', 'Absentee 2', 'Absentee 3', 'Absentee 4',
+                'Absentee 5', 'Absentee 6', 'Absentee 7', 'Absentee 8'
+            ]
+        };
+        
+        // Load members from localStorage
+        const savedMembers = localStorage.getItem('choirMembers');
+        if (savedMembers) {
+            members = JSON.parse(savedMembers);
+        }
+        
+        // Attendance data structure: { 'YYYY-MM-DD': { memberName: 'P' or 'A' } }
+        let attendanceData = {};
+        const savedAttendance = localStorage.getItem('choirAttendance');
+        if (savedAttendance) {
+            attendanceData = JSON.parse(savedAttendance);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+            renderAttendance();
+            loadAttendanceForDate();
+            
+            // Auto-sync on load if configured
+            if (gistId) {
+                syncFromGist();
+                // Auto-sync every 5 minutes
+                setInterval(() => syncFromGist(), 5 * 60 * 1000);
+            }
+        });
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'quarterly') generateQuarterlyReport();
+            if (tabName === 'yearly') generateYearlyReport();
+            if (tabName === 'manage') renderMemberLists();
+        }
+        
+        function renderAttendance() {
+            renderSection('femaleAttendance', members.female);
+            renderSection('maleAttendance', members.male);
+            renderSection('absenteeAttendance', members.absentee);
+        }
+        
+        function renderSection(containerId, memberList) {
+            const container = document.getElementById(containerId);
+            const date = document.getElementById('attendanceDate').value;
+            
+            container.innerHTML = memberList.map(name => {
+                const status = attendanceData[date]?.[name] || '';
+                return `
+                    <div class="member-row">
+                        <div class="member-name">${name}</div>
+                        <div class="attendance-btn ${status === 'P' ? 'present' : status === 'A' ? 'absent' : ''}" id="status-${name.replace(/\s/g, '-')}">
+                            ${status || '-'}
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="attendance-btn" style="flex: 1; background: #48bb78; color: white; border: none; cursor: pointer;" onclick="markAttendance('${name}', 'P')">P</button>
+                            <button class="attendance-btn" style="flex: 1; background: #f56565; color: white; border: none; cursor: pointer;" onclick="markAttendance('${name}', 'A')">A</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function markAttendance(memberName, status) {
+            const date = document.getElementById('attendanceDate').value;
+            if (!attendanceData[date]) {
+                attendanceData[date] = {};
+            }
+            attendanceData[date][memberName] = status;
+            
+            const statusEl = document.getElementById(`status-${memberName.replace(/\s/g, '-')}`);
+            statusEl.textContent = status;
+            statusEl.className = `attendance-btn ${status === 'P' ? 'present' : 'absent'}`;
+        }
+        
+        function loadAttendanceForDate() {
+            renderAttendance();
+        }
+        
+        function saveAttendance() {
+            localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+            
+            // Sync to cloud if configured
+            if (gistId && gistToken) {
+                syncToGist().then(success => {
+                    if (success) {
+                        alert('✅ Attendance saved and synced to cloud!');
+                    } else {
+                        alert('✅ Attendance saved locally (cloud sync failed)');
+                    }
+                });
+            } else {
+                alert('✅ Attendance saved locally!');
+            }
+        }
+        
+        function generateQuarterlyReport() {
+            const quarter = document.getElementById('quarterSelect').value;
+            const year = document.getElementById('quarterYear').value;
+            
+            const quarterMonths = {
+                'Q1': [0, 1, 2],
+                'Q2': [3, 4, 5],
+                'Q3': [6, 7, 8],
+                'Q4': [9, 10, 11]
+            };
+            
+            const months = quarterMonths[quarter];
+            const allMembers = [...members.female, ...members.male, ...members.absentee];
+            
+            const report = allMembers.map(name => {
+                let present = 0, absent = 0, total = 0;
+                
+                Object.keys(attendanceData).forEach(date => {
+                    const d = new Date(date);
+                    if (d.getFullYear() == year && months.includes(d.getMonth())) {
+                        const day = d.getDay();
+                        if (day === 0 || day === 6) { // Sunday or Saturday
+                            total++;
+                            if (attendanceData[date][name] === 'P') present++;
+                            if (attendanceData[date][name] === 'A') absent++;
+                        }
+                    }
+                });
+                
+                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+                return { name, present, absent, total, percentage };
+            });
+            
+            displayReport('quarterlyReport', report, `${quarter} ${year} Report`);
+        }
+        
+        function generateYearlyReport() {
+            const year = document.getElementById('yearSelect').value;
+            const allMembers = [...members.female, ...members.male, ...members.absentee];
+            
+            const report = allMembers.map(name => {
+                let present = 0, absent = 0, total = 0;
+                
+                Object.keys(attendanceData).forEach(date => {
+                    const d = new Date(date);
+                    if (d.getFullYear() == year) {
+                        const day = d.getDay();
+                        if (day === 0 || day === 6) { // Sunday or Saturday
+                            total++;
+                            if (attendanceData[date][name] === 'P') present++;
+                            if (attendanceData[date][name] === 'A') absent++;
+                        }
+                    }
+                });
+                
+                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+                return { name, present, absent, total, percentage };
+            });
+            
+            displayReport('yearlyReport', report, `${year} Annual Report`);
+        }
+        
+        function displayReport(containerId, data, title) {
+            const container = document.getElementById(containerId);
+            
+            const html = `
+                <h2 style="margin-bottom: 20px;">${title}</h2>
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Member Name</th>
+                            <th>Present</th>
+                            <th>Absent</th>
+                            <th>Total Days</th>
+                            <th>Attendance %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(row => `
+                            <tr>
+                                <td>${row.name}</td>
+                                <td>${row.present}</td>
+                                <td>${row.absent}</td>
+                                <td>${row.total}</td>
+                                <td class="percentage ${row.percentage >= 75 ? 'good' : row.percentage >= 50 ? 'warning' : 'poor'}">
+                                    ${row.percentage}%
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function authenticate() {
+            const password = document.getElementById('authPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                document.querySelector('.auth-section').style.display = 'none';
+                document.getElementById('memberManagement').style.display = 'block';
+                renderMemberLists();
+            } else {
+                alert('❌ Incorrect password!');
+            }
+        }
+        
+        function renderMemberLists() {
+            if (!isAuthenticated) return;
+            
+            renderMemberList('femaleList', members.female, 'female');
+            renderMemberList('maleList', members.male, 'male');
+            renderMemberList('absenteeList', members.absentee, 'absentee');
+        }
+        
+        function renderMemberList(containerId, memberList, category) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = memberList.map((name, index) => `
+                <div class="member-item">
+                    <span>${name}</span>
+                    <button onclick="removeMember('${category}', ${index})">🗑️ Remove</button>
+                </div>
+            `).join('');
+        }
+        
+        function addMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            const gender = document.getElementById('newMemberGender').value;
+            const status = document.getElementById('newMemberStatus').value;
+            
+            if (!name) {
+                alert('Please enter member name!');
+                return;
+            }
+            
+            if (status === 'absentee') {
+                members.absentee.push(name);
+                members.absentee.sort();
+            } else if (gender === 'female') {
+                members.female.push(name);
+                members.female.sort();
+            } else {
+                members.male.push(name);
+                members.male.sort();
+            }
+            
+            localStorage.setItem('choirMembers', JSON.stringify(members));
+            document.getElementById('newMemberName').value = '';
+            renderMemberLists();
+            renderAttendance();
+            alert('✅ Member added successfully!');
+        }
+        
+        function removeMember(category, index) {
+            if (confirm('Are you sure you want to remove this member?')) {
+                members[category].splice(index, 1);
+                localStorage.setItem('choirMembers', JSON.stringify(members));
+                renderMemberLists();
+                renderAttendance();
+                alert('✅ Member removed successfully!');
+            }
+        }
+        
+        // Cloud Sync Functions
+        function updateSyncStatus(message) {
+            const statusEl = document.getElementById('syncStatus');
+            if (statusEl) {
+                statusEl.textContent = message;
+            }
+        }
+        
+        async function syncToGist() {
+            if (!gistId || !gistToken) {
+                return false;
+            }
+            
+            try {
+                updateSyncStatus('⬆️ Syncing...');
+                
+                const data = {
+                    members: members,
+                    attendance: attendanceData,
+                    lastSync: new Date().toISOString()
+                };
+                
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${gistToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'choir-attendance-data.json': {
+                                content: JSON.stringify(data, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    updateSyncStatus(`✅ Synced ${new Date().toLocaleTimeString()}`);
+                    return true;
+                } else {
+                    updateSyncStatus('❌ Sync failed');
+                    return false;
+                }
+            } catch (error) {
+                updateSyncStatus('❌ Sync error');
+                return false;
+            }
+        }
+        
+        async function syncFromGist() {
+            if (!gistId) {
+                return false;
+            }
+            
+            try {
+                updateSyncStatus('⬇️ Syncing...');
+                
+                const headers = gistToken ? {
+                    'Authorization': `token ${gistToken}`
+                } : {};
+                
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: headers
+                });
+                
+                if (response.ok) {
+                    const gist = await response.json();
+                    const file = gist.files['choir-attendance-data.json'];
+                    
+                    if (file) {
+                        const data = JSON.parse(file.content);
+                        
+                        // Update members
+                        if (data.members) {
+                            members = data.members;
+                            localStorage.setItem('choirMembers', JSON.stringify(members));
+                        }
+                        
+                        // Update attendance
+                        if (data.attendance) {
+                            attendanceData = data.attendance;
+                            localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+                        }
+                        
+                        renderAttendance();
+                        loadAttendanceForDate();
+                        
+                        const syncTime = data.lastSync ? new Date(data.lastSync).toLocaleString() : 'Unknown';
+                        updateSyncStatus(`✅ Synced ${new Date().toLocaleTimeString()}`);
+                        return true;
+                    }
+                } else {
+                    updateSyncStatus('');
+                    return false;
+                }
+            } catch (error) {
+                updateSyncStatus('');
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>
