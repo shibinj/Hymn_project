@@ -100,6 +100,9 @@
     </style>
 </head>
 <body>
+    <div style="margin-bottom: 15px;">
+        <a href="../admin.html" style="background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block;">← Back to Admin</a>
+    </div>
     <h1>📝 Hymn Lyrics Editor</h1>
     
     <div class="stats">
@@ -128,7 +131,7 @@
 
         function loadCollection() {
             currentCollection = document.getElementById('collectionSelect').value;
-            const collectionFile = `data/${currentCollection}.json`;
+            const collectionFile = `../data/${currentCollection}.json`;
             
             // Load songs
             fetch(collectionFile)
