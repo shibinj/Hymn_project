@@ -1,6 +1,6 @@
 # Choir Attendance Tracker
 
-A web-based attendance tracking system for church choirs with GitHub authentication, cloud sync, and comprehensive reporting.
+A web-based attendance tracking system for church choirs with cloud sync and comprehensive reporting.
 
 🌐 **Standalone Application**: Works in any modern web browser
 
@@ -15,19 +15,19 @@ A web-based attendance tracking system for church choirs with GitHub authenticat
 - **Visual Status**: Color-coded attendance indicators
 - **Auto-save**: Data persists in browser localStorage
 
-### 🔐 GitHub Authentication
-- **Secure Access**: GitHub username-based authentication
-- **Encrypted Whitelist**: Authorized users list encrypted in code
-- **GitHub Validation**: Verifies users exist on GitHub
-- **No Passwords**: Each user uses their GitHub identity
-- **Easy Management**: Simple tool to add/remove authorized users
+### 👥 Member Management
+- **JSON File Storage**: Members stored in `data/choir-members.json`
+- **Easy Editing**: Edit member list in any text editor
+- **Three Categories**: Female, Male, Absentees
+- **Simple Format**: Plain JSON array structure
+- **No Authentication**: Just edit the file and refresh
 
 ### ☁️ Cloud Sync (Optional)
-- **GitHub Gist Integration**: Sync data across devices
+- **GitHub Gist Integration**: Sync attendance data across devices
 - **Auto-sync**: On load, after save, every 5 minutes
 - **Team Collaboration**: Multiple users can access same data
 - **Offline Support**: Works offline, syncs when online
-- **Manual Sync**: Sync button available
+- **Attendance Only**: Only attendance data syncs (not member names)
 
 ### 📊 Reports
 - **Quarterly Reports**: Q1, Q2, Q3, Q4 attendance summaries
@@ -39,13 +39,6 @@ A web-based attendance tracking system for church choirs with GitHub authenticat
 - **Present/Absent Counts**: Detailed statistics per member
 - **Saturday/Sunday Only**: Only counts weekend attendance
 
-### ⚙️ Member Management (Admin Only)
-- **Add Members**: Add new choir members with gender/status
-- **Edit Members**: Update member names (preserves attendance history)
-- **Remove Members**: Delete members with confirmation
-- **Automatic Sorting**: Members sorted alphabetically
-- **Category Management**: Organize by Female/Male/Absentee
-
 ### 📱 Mobile Responsive
 - **Works on All Devices**: Desktop, tablet, and mobile
 - **Touch-Friendly**: Large buttons for easy tapping
@@ -56,44 +49,27 @@ A web-based attendance tracking system for church choirs with GitHub authenticat
 
 ## Quick Start
 
-### 1. Set Up Authentication
+### 1. Set Up Member List
 
-**Generate Whitelist:**
-1. Open `generate-whitelist.html` in browser
-2. Change the secret key (default: `choir-auth-2026`)
-3. Add GitHub usernames of authorized users
-4. Click "Generate Encrypted Whitelist"
-5. Copy the encrypted output
+**Edit Member File:**
+1. Open `data/choir-members.json` in text editor
+2. Update the member names:
+   ```json
+   {
+     "female": ["Name 1", "Name 2", "Name 3"],
+     "male": ["Name 4", "Name 5", "Name 6"],
+     "absentees": ["Name 7", "Name 8"]
+   }
+   ```
+3. Save file
+4. Refresh the attendance page
 
-**Configure Application:**
-1. Open `choir-attendance.html` in text editor
-2. Find line ~462: `const ENCRYPTED_WHITELIST = '';`
-3. Paste encrypted whitelist between quotes
-4. Find line ~463: `const WHITELIST_KEY = 'choir-auth-2026';`
-5. Replace with your secret key
-6. Save file
+**Tips:**
+- Keep names in alphabetical order for easier management
+- Use consistent name formatting
+- Backup this file regularly
 
-### 2. Update Member Names
-
-Find the `members` object (around line ~470):
-
-```javascript
-let members = {
-    female: [
-        'Member F1', 'Member F2', ...  // Replace with actual names
-    ],
-    male: [
-        'Member M1', 'Member M2', ...  // Replace with actual names
-    ],
-    absentee: [
-        'Absentee 1', 'Absentee 2', ...  // Replace with actual names
-    ]
-};
-```
-
-Replace placeholder names with your actual choir members (alphabetically).
-
-### 3. Set Up Cloud Sync (Optional)
+### 2. Set Up Cloud Sync (Optional)
 
 **Create GitHub Gist:**
 1. Go to https://gist.github.com
@@ -109,19 +85,21 @@ Replace placeholder names with your actual choir members (alphabetically).
 4. Copy token
 
 **Configure Sync:**
-1. Open `choir-attendance.html`
+1. Open `admin/choir-attendance.html` in text editor
 2. Find line ~460: `const SHARED_GIST_ID = '';`
 3. Paste your Gist ID
 4. Find line ~461: `const SHARED_GIST_TOKEN = '';`
 5. Paste your GitHub token
 6. Save file
 
-### 4. Start Using
+**Note:** Only attendance data syncs to Gist, not member names.
 
-1. Open `choir-attendance.html` in browser
+### 3. Start Using
+
+1. Open `admin/choir-attendance.html` in browser
 2. Mark attendance on the main tab
 3. View reports in Quarterly/Yearly tabs
-4. Manage members (requires GitHub authentication)
+4. Check "Manage Members" tab for member list instructions
 
 ---
 
@@ -194,16 +172,16 @@ Hymn_project/
 - **No Shared Passwords**: Each user has their own identity
 
 ### Data Storage
-- **Browser localStorage**: Attendance data stored locally
-- **GitHub Gist**: Optional cloud backup (private gist)
+- **Member Names**: Stored in `data/choir-members.json` file
+- **Attendance Data**: Browser localStorage + optional GitHub Gist
 - **No Encryption**: Data stored in plain text (names only)
 - **Privacy Level**: Low-Medium (names only, no sensitive data)
 
 ### Best Practices
 - ✅ Use secret gist (not public)
-- ✅ Keep secret key confidential
+- ✅ Backup choir-members.json regularly
+- ✅ Keep GitHub token confidential
 - ✅ Only share file with authorized users
-- ✅ Regular backups
 - ✅ Secure computer access
 - ✅ Don't commit token to public repos
 
@@ -213,13 +191,14 @@ Hymn_project/
 
 ### Backup Data
 
-**Method 1: Browser Console**
+**Member List:**
+- Simply copy `data/choir-members.json` to backup location
+- Commit to Git for version control
+
+**Attendance Data (Browser Console):**
 ```javascript
 // Backup attendance
 console.log(localStorage.getItem('choirAttendance'));
-
-// Backup members
-console.log(localStorage.getItem('choirMembers'));
 ```
 Copy output and save to file.
 

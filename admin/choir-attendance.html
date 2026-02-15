@@ -422,32 +422,32 @@
         
         <!-- Manage Members Tab -->
         <div id="manage" class="tab-content">
-            <div class="auth-section">
-                <strong>🔒 GitHub Authentication</strong>
-                <p style="margin: 10px 0; font-size: 13px;">Enter your GitHub username to manage members:</p>
-                <input type="text" id="githubUsername" placeholder="GitHub username (e.g., octocat)">
-                <button onclick="authenticate()">Verify & Unlock</button>
-                <p style="margin-top: 10px; font-size: 11px; color: #6c757d;">
-                    Only authorized GitHub users can access member management.
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; border-left: 4px solid #2196f3;">
+                <h3 style="color: #1976d2; margin-bottom: 15px;">📝 Managing Choir Members</h3>
+                <p style="margin-bottom: 10px; line-height: 1.6;">
+                    To add, edit, or remove choir members, please edit the file:
+                </p>
+                <code style="background: white; padding: 10px; display: block; border-radius: 5px; margin: 10px 0; font-size: 14px;">
+                    data/choir-members.json
+                </code>
+                <p style="margin-top: 15px; line-height: 1.6; font-size: 14px;">
+                    <strong>Structure:</strong>
+                </p>
+                <pre style="background: white; padding: 15px; border-radius: 5px; margin: 10px 0; overflow-x: auto; font-size: 13px;">{
+  "female": ["Name 1", "Name 2", ...],
+  "male": ["Name 3", "Name 4", ...],
+  "absentees": ["Name 5", "Name 6", ...]
+}</pre>
+                <p style="margin-top: 15px; line-height: 1.6; font-size: 14px; color: #666;">
+                    💡 <strong>Tip:</strong> After editing the file, refresh this page to see the updated member list.
+                </p>
+                <p style="margin-top: 10px; line-height: 1.6; font-size: 14px; color: #666;">
+                    ✅ <strong>Benefit:</strong> Member names are stored in a file (easy to backup), while attendance data syncs to GitHub Gist.
                 </p>
             </div>
             
-            <div id="memberManagement" style="display: none;">
-                <div class="add-member">
-                    <h3 style="margin-bottom: 10px;">Add New Member</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="newMemberName" placeholder="Member Name">
-                        <select id="newMemberGender">
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
-                        </select>
-                        <select id="newMemberStatus">
-                            <option value="active">Active</option>
-                            <option value="absentee">Long-term Absentee</option>
-                        </select>
-                        <button onclick="addMember()">➕ Add Member</button>
-                    </div>
-                </div>
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 10px;">Current Members</h3>
                 
                 <div class="section-header">👩 Female Members</div>
                 <div id="femaleList" class="member-list"></div>
@@ -475,29 +475,27 @@
         let isAuthenticated = false;
         let currentUser = null;
         
-        // Default member list (update with your actual members from Excel)
+        // Members will be loaded from JSON file
         let members = {
-            female: [
-                'Member F1', 'Member F2', 'Member F3', 'Member F4', 'Member F5',
-                'Member F6', 'Member F7', 'Member F8', 'Member F9', 'Member F10',
-                'Member F11', 'Member F12', 'Member F13', 'Member F14', 'Member F15',
-                'Member F16', 'Member F17'
-            ],
-            male: [
-                'Member M1', 'Member M2', 'Member M3', 'Member M4', 'Member M5',
-                'Member M6', 'Member M7', 'Member M8', 'Member M9', 'Member M10',
-                'Member M11'
-            ],
-            absentee: [
-                'Absentee 1', 'Absentee 2', 'Absentee 3', 'Absentee 4',
-                'Absentee 5', 'Absentee 6', 'Absentee 7', 'Absentee 8'
-            ]
+            female: [],
+            male: [],
+            absentees: []
         };
         
-        // Load members from localStorage
-        const savedMembers = localStorage.getItem('choirMembers');
-        if (savedMembers) {
-            members = JSON.parse(savedMembers);
+        // Load members from JSON file
+        async function loadMembers() {
+            try {
+                const response = await fetch('../data/choir-members.json');
+                if (response.ok) {
+                    members = await response.json();
+                    console.log('Members loaded from choir-members.json');
+                } else {
+                    console.error('Failed to load choir-members.json');
+                }
+            } catch (error) {
+                console.error('Error loading members:', error);
+            }
+        }
         }
         
         // Attendance data structure: { 'YYYY-MM-DD': { memberName: 'P' or 'A' } }
@@ -508,7 +506,8 @@
         }
         
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadMembers(); // Load members from JSON file first
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             renderAttendance();
             loadAttendanceForDate();
@@ -536,7 +535,7 @@
         function renderAttendance() {
             renderSection('femaleAttendance', members.female);
             renderSection('maleAttendance', members.male);
-            renderSection('absenteeAttendance', members.absentee);
+            renderSection('absenteeAttendance', members.absentees);
         }
         
         function renderSection(containerId, memberList) {
@@ -605,7 +604,7 @@
             };
             
             const months = quarterMonths[quarter];
-            const allMembers = [...members.female, ...members.male, ...members.absentee];
+            const allMembers = [...members.female, ...members.male, ...members.absentees];
             
             const report = allMembers.map(name => {
                 let present = 0, absent = 0, total = 0;
@@ -631,7 +630,7 @@
         
         function generateYearlyReport() {
             const year = document.getElementById('yearSelect').value;
-            const allMembers = [...members.female, ...members.male, ...members.absentee];
+            const allMembers = [...members.female, ...members.male, ...members.absentees];
             
             const report = allMembers.map(name => {
                 let present = 0, absent = 0, total = 0;
@@ -722,79 +721,19 @@
             }
         }
         
-        async function authenticate() {
-            const username = document.getElementById('githubUsername').value.trim();
-            
-            if (!username) {
-                alert('Please enter your GitHub username!');
-                return;
-            }
-            
-            // Check if whitelist is configured
-            if (!ENCRYPTED_WHITELIST) {
-                alert('⚠️ Whitelist not configured!\n\nAdmin: Please generate and set the encrypted whitelist.');
-                return;
-            }
-            
-            // Show loading
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '⏳ Verifying...';
-            btn.disabled = true;
-            
-            try {
-                // Decrypt whitelist
-                const whitelist = await decryptWhitelist();
-                
-                // Check if user is in whitelist
-                if (!whitelist.includes(username.toLowerCase())) {
-                    alert('❌ Access Denied!\n\nYour GitHub username is not authorized.');
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                // Verify user exists on GitHub
-                const userExists = await verifyGitHubUser(username);
-                if (!userExists) {
-                    alert('❌ GitHub user not found!\n\nPlease check your username.');
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                // Grant access
-                isAuthenticated = true;
-                currentUser = username;
-                document.querySelector('.auth-section').style.display = 'none';
-                document.getElementById('memberManagement').style.display = 'block';
-                renderMemberLists();
-                
-                alert(`✅ Welcome, ${username}!\n\nAccess granted.`);
-            } catch (error) {
-                alert('❌ Authentication failed!\n\nPlease try again.');
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
-        
         function renderMemberLists() {
-            if (!isAuthenticated) return;
-            
             renderMemberList('femaleList', members.female, 'female');
             renderMemberList('maleList', members.male, 'male');
-            renderMemberList('absenteeList', members.absentee, 'absentee');
+            renderMemberList('absenteeList', members.absentees, 'absentees');
         }
         
         function renderMemberList(containerId, memberList, category) {
             const container = document.getElementById(containerId);
+            if (!container) return;
+            
             container.innerHTML = memberList.map((name, index) => `
                 <div class="member-item">
-                    <span>${name}</span>
-                    <div>
-                        <button onclick="editMember('${category}', ${index})" style="background: #667eea; margin-right: 5px;">✏️ Edit</button>
-                        <button onclick="removeMember('${category}', ${index})">🗑️ Remove</button>
-                    </div>
+                    <span>${index + 1}. ${name}</span>
                 </div>
             `).join('');
         }
@@ -802,72 +741,6 @@
         function editMember(category, index) {
             const currentName = members[category][index];
             const newName = prompt(`Edit member name:\n\nCurrent: ${currentName}\n\nEnter new name:`, currentName);
-            
-            if (newName && newName.trim() && newName.trim() !== currentName) {
-                // Update attendance data with new name
-                Object.keys(attendanceData).forEach(date => {
-                    if (attendanceData[date][currentName]) {
-                        attendanceData[date][newName.trim()] = attendanceData[date][currentName];
-                        delete attendanceData[date][currentName];
-                    }
-                });
-                
-                // Update member name
-                members[category][index] = newName.trim();
-                members[category].sort();
-                
-                // Save changes
-                localStorage.setItem('choirMembers', JSON.stringify(members));
-                localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
-                
-                // Sync to cloud if configured
-                if (gistId && gistToken) {
-                    syncToGist();
-                }
-                
-                renderMemberLists();
-                renderAttendance();
-                alert('✅ Member name updated successfully!');
-            }
-        }
-        
-        function addMember() {
-            const name = document.getElementById('newMemberName').value.trim();
-            const gender = document.getElementById('newMemberGender').value;
-            const status = document.getElementById('newMemberStatus').value;
-            
-            if (!name) {
-                alert('Please enter member name!');
-                return;
-            }
-            
-            if (status === 'absentee') {
-                members.absentee.push(name);
-                members.absentee.sort();
-            } else if (gender === 'female') {
-                members.female.push(name);
-                members.female.sort();
-            } else {
-                members.male.push(name);
-                members.male.sort();
-            }
-            
-            localStorage.setItem('choirMembers', JSON.stringify(members));
-            document.getElementById('newMemberName').value = '';
-            renderMemberLists();
-            renderAttendance();
-            alert('✅ Member added successfully!');
-        }
-        
-        function removeMember(category, index) {
-            if (confirm('Are you sure you want to remove this member?')) {
-                members[category].splice(index, 1);
-                localStorage.setItem('choirMembers', JSON.stringify(members));
-                renderMemberLists();
-                renderAttendance();
-                alert('✅ Member removed successfully!');
-            }
-        }
         
         // Cloud Sync Functions
         function updateSyncStatus(message) {
@@ -885,8 +758,8 @@
             try {
                 updateSyncStatus('⬆️ Syncing...');
                 
+                // Only sync attendance data (members are in JSON file)
                 const data = {
-                    members: members,
                     attendance: attendanceData,
                     lastSync: new Date().toISOString()
                 };
@@ -942,13 +815,7 @@
                     if (file) {
                         const data = JSON.parse(file.content);
                         
-                        // Update members
-                        if (data.members) {
-                            members = data.members;
-                            localStorage.setItem('choirMembers', JSON.stringify(members));
-                        }
-                        
-                        // Update attendance
+                        // Only update attendance (members are loaded from JSON file)
                         if (data.attendance) {
                             attendanceData = data.attendance;
                             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
