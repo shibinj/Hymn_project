@@ -384,29 +384,14 @@
                 <span id="syncStatus" style="margin-left: 15px; font-size: 12px; color: #6c757d;"></span>
             </div>
             
-            <div class="section-header">👩 Female Members (17)</div>
-            <div class="attendance-grid">
-                <div class="grid-header">Name</div>
-                <div class="grid-header">Status</div>
-                <div class="grid-header">Action</div>
-            </div>
-            <div id="femaleAttendance"></div>
+            <div class="section-header">👩 Female Members</div>
+            <div id="femaleAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
             
-            <div class="section-header">👨 Male Members (11)</div>
-            <div class="attendance-grid">
-                <div class="grid-header">Name</div>
-                <div class="grid-header">Status</div>
-                <div class="grid-header">Action</div>
-            </div>
-            <div id="maleAttendance"></div>
+            <div class="section-header" style="margin-top: 20px;">👨 Male Members</div>
+            <div id="maleAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
             
-            <div class="section-header">🌍 Occasional Attendees (6)</div>
-            <div class="attendance-grid">
-                <div class="grid-header">Name</div>
-                <div class="grid-header">Status</div>
-                <div class="grid-header">Action</div>
-            </div>
-            <div id="occasionalAttendance"></div>
+            <div class="section-header" style="margin-top: 20px;">🌍 Occasional Attendees</div>
+            <div id="occasionalAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
         </div>
         
         <!-- Quarterly Report Tab -->
@@ -566,28 +551,36 @@
             container.innerHTML = memberList.map(name => {
                 const status = attendanceData[date]?.[name] || '';
                 const disabled = !isAuthenticated ? 'disabled' : '';
-                const opacity = !isAuthenticated ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                const nameId = name.replace(/\s/g, '-').replace(/\./g, '');
                 
                 return `
-                    <div class="member-row">
-                        <div class="member-name">${name}</div>
-                        <div class="attendance-btn ${status === 'P' ? 'present' : status === 'A' ? 'absent' : ''}" id="status-${name.replace(/\s/g, '-')}">
-                            ${status || '-'}
-                        </div>
-                        <div style="display: flex; gap: 5px;">
-                            <button class="attendance-btn" style="flex: 1; background: #48bb78; color: white; border: none; ${opacity}" onclick="markAttendance('${name}', 'P')" ${disabled}>P</button>
-                            <button class="attendance-btn" style="flex: 1; background: #f56565; color: white; border: none; ${opacity}" onclick="markAttendance('${name}', 'A')" ${disabled}>A</button>
-                        </div>
+                    <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0; gap: 10px;">
+                        <div style="flex: 1; font-size: 14px; color: #2d3748;">${name}</div>
+                        <select 
+                            id="select-${nameId}" 
+                            onchange="markAttendanceAuto('${name}')" 
+                            ${disabled}
+                            style="padding: 6px 10px; border: 2px solid ${status === 'P' ? '#48bb78' : status === 'A' ? '#f56565' : '#cbd5e0'}; border-radius: 6px; background: ${status === 'P' ? '#f0fff4' : status === 'A' ? '#fff5f5' : 'white'}; color: ${status === 'P' ? '#22543d' : status === 'A' ? '#742a2a' : '#4a5568'}; font-weight: 600; cursor: pointer; min-width: 80px;">
+                            <option value="">-</option>
+                            <option value="P" ${status === 'P' ? 'selected' : ''}>Present</option>
+                            <option value="A" ${status === 'A' ? 'selected' : ''}>Absent</option>
+                        </select>
                     </div>
                 `;
             }).join('');
         }
         
-        function markAttendance(memberName, status) {
+        function markAttendanceAuto(memberName) {
             if (!isAuthenticated) {
                 alert('🔒 Authentication required!\n\nPlease login to mark attendance.');
                 return;
             }
+            
+            const nameId = memberName.replace(/\s/g, '-').replace(/\./g, '');
+            const selectEl = document.getElementById(`select-${nameId}`);
+            const status = selectEl.value;
+            
+            if (!status) return; // If "-" selected, do nothing
             
             const date = document.getElementById('attendanceDate').value;
             if (!attendanceData[date]) {
@@ -595,9 +588,23 @@
             }
             attendanceData[date][memberName] = status;
             
-            const statusEl = document.getElementById(`status-${memberName.replace(/\s/g, '-')}`);
-            statusEl.textContent = status;
-            statusEl.className = `attendance-btn ${status === 'P' ? 'present' : 'absent'}`;
+            // Update select styling
+            if (status === 'P') {
+                selectEl.style.borderColor = '#48bb78';
+                selectEl.style.background = '#f0fff4';
+                selectEl.style.color = '#22543d';
+            } else {
+                selectEl.style.borderColor = '#f56565';
+                selectEl.style.background = '#fff5f5';
+                selectEl.style.color = '#742a2a';
+            }
+            
+            // Auto-save to localStorage
+            localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+            updateSyncStatus('💾 Auto-saved');
+            
+            // Clear status after 2 seconds
+            setTimeout(() => updateSyncStatus(''), 2000);
         }
         
         function loadAttendanceForDate() {
