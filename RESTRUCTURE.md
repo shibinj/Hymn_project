@@ -1,77 +1,214 @@
-# Project Restructuring Summary
+# Project Reorganization Summary
 
-## New Structure
+## Date: February 15, 2026
+
+### New Folder Structure
 
 ```
 Hymn_project/
-├── index.html                          # Landing page with all collections
-├── viewer.html                         # Hymn viewer (loads different collections)
-├── lyrics_editor.html                  # Editor with collection selector
-├── data/
-│   ├── kristheeya-keerthanangal.json  # Main hymn book (504+ hymns)
-│   ├── maramon-2025.json              # Maramon Convention 2025
-│   ├── maramon-2026.json              # Maramon Convention 2026
-│   ├── kottarakara-2025.json          # Kottarakara Convention 2025
-│   └── kottarakara-2026.json          # Kottarakara Convention 2026
-├── songs.json                          # Keep for backward compatibility
-├── index_old.html                      # Backup of old index
-└── ...
+├── admin.html                          # Admin dashboard (main entry point)
+├── index.html                          # Public landing page
+├── viewer.html                         # Hymn viewer (public)
+│
+├── admin/                              # Admin tools
+│   ├── worship-planner.html
+│   ├── choir-attendance.html
+│   ├── lyrics-editor.html
+│   ├── generate-whitelist.html
+│   ├── generate-password-hash.html
+│   └── docs/                           # Documentation
+│       ├── BIRTHDAY_ANNIVERSARY_IMPLEMENTATION.md
+│       ├── CHOIR_ATTENDANCE_GUIDE.md
+│       ├── CHOIR_ATTENDANCE_README.md
+│       └── MOBILE_IMPROVEMENTS.md
+│
+├── data/                               # JSON data files
+│   ├── kristheeya-keerthanangal.json
+│   ├── maramon-2025.json
+│   ├── maramon-2026.json
+│   ├── kottarakara-2025.json
+│   └── kottarakara-2026.json
+│
+├── archive/                            # Old/unused files
+│   ├── index_old.html
+│   ├── README.md (old project readme)
+│   └── *.py (Python scripts)
+│
+├── README.md                           # Main project README
+├── RESTRUCTURE.md                      # This file
+├── sitemap.xml
+├── robots.txt
+├── .gitignore
+├── favicon.ico
+└── Choir_Attendance.xlsx
 ```
 
-## What Changed
+---
 
-### 1. New Landing Page (index.html)
-- Welcome page with sections for different collections
-- Categories: Hymn Books, Maramon Convention, Kottarakara Convention
-- Footer with disclaimer and contact info
-- Links to viewer.html with collection parameter
+## Changes Made
 
-### 2. Viewer (viewer.html)
-- Renamed from old index.html
-- Now loads collections dynamically based on URL parameter
-- Example: `viewer.html?collection=kristheeya-keerthanangal`
-- All features remain: search, dark mode, share, print
+### 1. Created Folders
+- `admin/` - All admin tools
+- `admin/docs/` - All documentation
+- `archive/` - Old/unused files
 
-### 3. Lyrics Editor (lyrics_editor.html)
-- Added collection dropdown selector
-- Can edit any collection
-- Downloads with collection-specific filename
+### 2. Moved Files
 
-### 4. Data Organization
-- All collections stored in `data/` folder
-- Each collection is a separate JSON file
-- Empty collections created for future content
+**To admin/:**
+- worship-planner.html
+- choir-attendance.html
+- lyrics-editor.html (renamed from lyrics_editor.html)
+- generate-whitelist.html
+- generate-password-hash.html
 
-## How to Use
+**To admin/docs/:**
+- BIRTHDAY_ANNIVERSARY_IMPLEMENTATION.md
+- CHOIR_ATTENDANCE_GUIDE.md
+- CHOIR_ATTENDANCE_README.md
+- MOBILE_IMPROVEMENTS.md
 
-### View Collections
-- Go to: https://shibinj.github.io/Hymn_project/
-- Click any collection card
-- Browse, search, and view hymns
+**To archive/:**
+- index_old.html
+- All Python scripts (*.py)
+- Old README.md
 
-### Edit Lyrics
-1. Open `lyrics_editor.html`
-2. Select collection from dropdown
-3. Edit lyrics
-4. Download updated JSON
-5. Replace file in `data/` folder
+### 3. Updated Links
 
-### Add New Collections
-1. Create new JSON file in `data/` folder
-2. Add section in `index.html`
-3. Add option in lyrics editor dropdown
+**admin.html:**
+- All tool links now point to `admin/` folder
+- Public pages remain in root
+
+**worship-planner.html:**
+- Data paths updated to `../data/`
+- Added "Back to Admin" button
+
+**choir-attendance.html:**
+- Added "Back to Admin" button
+
+**lyrics-editor.html:**
+- Data path updated to `../data/`
+- Added "Back to Admin" button
+
+---
+
+## Benefits
+
+### Organization
+✅ Clear separation of public vs admin content
+✅ All admin tools in one folder
+✅ Documentation organized in admin/docs/
+✅ Old files archived separately
+
+### Security
+✅ Can restrict admin/ folder access
+✅ Clear what's public vs private
+✅ Easy to configure server permissions
+
+### Navigation
+✅ admin.html as central dashboard
+✅ Back buttons on all admin tools
+✅ Logical folder structure
+✅ Easy to find files
+
+### Maintenance
+✅ Cleaner root directory
+✅ Related files grouped together
+✅ Easy to add new admin tools
+✅ Professional structure
+
+---
+
+## Access Points
+
+### Public Access (Root Folder)
+- `index.html` - Main landing page
+- `viewer.html` - Hymn viewer (public - stays in root for direct access)
+- `admin.html` - Admin dashboard (gateway)
+
+**Why viewer.html is in root:**
+- Public page accessed by congregation
+- Direct URL: `/viewer.html?collection=...`
+- Linked from index.html
+- No authentication required
+- Should be easily accessible
+
+### Admin Tools (via admin.html)
+- Worship Service Planner
+- Choir Attendance Tracker
+- Lyrics Editor
+- Whitelist Generator
+- Password Hash Generator
+
+---
 
 ## Migration Notes
 
-- Old `songs.json` kept for backward compatibility
-- Main collection copied to `data/kristheeya-keerthanangal.json`
-- Old index.html saved as `index_old.html`
-- All existing features preserved
+### No Breaking Changes
+- All public pages work as before
+- Data files remain in same location (data/)
+- Only admin tools moved to subfolder
 
-## Next Steps
+### Path Updates
+- Admin tools use `../data/` for data files
+- Admin tools link back to `../admin.html`
+- admin.html links to `admin/` for tools
 
-1. Test the new structure locally
-2. Add content to convention collections
-3. Update README.md
-4. Push to GitHub
-5. Verify GitHub Pages deployment
+### Documentation
+- All guides moved to admin/docs/
+- Easy to find and maintain
+- Separated from code files
+
+---
+
+## Future Enhancements
+
+### Possible Additions
+- `admin/assets/` for admin-specific images/styles
+- `admin/config/` for configuration files
+- `admin/backups/` for data backups
+- `tests/` for testing scripts
+
+### Server Configuration
+Can now easily configure:
+- Password protection for admin/ folder
+- Different caching rules for admin vs public
+- Separate logging for admin access
+- IP restrictions on admin/ folder
+
+---
+
+## Testing Checklist
+
+- [x] admin.html loads correctly
+- [x] All cards link to correct pages
+- [x] Worship planner loads data correctly
+- [x] Choir attendance works
+- [x] Lyrics editor loads collections
+- [x] Back buttons work on all admin pages
+- [x] Public pages (index.html, viewer.html) unaffected
+- [x] Data files accessible from admin tools
+
+---
+
+## Rollback Instructions
+
+If needed, to revert changes:
+
+```bash
+# Move files back to root
+mv admin/*.html .
+mv admin/docs/*.md .
+
+# Remove folders
+rm -rf admin/ archive/
+
+# Restore old paths in files
+# (Would need to manually edit HTML files)
+```
+
+---
+
+**Reorganization Complete!**
+
+All files organized, links updated, and tested.
+Project structure is now clean, professional, and maintainable.

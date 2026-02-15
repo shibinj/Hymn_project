@@ -134,6 +134,9 @@
 </head>
 <body>
     <div class="container">
+        <div style="margin-bottom: 15px;">
+            <a href="../admin.html" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">← Back to Admin</a>
+        </div>
         <h1>🎵 Worship Service Planner</h1>
         <p class="subtitle">Generate random song selections for Sunday worship</p>
         
@@ -224,11 +227,11 @@
         };
 
         async function loadData() {
-            hymns = await fetch('data/kristheeya-keerthanangal.json').then(r => r.json());
-            conventions['maramon-2025'] = await fetch('data/maramon-2025.json').then(r => r.json());
-            conventions['maramon-2026'] = await fetch('data/maramon-2026.json').then(r => r.json());
-            conventions['kottarakara-2025'] = await fetch('data/kottarakara-2025.json').then(r => r.json());
-            conventions['kottarakara-2026'] = await fetch('data/kottarakara-2026.json').then(r => r.json());
+            hymns = await fetch('../data/kristheeya-keerthanangal.json').then(r => r.json());
+            conventions['maramon-2025'] = await fetch('../data/maramon-2025.json').then(r => r.json());
+            conventions['maramon-2026'] = await fetch('../data/maramon-2026.json').then(r => r.json());
+            conventions['kottarakara-2025'] = await fetch('../data/kottarakara-2025.json').then(r => r.json());
+            conventions['kottarakara-2026'] = await fetch('../data/kottarakara-2026.json').then(r => r.json());
             
             // Auto-configure Gist ID if set in code
             if (SHARED_GIST_ID) {
