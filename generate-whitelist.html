@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Whitelist Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            padding: 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+        }
+        h1 { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+            font-size: 24px; 
+        }
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+            margin-top: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+        textarea {
+            min-height: 150px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .copy-btn {
+            background: #48bb78;
+        }
+        .copy-btn:hover {
+            background: #38a169;
+        }
+        .result {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .output {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid #e2e8f0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .instructions {
+            background: #e6f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #1890ff;
+        }
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #0050b3;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            color: #0050b3;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .instructions code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+            font-size: 13px;
+        }
+        .username-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .username-tag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .username-tag button {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 12px;
+            width: auto;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 GitHub Whitelist Generator</h1>
+        <p class="subtitle">Generate encrypted whitelist for choir attendance authentication</p>
+        
+        <label for="secretKey">Secret Key (Change this!):</label>
+        <input type="text" id="secretKey" value="choir-auth-2026" placeholder="Enter a secret key">
+        <p style="font-size: 12px; color: #6c757d; margin-top: -5px;">This key will be used to encrypt/decrypt the whitelist. Keep it secret!</p>
+        
+        <label for="usernameInput">Add GitHub Usernames:</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="usernameInput" placeholder="Enter GitHub username (e.g., octocat)" style="flex: 1;">
+            <button onclick="addUsername()" style="width: auto; padding: 12px 24px;">➕ Add</button>
+        </div>
+        
+        <div id="usernameList" class="username-list"></div>
+        
+        <button onclick="generateEncrypted()">🔒 Generate Encrypted Whitelist</button>
+        
+        <div id="result" class="result">
+            <h3 style="margin-bottom: 10px; color: #2d3748;">Encrypted Whitelist:</h3>
+            <div id="encryptedOutput" class="output"></div>
+            <button class="copy-btn" onclick="copyEncrypted()">📋 Copy Encrypted Whitelist</button>
+            
+            <h3 style="margin: 20px 0 10px; color: #2d3748;">Secret Key:</h3>
+            <div id="keyOutput" class="output"></div>
+            <button class="copy-btn" onclick="copyKey()">📋 Copy Secret Key</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 How to Use:</h3>
+            <ol>
+                <li>Change the secret key to something unique</li>
+                <li>Add GitHub usernames of authorized users</li>
+                <li>Click "Generate Encrypted Whitelist"</li>
+                <li>Copy the encrypted whitelist</li>
+                <li>Open <code>choir-attendance.html</code></li>
+                <li>Find line ~462: <code>const ENCRYPTED_WHITELIST = '';</code></li>
+                <li>Paste the encrypted whitelist between the quotes</li>
+                <li>Find line ~463: <code>const WHITELIST_KEY = 'choir-auth-2026';</code></li>
+                <li>Replace with your secret key</li>
+                <li>Save the file</li>
+            </ol>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Security Notes:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li>Keep the secret key confidential</li>
+                <li>Don't share the key publicly</li>
+                <li>Change the key if compromised</li>
+                <li>Only add trusted GitHub users</li>
+                <li>This provides obscurity, not true encryption</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let usernames = [];
+        
+        function addUsername() {
+            const input = document.getElementById('usernameInput');
+            const username = input.value.trim().toLowerCase();
+            
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+            
+            if (usernames.includes(username)) {
+                alert('Username already added!');
+                return;
+            }
+            
+            usernames.push(username);
+            input.value = '';
+            renderUsernames();
+        }
+        
+        function removeUsername(username) {
+            usernames = usernames.filter(u => u !== username);
+            renderUsernames();
+        }
+        
+        function renderUsernames() {
+            const container = document.getElementById('usernameList');
+            if (usernames.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; font-size: 13px; margin-top: 10px;">No usernames added yet</p>';
+                return;
+            }
+            
+            container.innerHTML = usernames.map(username => `
+                <div class="username-tag">
+                    <span>${username}</span>
+                    <button onclick="removeUsername('${username}')">✖</button>
+                </div>
+            `).join('');
+        }
+        
+        function generateEncrypted() {
+            if (usernames.length === 0) {
+                alert('Please add at least one username!');
+                return;
+            }
+            
+            const key = document.getElementById('secretKey').value;
+            if (!key) {
+                alert('Please enter a secret key!');
+                return;
+            }
+            
+            // Simple XOR encryption
+            const data = JSON.stringify(usernames);
+            let encrypted = '';
+            
+            for (let i = 0; i < data.length; i++) {
+                encrypted += String.fromCharCode(data.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            
+            const encoded = btoa(encrypted);
+            
+            // Display results
+            document.getElementById('encryptedOutput').textContent = encoded;
+            document.getElementById('keyOutput').textContent = key;
+            document.getElementById('result').classList.add('show');
+        }
+        
+        function copyEncrypted() {
+            const text = document.getElementById('encryptedOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Encrypted whitelist copied to clipboard!');
+            });
+        }
+        
+        function copyKey() {
+            const text = document.getElementById('keyOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Secret key copied to clipboard!');
+            });
+        }
+        
+        // Allow Enter key to add username
+        document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addUsername();
+            }
+        });
+        
+        // Initialize
+        renderUsernames();
+    </script>
+</body>
+</html>

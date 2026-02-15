@@ -89,21 +89,42 @@ let members = {
 };
 ```
 
-### Step 2: Change Admin Password
+### Step 2: Set Up GitHub Authentication
 
-Find this line (around line 462):
+**Generate Encrypted Whitelist:**
 
+1. Open `generate-whitelist.html` in your browser
+2. Change the secret key (default: `choir-auth-2026`)
+3. Add GitHub usernames of authorized users (one at a time)
+4. Click "Generate Encrypted Whitelist"
+5. Copy the encrypted whitelist
+6. Open `choir-attendance.html`
+7. Find line ~462: `const ENCRYPTED_WHITELIST = '';`
+8. Paste the encrypted whitelist between the quotes
+9. Find line ~463: `const WHITELIST_KEY = 'choir-auth-2026';`
+10. Replace with your secret key
+11. Save the file
+
+**Example:**
 ```javascript
-const ADMIN_PASSWORD = 'choir2026'; // Admin: Change this password
+const ENCRYPTED_WHITELIST = 'SGVsbG8gV29ybGQ='; // Your encrypted data
+const WHITELIST_KEY = 'my-secret-key-2026'; // Your secret key
 ```
 
-Change to your secure password:
+**Security Benefits:**
+- ✅ No passwords to manage
+- ✅ Each user has their own GitHub identity
+- ✅ Whitelist is encrypted in code
+- ✅ GitHub validates users exist
+- ✅ Easy to add/remove users
+- ✅ Can revoke access anytime
 
-```javascript
-const ADMIN_PASSWORD = 'YourSecurePassword123';
-```
-
-**Note**: This is now grouped with other configuration settings (Gist ID and Token) at the top of the script section.
+**How Users Access:**
+1. Go to "Manage Members" tab
+2. Enter their GitHub username
+3. Click "Verify & Unlock"
+4. System checks whitelist and validates with GitHub
+5. Access granted if authorized
 
 ### Step 3: Import Existing Attendance Data (Optional)
 
