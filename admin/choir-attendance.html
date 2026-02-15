@@ -363,7 +363,7 @@
                 <p style="margin-bottom: 15px; color: #856404;">Enter your GitHub username to mark or edit attendance:</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <input type="text" id="githubUsername" placeholder="GitHub username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;" onkeypress="if(event.key==='Enter') authenticate(event)">
-                    <button onclick="authenticate(event)" style="background: #ffc107; color: #856404; font-weight: 600;">Verify & Unlock</button>
+                    <button onclick="authenticate(event)" style="background: #ffc107; color: #856404; font-weight: 600; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Verify & Unlock</button>
                 </div>
                 <p style="margin-top: 10px; font-size: 12px; color: #856404;">
                     💡 View-only mode: You can view past attendance without authentication.
@@ -757,6 +757,7 @@
         
         // Authentication functions
         async function authenticate(event) {
+            console.log('Authenticate function called');
             const username = document.getElementById('githubUsername').value.trim();
             
             if (!username) {
