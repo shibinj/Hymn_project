@@ -349,10 +349,10 @@
         <h1>🎵 Choir Attendance Tracker</h1>
         
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('attendance')">📝 Mark Attendance</button>
-            <button class="tab" onclick="switchTab('quarterly')">📊 Quarterly Report</button>
-            <button class="tab" onclick="switchTab('yearly')">📈 Yearly Report</button>
-            <button class="tab" onclick="switchTab('manage')">⚙️ Manage Members</button>
+            <button class="tab active" onclick="switchTab('attendance', event)">📝 Mark Attendance</button>
+            <button class="tab" onclick="switchTab('quarterly', event)">📊 Quarterly Report</button>
+            <button class="tab" onclick="switchTab('yearly', event)">📈 Yearly Report</button>
+            <button class="tab" onclick="switchTab('manage', event)">⚙️ Manage Members</button>
         </div>
         
         <!-- Attendance Tab -->
@@ -362,8 +362,8 @@
                 <h3 style="color: #856404; margin-bottom: 15px;">🔒 Authentication Required</h3>
                 <p style="margin-bottom: 15px; color: #856404;">Enter your GitHub username to mark or edit attendance:</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" id="githubUsername" placeholder="GitHub username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;">
-                    <button onclick="authenticate()" style="background: #ffc107; color: #856404; font-weight: 600;">Verify & Unlock</button>
+                    <input type="text" id="githubUsername" placeholder="GitHub username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;" onkeypress="if(event.key==='Enter') authenticate(event)">
+                    <button onclick="authenticate(event)" style="background: #ffc107; color: #856404; font-weight: 600;">Verify & Unlock</button>
                 </div>
                 <p style="margin-top: 10px; font-size: 12px; color: #856404;">
                     💡 View-only mode: You can view past attendance without authentication.
@@ -539,11 +539,13 @@
             }
         });
         
-        function switchTab(tabName) {
+        function switchTab(tabName, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             document.getElementById(tabName).classList.add('active');
             
             if (tabName === 'quarterly') generateQuarterlyReport();
@@ -754,7 +756,7 @@
         }
         
         // Authentication functions
-        async function authenticate() {
+        async function authenticate(event) {
             const username = document.getElementById('githubUsername').value.trim();
             
             if (!username) {
@@ -769,7 +771,7 @@
             }
             
             // Show loading
-            const btn = event.target;
+            const btn = event ? event.target : document.querySelector('button[onclick*="authenticate"]');
             const originalText = btn.textContent;
             btn.textContent = '⏳ Verifying...';
             btn.disabled = true;
@@ -812,6 +814,7 @@
                 
                 alert(`✅ Welcome, ${username}!\n\nYou can now mark and edit attendance.`);
             } catch (error) {
+                console.error('Authentication error:', error);
                 alert('❌ Authentication failed!\n\nPlease try again.');
                 btn.textContent = originalText;
                 btn.disabled = false;
