@@ -49,10 +49,12 @@ This project provides:
 
 #### ✅ Choir Attendance Tracker
 - Track member attendance (Saturday/Sunday)
-- Quarterly and yearly reports
+- Compact dropdown UI with auto-save
+- Quarterly and yearly reports with bar charts
 - Cloud sync via GitHub Gist (attendance only)
 - Member list stored in JSON file
-- Attendance percentage tracking
+- GitHub username authentication
+- View-only mode for unauthenticated users
 - Mobile responsive
 
 #### ✏️ Lyrics Editor
@@ -151,16 +153,25 @@ Hymn_project/
 **Note:** "Occasional" members are regular members who attend when available (e.g., students/workers abroad).
 
 **Cloud Sync Setup (Optional):**
-1. Create GitHub Gist: `choir-attendance-data.json`
-2. Content: `{}`
-3. Get Gist ID and GitHub token
-4. Update in `admin/choir-attendance.html`:
-   ```javascript
-   const SHARED_GIST_ID = 'your_gist_id';
-   const SHARED_GIST_TOKEN = 'your_token';
-   ```
+1. Open the attendance page in browser
+2. Mark some attendance
+3. Click "💾 Save Attendance" or "☁️ Sync to Cloud"
+4. Enter your GitHub Personal Access Token when prompted
+5. Token is saved in browser (one-time setup)
 
-**Note:** Only attendance data syncs to Gist. Member names are stored in the JSON file.
+**Getting a GitHub Token:**
+1. Go to https://github.com/settings/tokens
+2. Click "Generate new token (classic)"
+3. Name: "Choir Attendance Sync"
+4. Select ONLY "gist" permission
+5. Generate and copy the token
+6. Paste when prompted in the app
+
+**Note:** 
+- Only attendance data syncs to Gist
+- Member names are stored in the JSON file
+- Token is stored in browser localStorage (never in code/Git)
+- Each user can use their own token
 
 ---
 
@@ -204,7 +215,7 @@ Hymn_project/
 
 ### Admin Tools
 - **Worship Planner**: Optional cloud sync with GitHub token
-- **Choir Attendance**: Member list in JSON file, attendance syncs to Gist
+- **Choir Attendance**: Compact dropdown UI, auto-save, GitHub authentication, view-only mode
 - **Lyrics Editor**: No authentication (internal use)
 
 ### Data Storage
@@ -229,12 +240,15 @@ Hymn_project/
 
 ### Choir Attendance Tracker
 - Three member categories: Female, Male, Occasional Attendees
-- Quick P/A marking
-- Quarterly reports (Q1-Q4)
-- Yearly reports
+- Compact dropdown UI for quick marking
+- Auto-save on selection
+- Quarterly reports (Q1-Q4) with bar charts
+- Yearly reports with bar charts
 - Attendance percentage with color coding
 - Member list stored in JSON file (easy to edit)
 - Cloud sync for attendance data only
+- GitHub username authentication
+- View-only mode for public access
 
 ---
 
@@ -275,11 +289,12 @@ Hymn_project/
 ✅ WhatsApp sharing
 
 ### For Choir Directors
-✅ Track attendance easily
-✅ Generate reports
+✅ Track attendance easily with dropdown UI
+✅ Auto-save as you mark
+✅ Generate visual bar chart reports
 ✅ Edit members in JSON file
 ✅ Cloud sync for attendance
-✅ Simple member management
+✅ View-only mode for transparency
 
 ### For Congregation
 ✅ Browse 500+ hymns
@@ -296,6 +311,10 @@ Hymn_project/
 - ✅ Reorganized project structure
 - ✅ Created admin dashboard
 - ✅ Simplified choir attendance (members in JSON file)
+- ✅ Compact dropdown UI with auto-save
+- ✅ Bar chart reports (quarterly/yearly)
+- ✅ Token prompt for cloud sync (no hardcoding)
+- ✅ GitHub authentication with view-only mode
 - ✅ Improved mobile responsiveness
 - ✅ Added cloud sync to both admin tools
 - ✅ Pre-populated worship themes for 2026
