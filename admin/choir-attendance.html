@@ -613,32 +613,59 @@
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
             
             // Always try to sync to cloud if configured
-            if (gistId && gistToken) {
+            if (gistId) {
+                // If token not set, prompt for it
+                if (!gistToken) {
+                    const token = prompt('🔑 Enter your GitHub Personal Access Token to sync:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens\n\nClick Cancel to save locally only.');
+                    
+                    if (token && token.trim() !== '') {
+                        gistToken = token.trim();
+                    } else {
+                        alert('✅ Attendance saved locally only!\n\nUse "☁️ Sync to Cloud" button to sync later.');
+                        return;
+                    }
+                }
+                
                 updateSyncStatus('⬆️ Saving & syncing...');
                 syncToGist().then(success => {
                     if (success) {
                         alert('✅ Attendance saved and synced to cloud!');
                     } else {
-                        alert('⚠️ Attendance saved locally, but cloud sync failed.\n\nCheck your Gist ID and token configuration.');
+                        alert('⚠️ Attendance saved locally, but cloud sync failed.\n\nToken will be cleared. Try "Sync to Cloud" button again.');
+                        gistToken = ''; // Clear invalid token
                     }
                 });
             } else {
-                alert('⚠️ Attendance saved locally only!\n\nCloud sync is not configured.\n\nTo enable cloud sync:\n1. Set SHARED_GIST_TOKEN in the code\n2. Make sure SHARED_GIST_ID is correct');
+                alert('⚠️ Attendance saved locally only!\n\nGist ID not configured in code (line 485).');
             }
         }
         
         function manualSync() {
-            if (!gistId || !gistToken) {
-                alert('⚠️ Cloud sync not configured!\n\nPlease set:\n• SHARED_GIST_ID\n• SHARED_GIST_TOKEN\n\nin the code (lines 485-486)');
+            // If token is not configured, prompt for it
+            if (!gistToken) {
+                const token = prompt('🔑 Enter your GitHub Personal Access Token:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens');
+                
+                if (!token || token.trim() === '') {
+                    alert('❌ Sync cancelled - no token provided');
+                    return;
+                }
+                
+                // Use the provided token temporarily
+                gistToken = token.trim();
+            }
+            
+            if (!gistId) {
+                alert('⚠️ Gist ID not configured!\n\nPlease set SHARED_GIST_ID in the code (line 485)');
                 return;
             }
             
             updateSyncStatus('⬆️ Syncing to cloud...');
             syncToGist().then(success => {
                 if (success) {
-                    alert('✅ Successfully synced to cloud!');
+                    alert('✅ Successfully synced to cloud!\n\nYour attendance data is now saved to GitHub Gist.');
                 } else {
-                    alert('❌ Cloud sync failed!\n\nCheck:\n• Gist ID is correct\n• Token has gist permission\n• Internet connection');
+                    alert('❌ Cloud sync failed!\n\nCheck:\n• Token has "gist" permission\n• Gist ID is correct\n• Internet connection\n\nToken will be cleared for security.');
+                    gistToken = ''; // Clear invalid token
                 }
             });
         }
