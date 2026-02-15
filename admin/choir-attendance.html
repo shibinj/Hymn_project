@@ -944,6 +944,7 @@
                         updateSyncStatus(`✅ Synced ${new Date().toLocaleTimeString()}`);
                         return true;
                     }
+                    return false;
                 } else {
                     updateSyncStatus('');
                     return false;
