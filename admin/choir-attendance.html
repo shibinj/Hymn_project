@@ -491,7 +491,7 @@
         const WHITELIST_KEY = 'MTC_choir_2026'; // Admin: Change this secret key
         
         let gistId = SHARED_GIST_ID;
-        let gistToken = SHARED_GIST_TOKEN;
+        let gistToken = SHARED_GIST_TOKEN || localStorage.getItem('gistToken') || ''; // Load from localStorage if available
         let isAuthenticated = false;
         let currentUser = null;
         
@@ -616,10 +616,11 @@
             if (gistId) {
                 // If token not set, prompt for it
                 if (!gistToken) {
-                    const token = prompt('🔑 Enter your GitHub Personal Access Token to sync:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens\n\nClick Cancel to save locally only.');
+                    const token = prompt('🔑 Enter your GitHub Personal Access Token to sync:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens\n\nThis will be saved in browser storage.\n\nClick Cancel to save locally only.');
                     
                     if (token && token.trim() !== '') {
                         gistToken = token.trim();
+                        localStorage.setItem('gistToken', gistToken);
                     } else {
                         alert('✅ Attendance saved locally only!\n\nUse "☁️ Sync to Cloud" button to sync later.');
                         return;
@@ -632,7 +633,8 @@
                         alert('✅ Attendance saved and synced to cloud!');
                     } else {
                         alert('⚠️ Attendance saved locally, but cloud sync failed.\n\nToken will be cleared. Try "Sync to Cloud" button again.');
-                        gistToken = ''; // Clear invalid token
+                        gistToken = '';
+                        localStorage.removeItem('gistToken'); // Clear invalid token
                     }
                 });
             } else {
@@ -643,15 +645,16 @@
         function manualSync() {
             // If token is not configured, prompt for it
             if (!gistToken) {
-                const token = prompt('🔑 Enter your GitHub Personal Access Token:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens');
+                const token = prompt('🔑 Enter your GitHub Personal Access Token:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens\n\nThis will be saved in browser storage.');
                 
                 if (!token || token.trim() === '') {
                     alert('❌ Sync cancelled - no token provided');
                     return;
                 }
                 
-                // Use the provided token temporarily
+                // Save the token to localStorage and memory
                 gistToken = token.trim();
+                localStorage.setItem('gistToken', gistToken);
             }
             
             if (!gistId) {
@@ -664,8 +667,9 @@
                 if (success) {
                     alert('✅ Successfully synced to cloud!\n\nYour attendance data is now saved to GitHub Gist.');
                 } else {
-                    alert('❌ Cloud sync failed!\n\nCheck:\n• Token has "gist" permission\n• Gist ID is correct\n• Internet connection\n\nToken will be cleared for security.');
-                    gistToken = ''; // Clear invalid token
+                    alert('❌ Cloud sync failed!\n\nCheck:\n• Token has "gist" permission\n• Gist ID is correct\n• Internet connection\n\nToken will be cleared. Please try again.');
+                    gistToken = '';
+                    localStorage.removeItem('gistToken'); // Clear invalid token
                 }
             });
         }
