@@ -1005,7 +1005,11 @@
         .bar-present { background: linear-gradient(90deg, #48bb78, #38a169); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
         .bar-absent { background: linear-gradient(90deg, #f56565, #e53e3e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
         .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; color: #6c757d; font-size: 12px; }
-        @media print { body { background: white; } .report-container { box-shadow: none; } }
+        @media print { 
+            body { background: white; padding: 20px; } 
+            .report-container { box-shadow: none; padding: 20px; } 
+            button, #instructions { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -1070,28 +1074,32 @@
             <p>Generated on ${new Date().toLocaleString()}</p>
             <p>Holy Hymns - Choir Attendance Tracker</p>
         </div>
-    </div>
-    
-    <div style="position: fixed; top: 20px; right: 20px; background: #667eea; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; display: none;" id="printHelper">
-        <div style="font-weight: 600; margin-bottom: 8px;">💾 Save as PDF</div>
-        <div style="font-size: 13px; line-height: 1.6;">
-            Press <strong>Ctrl+P</strong> (or <strong>Cmd+P</strong> on Mac)<br>
-            Then select "Save as PDF"
+        
+        <!-- Floating Download Button -->
+        <button onclick="window.print()" style="position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px 30px; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4); z-index: 1000; display: flex; align-items: center; gap: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <span style="font-size: 24px;">📥</span>
+            <span>Download PDF</span>
+        </button>
+        
+        <!-- Instructions Banner -->
+        <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff3cd; color: #856404; padding: 15px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; border-left: 4px solid #ffc107; max-width: 500px; text-align: center;" id="instructions">
+            <div style="font-weight: 600; margin-bottom: 5px;">💡 How to Save as PDF</div>
+            <div style="font-size: 13px;">Click the "Download PDF" button below, then select "Save as PDF" in the print dialog</div>
+            <button onclick="document.getElementById('instructions').style.display='none'" style="margin-top: 10px; background: transparent; border: 1px solid #856404; color: #856404; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">Got it!</button>
         </div>
-        <button onclick="window.print()" style="margin-top: 10px; width: 100%; background: white; color: #667eea; border: none; padding: 8px; border-radius: 5px; font-weight: 600; cursor: pointer;">🖨️ Print Now</button>
-        <button onclick="document.getElementById('printHelper').style.display='none'" style="margin-top: 5px; width: 100%; background: transparent; color: white; border: 1px solid white; padding: 6px; border-radius: 5px; font-size: 12px; cursor: pointer;">Close</button>
     </div>
     
     <script>
-        // Show print helper after page loads
-        window.onload = function() {
-            document.getElementById('printHelper').style.display = 'block';
-            // Auto-hide after 8 seconds
-            setTimeout(() => {
-                const helper = document.getElementById('printHelper');
-                if (helper) helper.style.display = 'none';
-            }, 8000);
-        };
+        // Auto-hide instructions after 10 seconds
+        setTimeout(() => {
+            const instructions = document.getElementById('instructions');
+            if (instructions) instructions.style.display = 'none';
+        }, 10000);
+        
+        // Auto-trigger print dialog after 1 second
+        setTimeout(() => {
+            window.print();
+        }, 1000);
     <\/script>
 </body>
 </html>`;
