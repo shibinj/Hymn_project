@@ -530,9 +530,19 @@
             // Display song with share buttons
             const videoId = currentSong.youtubeId.split('?')[0];
             const params = currentSong.youtubeId.includes('?') ? currentSong.youtubeId.split('?')[1] : '';
+            
+            // Extract start and end times
+            let startTime = '';
+            let endTime = '';
+            if (params) {
+                const urlParams = new URLSearchParams(params);
+                startTime = urlParams.get('start') || '';
+                endTime = urlParams.get('end') || '';
+            }
+            
             const embedUrl = params 
-                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0&loop=1&playlist=${videoId}`
-                : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&loop=1&playlist=${videoId}`;
+                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0&enablejsapi=1`
+                : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&enablejsapi=1`;
             
             document.getElementById('songDisplay').innerHTML = `
                 <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
@@ -544,12 +554,44 @@
                 </div>
                 <div class="song-lyrics">${currentSong.lyrics || '<em style="color: #999;">Lyrics available in official song book</em>'}</div>
                 <div class="video-container">
-                    <iframe src="${embedUrl}" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                    </iframe>
+                    <div style="position: relative;">
+                        <iframe id="ytPlayer" src="${embedUrl}" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                        <div id="replayOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; cursor: pointer;">
+                            <button onclick="replayVideo()" style="padding: 20px 40px; font-size: 20px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 30px;">▶️</span> Replay Song
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
+            
+            // Store start time for replay
+            window.currentVideoStart = startTime;
+            
+            // Monitor video end (simplified approach without full API)
+            if (endTime) {
+                setTimeout(() => {
+                    const overlay = document.getElementById('replayOverlay');
+                    if (overlay) overlay.style.display = 'flex';
+                }, (parseInt(endTime) - parseInt(startTime || 0)) * 1000);
+            }
+            
+            // Scroll to top of song display
+            document.getElementById('songDisplay').scrollTop = 0;
+        }
+        
+        function replayVideo() {
+            const overlay = document.getElementById('replayOverlay');
+            if (overlay) overlay.style.display = 'none';
+            
+            // Reload iframe to replay from start
+            const iframe = document.getElementById('ytPlayer');
+            const src = iframe.src;
+            iframe.src = src;
+        }
             
             // Scroll to top of song display
             document.getElementById('songDisplay').scrollTop = 0;
