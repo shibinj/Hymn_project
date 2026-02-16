@@ -571,12 +571,14 @@
             // Store start time for replay
             window.currentVideoStart = startTime;
             
-            // Monitor video end (simplified approach without full API)
-            if (endTime) {
+            // Monitor video end - show overlay slightly before end to cover suggestions
+            if (endTime && startTime) {
+                const duration = parseInt(endTime) - parseInt(startTime);
+                // Show overlay 0.5 seconds before end to prevent seeing suggestions
                 setTimeout(() => {
                     const overlay = document.getElementById('replayOverlay');
                     if (overlay) overlay.style.display = 'flex';
-                }, (parseInt(endTime) - parseInt(startTime || 0)) * 1000);
+                }, (duration - 0.5) * 1000);
             }
             
             // Scroll to top of song display
