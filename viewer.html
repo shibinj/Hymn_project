@@ -389,6 +389,14 @@
     <script>
         let songs = [];
         let currentSong = null;
+        let player = null;
+        let checkInterval = null;
+
+        // Load YouTube IFrame API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
         // Dark mode toggle
         function toggleDarkMode() {
@@ -555,11 +563,8 @@
                 <div class="song-lyrics">${currentSong.lyrics || '<em style="color: #999;">Lyrics available in official song book</em>'}</div>
                 <div class="video-container">
                     <div style="position: relative;">
-                        <iframe id="ytPlayer" src="${embedUrl}" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen>
-                        </iframe>
-                        <div id="replayOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; cursor: pointer;">
+                        <div id="ytPlayer"></div>
+                        <div id="replayOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
                             <button onclick="replayVideo()" style="padding: 20px 40px; font-size: 20px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
                                 <span style="font-size: 30px;">▶️</span> Replay Song
                             </button>
@@ -568,31 +573,98 @@
                 </div>
             `;
             
-            // Store start time for replay
-            window.currentVideoStart = startTime;
+            // Store video info
+            window.currentVideoId = videoId;
+            window.currentVideoStart = parseInt(startTime) || 0;
+            window.currentVideoEnd = parseInt(endTime) || 0;
             
-            // Monitor video end - show overlay slightly before end to cover suggestions
-            if (endTime && startTime) {
-                const duration = parseInt(endTime) - parseInt(startTime);
-                // Show overlay 0.5 seconds before end to prevent seeing suggestions
-                setTimeout(() => {
-                    const overlay = document.getElementById('replayOverlay');
-                    if (overlay) overlay.style.display = 'flex';
-                }, (duration - 0.5) * 1000);
-            }
+            // Clear any existing interval
+            if (checkInterval) clearInterval(checkInterval);
+            
+            // Initialize YouTube player
+            setTimeout(() => {
+                if (typeof YT !== 'undefined' && YT.Player) {
+                    player = new YT.Player('ytPlayer', {
+                        height: '450',
+                        width: '100%',
+                        videoId: videoId,
+                        playerVars: {
+                            start: window.currentVideoStart,
+                            end: window.currentVideoEnd,
+                            rel: 0,
+                            modestbranding: 1,
+                            showinfo: 0
+                        },
+                        events: {
+                            onStateChange: onPlayerStateChange
+                        }
+                    });
+                } else {
+                    // Fallback to iframe if API not loaded
+                    document.getElementById('ytPlayer').innerHTML = `
+                        <iframe src="${embedUrl}" style="width: 100%; height: 450px; border: none;"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    `;
+                    
+                    // Use timer as fallback
+                    if (endTime && startTime) {
+                        const duration = parseInt(endTime) - parseInt(startTime);
+                        setTimeout(() => {
+                            document.getElementById('replayOverlay').style.display = 'flex';
+                        }, duration * 1000);
+                    }
+                }
+            }, 100);
             
             // Scroll to top of song display
             document.getElementById('songDisplay').scrollTop = 0;
+        }
+        
+        function onPlayerStateChange(event) {
+            // YT.PlayerState.ENDED = 0
+            if (event.data === 0) {
+                document.getElementById('replayOverlay').style.display = 'flex';
+            }
+            
+            // Also check if we're near the end time
+            if (window.currentVideoEnd > 0 && player) {
+                checkInterval = setInterval(() => {
+                    const currentTime = player.getCurrentTime();
+                    if (currentTime >= window.currentVideoEnd - 0.5) {
+                        document.getElementById('replayOverlay').style.display = 'flex';
+                        clearInterval(checkInterval);
+                    }
+                }, 100);
+            }
         }
         
         function replayVideo() {
             const overlay = document.getElementById('replayOverlay');
             if (overlay) overlay.style.display = 'none';
             
-            // Reload iframe to replay from start
-            const iframe = document.getElementById('ytPlayer');
-            const src = iframe.src;
-            iframe.src = src;
+            // Clear interval
+            if (checkInterval) clearInterval(checkInterval);
+            
+            // Replay using API if available
+            if (player && player.seekTo) {
+                player.seekTo(window.currentVideoStart);
+                player.playVideo();
+            } else {
+                // Fallback: reload iframe
+                const container = document.getElementById('ytPlayer');
+                const videoId = window.currentVideoId;
+                const params = window.currentVideoStart ? `start=${window.currentVideoStart}` : '';
+                const endParam = window.currentVideoEnd ? `&end=${window.currentVideoEnd}` : '';
+                const embedUrl = `https://www.youtube.com/embed/${videoId}?${params}${endParam}&rel=0&modestbranding=1&showinfo=0`;
+                container.innerHTML = `
+                    <iframe src="${embedUrl}" style="width: 100%; height: 450px; border: none;"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                `;
+            }
         }
     </script>
 </body>
