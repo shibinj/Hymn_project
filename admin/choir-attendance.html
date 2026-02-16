@@ -965,35 +965,203 @@
         
         // PDF Export Function
         function exportToPDF(reportType) {
-            // Store current active tab
-            const currentTab = document.querySelector('.tab.active');
+            const reportData = reportType === 'quarterly' ? getQuarterlyData() : getYearlyData();
+            const title = reportType === 'quarterly' 
+                ? `${document.getElementById('quarterSelect').value} ${document.getElementById('quarterYear').value} Attendance Report`
+                : `${document.getElementById('yearSelect').value} Annual Attendance Report`;
             
-            // Hide all tabs except the report we want to print
-            document.querySelectorAll('.tab-content').forEach(content => {
-                if (content.id !== reportType) {
-                    content.style.display = 'none';
-                }
-            });
+            // Generate analysis
+            const analysis = generateAnalysis(reportData);
             
-            // Show the report we want to print
-            document.getElementById(reportType).style.display = 'block';
+            // Create HTML report
+            const reportHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5; }
+        .report-container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2d3748; border-bottom: 3px solid #667eea; padding-bottom: 15px; margin-bottom: 30px; }
+        .summary { background: #e6f7ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #1890ff; }
+        .summary h2 { color: #1890ff; margin-bottom: 15px; font-size: 18px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+        .summary-item { background: white; padding: 15px; border-radius: 6px; text-align: center; }
+        .summary-item .value { font-size: 28px; font-weight: bold; color: #667eea; }
+        .summary-item .label { font-size: 12px; color: #6c757d; margin-top: 5px; }
+        .insights { background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #ffc107; }
+        .insights h2 { color: #856404; margin-bottom: 15px; font-size: 18px; }
+        .insights ul { margin-left: 20px; line-height: 1.8; color: #856404; }
+        .member-card { background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #cbd5e0; }
+        .member-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .member-name { font-size: 18px; font-weight: 600; color: #2d3748; }
+        .member-percentage { font-size: 24px; font-weight: bold; }
+        .percentage-good { color: #48bb78; }
+        .percentage-warning { color: #ed8936; }
+        .percentage-poor { color: #f56565; }
+        .stats { font-size: 13px; color: #6c757d; margin-bottom: 12px; }
+        .bar-container { height: 30px; background: #e2e8f0; border-radius: 5px; overflow: hidden; display: flex; }
+        .bar-present { background: linear-gradient(90deg, #48bb78, #38a169); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
+        .bar-absent { background: linear-gradient(90deg, #f56565, #e53e3e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; color: #6c757d; font-size: 12px; }
+        @media print { body { background: white; } .report-container { box-shadow: none; } }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <h1>🎵 ${title}</h1>
+        
+        <div class="summary">
+            <h2>📊 Summary Statistics</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="value">${analysis.totalMembers}</div>
+                    <div class="label">Total Members</div>
+                </div>
+                <div class="summary-item">
+                    <div class="value">${analysis.avgAttendance}%</div>
+                    <div class="label">Average Attendance</div>
+                </div>
+                <div class="summary-item">
+                    <div class="value">${analysis.totalDays}</div>
+                    <div class="label">Total Days Tracked</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="insights">
+            <h2>💡 Key Insights</h2>
+            <ul>
+                ${analysis.insights.map(insight => `<li>${insight}</li>`).join('')}
+            </ul>
+        </div>
+        
+        <h2 style="margin-bottom: 20px; color: #2d3748;">Individual Attendance Records</h2>
+        ${reportData.map(member => {
+            const percentage = parseFloat(member.percentage);
+            const presentWidth = member.total > 0 ? (member.present / member.total * 100) : 0;
+            const absentWidth = member.total > 0 ? (member.absent / member.total * 100) : 0;
+            const colorClass = percentage >= 75 ? 'percentage-good' : percentage >= 50 ? 'percentage-warning' : 'percentage-poor';
+            const borderColor = percentage >= 75 ? '#48bb78' : percentage >= 50 ? '#ed8936' : '#f56565';
             
-            // Trigger print dialog
-            window.print();
+            return `
+                <div class="member-card" style="border-left-color: ${borderColor};">
+                    <div class="member-header">
+                        <span class="member-name">${member.name}</span>
+                        <span class="member-percentage ${colorClass}">${member.percentage}%</span>
+                    </div>
+                    <div class="stats">
+                        ✅ Present: ${member.present} days | ❌ Absent: ${member.absent} days | 📅 Total: ${member.total} days
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-present" style="width: ${presentWidth}%;">
+                            ${member.present > 0 ? member.present : ''}
+                        </div>
+                        <div class="bar-absent" style="width: ${absentWidth}%;">
+                            ${member.absent > 0 ? member.absent : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('')}
+        
+        <div class="footer">
+            <p>Generated on ${new Date().toLocaleString()}</p>
+            <p>Holy Hymns - Choir Attendance Tracker</p>
+        </div>
+    </div>
+</body>
+</html>`;
             
-            // Restore original tab state after print dialog closes
-            setTimeout(() => {
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.style.display = 'none';
+            // Open in new window
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(reportHTML);
+            newWindow.document.close();
+        }
+        
+        function getQuarterlyData() {
+            const quarter = document.getElementById('quarterSelect').value;
+            const year = document.getElementById('quarterYear').value;
+            
+            const quarterMonths = {
+                'Q1': [0, 1, 2],
+                'Q2': [3, 4, 5],
+                'Q3': [6, 7, 8],
+                'Q4': [9, 10, 11]
+            };
+            
+            const months = quarterMonths[quarter];
+            const allMembers = [...members.female, ...members.male, ...members.occasional];
+            
+            return allMembers.map(name => {
+                let present = 0, absent = 0, total = 0;
+                
+                Object.keys(attendanceData).forEach(date => {
+                    const d = new Date(date);
+                    if (d.getFullYear() == year && months.includes(d.getMonth())) {
+                        const day = d.getDay();
+                        if (day === 0 || day === 6) {
+                            total++;
+                            if (attendanceData[date][name] === 'P') present++;
+                            if (attendanceData[date][name] === 'A') absent++;
+                        }
+                    }
                 });
-                if (currentTab) {
-                    const tabName = currentTab.textContent.includes('Quarterly') ? 'quarterly' :
-                                   currentTab.textContent.includes('Yearly') ? 'yearly' :
-                                   currentTab.textContent.includes('Mark') ? 'attendance' : 'manage';
-                    document.getElementById(tabName).classList.add('active');
-                    document.getElementById(tabName).style.display = 'block';
-                }
-            }, 100);
+                
+                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+                return { name, present, absent, total, percentage };
+            });
+        }
+        
+        function getYearlyData() {
+            const year = document.getElementById('yearSelect').value;
+            const allMembers = [...members.female, ...members.male, ...members.occasional];
+            
+            return allMembers.map(name => {
+                let present = 0, absent = 0, total = 0;
+                
+                Object.keys(attendanceData).forEach(date => {
+                    const d = new Date(date);
+                    if (d.getFullYear() == year) {
+                        const day = d.getDay();
+                        if (day === 0 || day === 6) {
+                            total++;
+                            if (attendanceData[date][name] === 'P') present++;
+                            if (attendanceData[date][name] === 'A') absent++;
+                        }
+                    }
+                });
+                
+                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+                return { name, present, absent, total, percentage };
+            });
+        }
+        
+        function generateAnalysis(data) {
+            const totalMembers = data.length;
+            const avgAttendance = data.length > 0 
+                ? (data.reduce((sum, m) => sum + parseFloat(m.percentage), 0) / data.length).toFixed(1)
+                : 0;
+            const totalDays = data.length > 0 ? Math.max(...data.map(m => m.total)) : 0;
+            
+            const excellent = data.filter(m => parseFloat(m.percentage) >= 90).length;
+            const good = data.filter(m => parseFloat(m.percentage) >= 75 && parseFloat(m.percentage) < 90).length;
+            const needsImprovement = data.filter(m => parseFloat(m.percentage) < 50).length;
+            const topAttendee = data.reduce((max, m) => parseFloat(m.percentage) > parseFloat(max.percentage) ? m : max, data[0] || {percentage: 0});
+            
+            const insights = [];
+            insights.push(`${excellent} member${excellent !== 1 ? 's' : ''} with excellent attendance (≥90%)`);
+            insights.push(`${good} member${good !== 1 ? 's' : ''} with good attendance (75-89%)`);
+            if (needsImprovement > 0) {
+                insights.push(`${needsImprovement} member${needsImprovement !== 1 ? 's' : ''} need${needsImprovement === 1 ? 's' : ''} improvement (<50%)`);
+            }
+            if (topAttendee.name) {
+                insights.push(`Top attendee: ${topAttendee.name} (${topAttendee.percentage}%)`);
+            }
+            insights.push(`Overall choir attendance rate: ${avgAttendance}%`);
+            
+            return { totalMembers, avgAttendance, totalDays, insights };
         }
         
         async function syncToGist() {
