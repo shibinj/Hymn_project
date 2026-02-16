@@ -528,6 +528,9 @@
             const displayNumber = typeof currentSong.number === 'string' ? currentSong.number : `#${currentSong.number}`;
 
             // Display song with share buttons
+            const videoId = currentSong.youtubeId.split('?')[0];
+            const startTime = currentSong.youtubeId.includes('start=') ? '&start=' + currentSong.youtubeId.split('start=')[1] : '';
+            
             document.getElementById('songDisplay').innerHTML = `
                 <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
                 <div class="share-buttons">
@@ -538,7 +541,7 @@
                 </div>
                 <div class="song-lyrics">${currentSong.lyrics || '<em style="color: #999;">Lyrics available in official song book</em>'}</div>
                 <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/${currentSong.youtubeId}?rel=0&modestbranding=1&showinfo=0&controls=1&disablekb=1" 
+                    <iframe src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&controls=1&disablekb=1${startTime}" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen>
                     </iframe>
