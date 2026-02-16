@@ -531,8 +531,8 @@
             const videoId = currentSong.youtubeId.split('?')[0];
             const params = currentSong.youtubeId.includes('?') ? currentSong.youtubeId.split('?')[1] : '';
             const embedUrl = params 
-                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0`
-                : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0`;
+                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0&loop=1&playlist=${videoId}`
+                : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&loop=1&playlist=${videoId}`;
             
             document.getElementById('songDisplay').innerHTML = `
                 <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
