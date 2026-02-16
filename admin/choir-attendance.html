@@ -339,6 +339,44 @@
             .report-table { font-size: 12px; }
             .report-table th, .report-table td { padding: 8px; }
         }
+        
+        @media print {
+            body { 
+                background: white; 
+                padding: 0; 
+            }
+            .container { 
+                box-shadow: none; 
+                padding: 20px; 
+            }
+            .tabs, .report-controls, .save-btn, 
+            a[href*="admin.html"], 
+            button[onclick*="manualSync"] {
+                display: none !important;
+            }
+            .tab-content {
+                display: block !important;
+            }
+            #attendance, #manage {
+                display: none !important;
+            }
+        }
+        
+        .export-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .export-btn:hover {
+            background: #218838;
+        }
     </style>
 </head>
 <body>
@@ -408,6 +446,7 @@
                     <option value="2026">2026</option>
                     <option value="2027">2027</option>
                 </select>
+                <button class="export-btn" onclick="exportToPDF('quarterly')">📄 Export to PDF</button>
             </div>
             <div id="quarterlyReport"></div>
         </div>
@@ -420,6 +459,7 @@
                     <option value="2026">2026</option>
                     <option value="2027">2027</option>
                 </select>
+                <button class="export-btn" onclick="exportToPDF('yearly')">📄 Export to PDF</button>
             </div>
             <div id="yearlyReport"></div>
         </div>
@@ -921,6 +961,39 @@
             if (statusEl) {
                 statusEl.textContent = message;
             }
+        }
+        
+        // PDF Export Function
+        function exportToPDF(reportType) {
+            // Store current active tab
+            const currentTab = document.querySelector('.tab.active');
+            
+            // Hide all tabs except the report we want to print
+            document.querySelectorAll('.tab-content').forEach(content => {
+                if (content.id !== reportType) {
+                    content.style.display = 'none';
+                }
+            });
+            
+            // Show the report we want to print
+            document.getElementById(reportType).style.display = 'block';
+            
+            // Trigger print dialog
+            window.print();
+            
+            // Restore original tab state after print dialog closes
+            setTimeout(() => {
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                if (currentTab) {
+                    const tabName = currentTab.textContent.includes('Quarterly') ? 'quarterly' :
+                                   currentTab.textContent.includes('Yearly') ? 'yearly' :
+                                   currentTab.textContent.includes('Mark') ? 'attendance' : 'manage';
+                    document.getElementById(tabName).classList.add('active');
+                    document.getElementById(tabName).style.display = 'block';
+                }
+            }, 100);
         }
         
         async function syncToGist() {
