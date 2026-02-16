@@ -76,6 +76,7 @@ Hymn_project/
 │   ├── worship-planner.html
 │   ├── choir-attendance.html
 │   ├── lyrics-editor.html
+│   ├── timestamp-converter.html
 │   ├── generate-whitelist.html
 │   ├── generate-password-hash.html
 │   └── docs/                   # Documentation
@@ -261,12 +262,24 @@ Hymn_project/
 3. Add song number, name, lyrics, YouTube ID
 4. Save to JSON file
 
+**YouTube ID Format for Convention Songs:**
+- For songs from a single long video, use: `VIDEO_ID?start=SECONDS&end=SECONDS`
+- Example: `"youtubeId": "rYuNAJ4QO58?start=1557&end=2054"`
+- Use `admin/timestamp-converter.html` to convert time (MM:SS) to seconds
+
 ### Adding New Collections
 
 1. Create JSON file in `data/` folder
 2. Update `viewer.html` collection map
 3. Update `index.html` with new card
 4. Update admin tools if needed
+
+### Utility Tools
+
+**Timestamp Converter** (`admin/timestamp-converter.html`)
+- Convert YouTube timestamps between time format (MM:SS) and seconds
+- Useful for setting start/end times for convention songs
+- Bidirectional conversion
 
 ---
 
@@ -318,6 +331,8 @@ Hymn_project/
 - ✅ Improved mobile responsiveness
 - ✅ Added cloud sync to both admin tools
 - ✅ Pre-populated worship themes for 2026
+- ✅ YouTube timestamp converter utility
+- ✅ Fixed convention song video start/end times
 
 ---
 
@@ -366,7 +381,7 @@ Free to use for non-commercial, ministry purposes.
 - **Convention Songs**: 100+
 - **Collections**: 5
 - **Languages**: Malayalam, English (UI)
-- **Admin Tools**: 5
+- **Admin Tools**: 6
 
 ---
 
