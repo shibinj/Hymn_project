@@ -1001,14 +1001,15 @@
         .percentage-warning { color: #ed8936; }
         .percentage-poor { color: #f56565; }
         .stats { font-size: 13px; color: #6c757d; margin-bottom: 12px; }
-        .bar-container { height: 30px; background: #e2e8f0; border-radius: 5px; overflow: hidden; display: flex; }
-        .bar-present { background: linear-gradient(90deg, #48bb78, #38a169); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
+        .bar-container { height: 30px; background: #e2e8f0; border-radius: 5px; overflow: hidden; display: flex; border: 2px solid #cbd5e0; }
+        .bar-present { background: linear-gradient(90deg, #48bb78, #38a169); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; border-right: 1px solid #2d7a4f; }
         .bar-absent { background: linear-gradient(90deg, #f56565, #e53e3e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
         .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; color: #6c757d; font-size: 12px; }
         @media print { 
-            body { background: white; padding: 20px; } 
+            body { background: white; padding: 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; } 
             .report-container { box-shadow: none; padding: 20px; } 
             button, #instructions { display: none !important; }
+            .bar-present, .bar-absent, .summary-item, .summary, .insights, .member-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
         }
     </style>
 </head>
