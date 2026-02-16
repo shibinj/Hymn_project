@@ -529,9 +529,9 @@
 
             // Display song with share buttons
             const videoId = currentSong.youtubeId.split('?')[0];
-            const startParam = currentSong.youtubeId.includes('start=') ? 'start=' + currentSong.youtubeId.split('start=')[1] : '';
-            const embedUrl = startParam 
-                ? `https://www.youtube.com/embed/${videoId}?${startParam}&rel=0&modestbranding=1&showinfo=0`
+            const params = currentSong.youtubeId.includes('?') ? currentSong.youtubeId.split('?')[1] : '';
+            const embedUrl = params 
+                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0`
                 : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0`;
             
             document.getElementById('songDisplay').innerHTML = `
