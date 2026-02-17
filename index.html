@@ -171,6 +171,118 @@
             pointer-events: none;
         }
         
+        .collection-group {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .collection-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .collection-group-info {
+            flex: 1;
+        }
+        
+        .collection-group-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .collection-group-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        .expand-btn {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .expand-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .collection-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            margin-top: 0;
+        }
+        
+        .collection-list.expanded {
+            max-height: 600px;
+            margin-top: 25px;
+        }
+        
+        .collection-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .collection-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .collection-item-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .collection-item-info {
+            flex: 1;
+        }
+        
+        .collection-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+        
+        .collection-item-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .collection-item-arrow {
+            font-size: 1.2rem;
+            color: #667eea;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .collection-item:hover .collection-item-arrow {
+            opacity: 1;
+        }
+        
         .sections {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -322,6 +434,11 @@
             .section-title { font-size: 1.3rem; }
             .section-desc { font-size: 0.95rem; }
             .year-bg { font-size: 3rem; }
+            .collection-group { padding: 20px; }
+            .collection-group-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .expand-btn { width: 100%; }
+            .collection-item { padding: 12px; }
+            .collection-item-icon { font-size: 1.5rem; margin-right: 12px; }
             footer { padding: 30px 15px; margin-top: 40px; }
             .disclaimer { padding: 15px; font-size: 0.9rem; }
             .footer-links a { margin: 0 10px; font-size: 0.9rem; }
@@ -345,6 +462,13 @@
             .section-icon { font-size: 2.2rem; }
             .section-title { font-size: 1.2rem; }
             .year-bg { font-size: 2.5rem; }
+            .collection-group { padding: 15px; }
+            .collection-group-title { font-size: 1.2rem; }
+            .collection-group-subtitle { font-size: 0.85rem; }
+            .collection-item { padding: 10px; }
+            .collection-item-icon { font-size: 1.3rem; margin-right: 10px; }
+            .collection-item-title { font-size: 0.95rem; }
+            .collection-item-count { font-size: 0.8rem; }
             .dark-mode-toggle { padding: 8px 15px; font-size: 13px; }
         }
     </style>
@@ -395,53 +519,71 @@
         
         <h2 class="category-header">🎪 Maramon Convention Songs</h2>
         <div class="sections">
-            <a href="viewer.html?collection=maramon-2026" class="section-card">
-                <div class="year-bg">2026</div>
-                <div class="section-icon">🎹</div>
-                <h3 class="section-title">Maramon Convention 2026<span class="new-badge">NEW</span></h3>
-                <p class="section-desc">Songs from Maramon Convention 2026</p>
-                <div class="section-count">16 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=maramon-2025" class="section-card">
-                <div class="year-bg">2025</div>
-                <div class="section-icon">🎼</div>
-                <h3 class="section-title">Maramon Convention 2025<span class="new-badge">NEW</span></h3>
-                <p class="section-desc">Songs from Maramon Convention 2025</p>
-                <div class="section-count">16 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=maramon-2024" class="section-card">
-                <div class="year-bg">2024</div>
-                <div class="section-icon">🎧</div>
-                <h3 class="section-title">Maramon Convention 2024</h3>
-                <p class="section-desc">Songs from Maramon Convention 2024</p>
-                <div class="section-count">16 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=maramon-2023" class="section-card">
-                <div class="year-bg">2023</div>
-                <div class="section-icon">🎶</div>
-                <h3 class="section-title">Maramon Convention 2023</h3>
-                <p class="section-desc">Songs from Maramon Convention 2023</p>
-                <div class="section-count">12 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=maramon-2021" class="section-card">
-                <div class="year-bg">2021</div>
-                <div class="section-icon">🎵</div>
-                <h3 class="section-title">Maramon Convention 2021</h3>
-                <p class="section-desc">Songs from Maramon Convention 2021</p>
-                <div class="section-count">20 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=maramon-2013" class="section-card">
-                <div class="year-bg">2013</div>
-                <div class="section-icon">🎤</div>
-                <h3 class="section-title">Maramon Convention 2013</h3>
-                <p class="section-desc">Songs from Maramon Convention 2013</p>
-                <div class="section-count">16 Songs</div>
-            </a>
+            <div class="collection-group">
+                <div class="collection-group-header" onclick="toggleMaramonList()">
+                    <div class="collection-group-info">
+                        <div class="collection-group-title">🎪 Maramon Convention (2013-2026)</div>
+                        <div class="collection-group-subtitle">96 songs across 6 years</div>
+                    </div>
+                    <button class="expand-btn" id="maramon-toggle">▼ Show All Years</button>
+                </div>
+                
+                <div class="collection-list" id="maramon-list">
+                    <a href="viewer.html?collection=maramon-2026" class="collection-item">
+                        <div class="collection-item-icon">🎹</div>
+                        <div class="collection-item-info">
+                            <div class="collection-item-title">2026<span class="new-badge">NEW</span></div>
+                            <div class="collection-item-count">16 songs</div>
+                        </div>
+                        <div class="collection-item-arrow">→</div>
+                    </a>
+                    
+                    <a href="viewer.html?collection=maramon-2025" class="collection-item">
+                        <div class="collection-item-icon">🎼</div>
+                        <div class="collection-item-info">
+                            <div class="collection-item-title">2025<span class="new-badge">NEW</span></div>
+                            <div class="collection-item-count">16 songs</div>
+                        </div>
+                        <div class="collection-item-arrow">→</div>
+                    </a>
+                    
+                    <a href="viewer.html?collection=maramon-2024" class="collection-item">
+                        <div class="collection-item-icon">🎧</div>
+                        <div class="collection-item-info">
+                            <div class="collection-item-title">2024</div>
+                            <div class="collection-item-count">16 songs</div>
+                        </div>
+                        <div class="collection-item-arrow">→</div>
+                    </a>
+                    
+                    <a href="viewer.html?collection=maramon-2023" class="collection-item">
+                        <div class="collection-item-icon">🎶</div>
+                        <div class="collection-item-info">
+                            <div class="collection-item-title">2023</div>
+                            <div class="collection-item-count">12 songs</div>
+                        </div>
+                        <div class="collection-item-arrow">→</div>
+                    </a>
+                    
+                    <a href="viewer.html?collection=maramon-2021" class="collection-item">
+                        <div class="collection-item-icon">🎵</div>
+                        <div class="collection-item-info">
+                            <div class="collection-item-title">2021</div>
+                            <div class="collection-item-count">20 songs</div>
+                        </div>
+                        <div class="collection-item-arrow">→</div>
+                    </a>
+                    
+                    <a href="viewer.html?collection=maramon-2013" class="collection-item">
+                        <div class="collection-item-icon">🎤</div>
+                        <div class="collection-item-info">
+                            <div class="collection-item-title">2013</div>
+                            <div class="collection-item-count">16 songs</div>
+                        </div>
+                        <div class="collection-item-arrow">→</div>
+                    </a>
+                </div>
+            </div>
         </div>
         
         <h2 class="category-header">⛪ Kottarakara Convention Songs</h2>
@@ -505,6 +647,14 @@
             const button = document.querySelector('.disclaimer-toggle');
             disclaimer.classList.toggle('expanded');
             button.textContent = disclaimer.classList.contains('expanded') ? '📋 Hide Disclaimer' : '📋 Show Disclaimer';
+        }
+        
+        // Maramon list toggle
+        function toggleMaramonList() {
+            const list = document.getElementById('maramon-list');
+            const button = document.getElementById('maramon-toggle');
+            list.classList.toggle('expanded');
+            button.textContent = list.classList.contains('expanded') ? '▲ Hide Years' : '▼ Show All Years';
         }
     </script>
 </body>
