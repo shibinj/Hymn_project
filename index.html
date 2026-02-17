@@ -108,6 +108,69 @@
             opacity: 0.95;
         }
         
+        .intro-text {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        .stats-banner {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            background: rgba(255,255,255,0.15);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px auto;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .new-badge {
+            display: inline-block;
+            background: #ff4757;
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .year-bg {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 4rem;
+            font-weight: 900;
+            opacity: 0.08;
+            line-height: 1;
+            pointer-events: none;
+        }
+        
         .sections {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -123,6 +186,11 @@
             transition: all 0.3s ease;
             cursor: pointer;
             text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
             color: inherit;
             display: block;
         }
@@ -185,10 +253,33 @@
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: left;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .disclaimer.expanded {
+            max-height: 500px;
         }
         
         .disclaimer h3 {
             margin-bottom: 10px;
+        }
+        
+        .disclaimer-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .disclaimer-toggle:hover {
+            background: rgba(255,255,255,0.3);
         }
         
         .footer-links {
@@ -212,6 +303,14 @@
             header { padding: 30px 15px; }
             h1 { font-size: 2rem; }
             .subtitle { font-size: 1rem; }
+            .intro-text { font-size: 0.9rem; }
+            .stats-banner { 
+                gap: 25px; 
+                padding: 20px;
+                margin: 20px auto;
+            }
+            .stat-number { font-size: 2rem; }
+            .stat-label { font-size: 0.85rem; }
             .category-header { font-size: 1.4rem; margin: 30px 0 15px 0; }
             .sections { 
                 grid-template-columns: 1fr; 
@@ -222,6 +321,7 @@
             .section-icon { font-size: 2.5rem; }
             .section-title { font-size: 1.3rem; }
             .section-desc { font-size: 0.95rem; }
+            .year-bg { font-size: 3rem; }
             footer { padding: 30px 15px; margin-top: 40px; }
             .disclaimer { padding: 15px; font-size: 0.9rem; }
             .footer-links a { margin: 0 10px; font-size: 0.9rem; }
@@ -232,10 +332,19 @@
             header { padding: 25px 10px; }
             h1 { font-size: 1.75rem; }
             .subtitle { font-size: 0.9rem; }
+            .intro-text { font-size: 0.85rem; }
+            .stats-banner { 
+                gap: 15px; 
+                padding: 15px;
+                flex-wrap: wrap;
+            }
+            .stat-number { font-size: 1.8rem; }
+            .stat-label { font-size: 0.8rem; }
             .category-header { font-size: 1.25rem; }
             .section-card { padding: 20px; }
             .section-icon { font-size: 2.2rem; }
             .section-title { font-size: 1.2rem; }
+            .year-bg { font-size: 2.5rem; }
             .dark-mode-toggle { padding: 8px 15px; font-size: 13px; }
         }
     </style>
@@ -249,7 +358,23 @@
         <header>
             <h1>🎵 Holy Hymns</h1>
             <p class="subtitle">Malayalam Christian Songs & Worship Collection</p>
+            <p class="intro-text">Browse 640+ Malayalam Christian hymns with lyrics and videos</p>
         </header>
+        
+        <div class="stats-banner">
+            <div class="stat-item">
+                <div class="stat-number">640+</div>
+                <div class="stat-label">Songs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">10</div>
+                <div class="stat-label">Collections</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Years</div>
+            </div>
+        </div>
         
         <h2 class="category-header">📖 Hymn Books</h2>
         <div class="sections">
@@ -270,45 +395,51 @@
         
         <h2 class="category-header">🎪 Maramon Convention Songs</h2>
         <div class="sections">
-            <a href="viewer.html?collection=maramon-2013" class="section-card">
-                <div class="section-icon">🎤</div>
-                <h3 class="section-title">Maramon Convention 2013</h3>
-                <p class="section-desc">Songs from Maramon Convention 2013</p>
+            <a href="viewer.html?collection=maramon-2026" class="section-card">
+                <div class="year-bg">2026</div>
+                <div class="section-icon">🎹</div>
+                <h3 class="section-title">Maramon Convention 2026<span class="new-badge">NEW</span></h3>
+                <p class="section-desc">Songs from Maramon Convention 2026</p>
                 <div class="section-count">16 Songs</div>
             </a>
             
-            <a href="viewer.html?collection=maramon-2021" class="section-card">
-                <div class="section-icon">🎤</div>
-                <h3 class="section-title">Maramon Convention 2021</h3>
-                <p class="section-desc">Songs from Maramon Convention 2021</p>
-                <div class="section-count">20 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=maramon-2023" class="section-card">
-                <div class="section-icon">🎤</div>
-                <h3 class="section-title">Maramon Convention 2023</h3>
-                <p class="section-desc">Songs from Maramon Convention 2023</p>
-                <div class="section-count">12 Songs</div>
+            <a href="viewer.html?collection=maramon-2025" class="section-card">
+                <div class="year-bg">2025</div>
+                <div class="section-icon">🎼</div>
+                <h3 class="section-title">Maramon Convention 2025<span class="new-badge">NEW</span></h3>
+                <p class="section-desc">Songs from Maramon Convention 2025</p>
+                <div class="section-count">16 Songs</div>
             </a>
             
             <a href="viewer.html?collection=maramon-2024" class="section-card">
-                <div class="section-icon">🎤</div>
+                <div class="year-bg">2024</div>
+                <div class="section-icon">🎧</div>
                 <h3 class="section-title">Maramon Convention 2024</h3>
                 <p class="section-desc">Songs from Maramon Convention 2024</p>
                 <div class="section-count">16 Songs</div>
             </a>
             
-            <a href="viewer.html?collection=maramon-2025" class="section-card">
-                <div class="section-icon">🎤</div>
-                <h3 class="section-title">Maramon Convention 2025</h3>
-                <p class="section-desc">Songs from Maramon Convention 2025</p>
-                <div class="section-count">16 Songs</div>
+            <a href="viewer.html?collection=maramon-2023" class="section-card">
+                <div class="year-bg">2023</div>
+                <div class="section-icon">🎶</div>
+                <h3 class="section-title">Maramon Convention 2023</h3>
+                <p class="section-desc">Songs from Maramon Convention 2023</p>
+                <div class="section-count">12 Songs</div>
             </a>
             
-            <a href="viewer.html?collection=maramon-2026" class="section-card">
+            <a href="viewer.html?collection=maramon-2021" class="section-card">
+                <div class="year-bg">2021</div>
+                <div class="section-icon">🎵</div>
+                <h3 class="section-title">Maramon Convention 2021</h3>
+                <p class="section-desc">Songs from Maramon Convention 2021</p>
+                <div class="section-count">20 Songs</div>
+            </a>
+            
+            <a href="viewer.html?collection=maramon-2013" class="section-card">
+                <div class="year-bg">2013</div>
                 <div class="section-icon">🎤</div>
-                <h3 class="section-title">Maramon Convention 2026</h3>
-                <p class="section-desc">Songs from Maramon Convention 2026</p>
+                <h3 class="section-title">Maramon Convention 2013</h3>
+                <p class="section-desc">Songs from Maramon Convention 2013</p>
                 <div class="section-count">16 Songs</div>
             </a>
         </div>
@@ -332,7 +463,8 @@
         
         <footer>
             <div class="footer-content">
-                <div class="disclaimer">
+                <button class="disclaimer-toggle" onclick="toggleDisclaimer()">📋 Show Disclaimer</button>
+                <div class="disclaimer" id="disclaimer">
                     <h3>📋 Disclaimer</h3>
                     <p style="text-align: center;">This website is a non-commercial community resource created for the Malayalam Christian community.</p>
                     <p style="text-align: center;">All hymns and songs are traditional worship contents and are publicly available in the internet.</p>
@@ -365,6 +497,14 @@
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
             document.querySelector('.dark-mode-toggle').textContent = '☀️ Light Mode';
+        }
+        
+        // Disclaimer toggle
+        function toggleDisclaimer() {
+            const disclaimer = document.getElementById('disclaimer');
+            const button = document.querySelector('.disclaimer-toggle');
+            disclaimer.classList.toggle('expanded');
+            button.textContent = disclaimer.classList.contains('expanded') ? '📋 Hide Disclaimer' : '📋 Show Disclaimer';
         }
     </script>
 </body>
