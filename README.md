@@ -29,8 +29,18 @@ This project provides:
 - Dark mode support
 - Mobile responsive
 
+#### ✝️ Holy Communion Songs
+- 22 Malayalam Holy Communion songs
+- Full lyrics and videos
+- DSMC Media collection
+
 #### 🎪 Convention Songs
-- Maramon Convention 2025 & 2026
+- Maramon Convention 2013 (16 songs)
+- Maramon Convention 2021 (20 songs)
+- Maramon Convention 2023 (12 songs)
+- Maramon Convention 2024 (16 songs)
+- Maramon Convention 2025 (16 songs)
+- Maramon Convention 2026 (16 songs)
 - Kottarakara Convention 2025 & 2026
 - Full lyrics and videos
 - Organized by year
@@ -87,6 +97,11 @@ Hymn_project/
 │
 ├── data/                       # JSON data files
 │   ├── kristheeya-keerthanangal.json
+│   ├── holy-communion.json     # Holy Communion songs
+│   ├── maramon-2013.json
+│   ├── maramon-2021.json
+│   ├── maramon-2023.json
+│   ├── maramon-2024.json
 │   ├── maramon-2025.json
 │   ├── maramon-2026.json
 │   ├── kottarakara-2025.json
@@ -198,13 +213,22 @@ Hymn_project/
 - **Language**: Malayalam
 - **Content**: Traditional Christian hymns
 
+### Holy Communion Songs
+- **Songs**: 22 songs
+- **Language**: Malayalam
+- **Content**: DSMC Media Holy Communion collection
+
 ### Maramon Convention
-- **2025**: Convention songs
-- **2026**: Latest convention songs
+- **2013**: 16 songs
+- **2021**: 20 songs
+- **2023**: 12 songs
+- **2024**: 16 songs
+- **2025**: 16 songs
+- **2026**: 16 songs
 
 ### Kottarakara Convention
-- **2025**: Convention songs
-- **2026**: Latest convention songs
+- **2025**: 10 songs
+- **2026**: 8 songs
 
 ---
 
@@ -310,7 +334,7 @@ Hymn_project/
 ✅ View-only mode for transparency
 
 ### For Congregation
-✅ Browse 500+ hymns
+✅ Browse 640+ hymns and songs
 ✅ View lyrics in Malayalam
 ✅ Watch YouTube videos
 ✅ Search functionality
@@ -321,6 +345,12 @@ Hymn_project/
 ## 🔄 Updates
 
 ### Recent Changes (Feb 2026)
+- ✅ Added Holy Communion Songs collection (22 songs)
+- ✅ Added Maramon Convention 2013 (16 songs)
+- ✅ Added Maramon Convention 2021 (20 songs)
+- ✅ Added Maramon Convention 2023 (12 songs)
+- ✅ Added Maramon Convention 2024 (16 songs)
+- ✅ Created playlist extraction tool
 - ✅ Reorganized project structure
 - ✅ Created admin dashboard
 - ✅ Simplified choir attendance (members in JSON file)
@@ -378,8 +408,10 @@ Free to use for non-commercial, ministry purposes.
 ## 📈 Statistics
 
 - **Total Hymns**: 504+
-- **Convention Songs**: 100+
-- **Collections**: 5
+- **Holy Communion Songs**: 22
+- **Convention Songs**: 114 (Maramon: 96, Kottarakara: 18)
+- **Total Songs**: 640+
+- **Collections**: 10
 - **Languages**: Malayalam, English (UI)
 - **Admin Tools**: 6
 
