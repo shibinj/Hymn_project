@@ -377,6 +377,16 @@
         .export-btn:hover {
             background: #218838;
         }
+        
+        .collapsible-header {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        
+        .collapsible-header:hover {
+            background: #5568d3 !important;
+        }
     </style>
 </head>
 <body>
@@ -430,6 +440,17 @@
             
             <div class="section-header" style="margin-top: 20px;">🌍 Occasional Attendees</div>
             <div id="occasionalAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
+            
+            <!-- Past Members Collapsible Section -->
+            <div style="margin-top: 20px;">
+                <div class="section-header collapsible-header" style="display: flex; justify-content: space-between; align-items: center;" onclick="togglePastMembers()">
+                    <span>📦 Past Members</span>
+                    <span id="pastMembersToggle">▼</span>
+                </div>
+                <div id="pastMembersSection" style="display: none; background: #f7fafc; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                    <div id="pastMembersList"></div>
+                </div>
+            </div>
         </div>
         
         <!-- Quarterly Report Tab -->
@@ -502,6 +523,43 @@
                 <div class="section-header">🌍 Occasional Attendees</div>
                 <div id="occasionalList" class="member-list"></div>
             </div>
+            
+            <!-- Archive Manager -->
+            <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e2e8f0;">
+                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107;">
+                    <h3 style="color: #856404; margin-bottom: 15px;">🔒 Move Member to Archive</h3>
+                    <p style="margin-bottom: 15px; color: #856404; font-size: 14px;">
+                        Authentication required. Member will be automatically moved to Past Members.
+                    </p>
+                    <div style="display: grid; gap: 10px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #856404;">Member Name:</label>
+                            <select id="archiveMemberSelect" style="width: 100%; padding: 10px; border: 2px solid #ffc107; border-radius: 6px;">
+                                <option value="">-- Select Member --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #856404;">Leave Date:</label>
+                            <input type="date" id="archiveLeaveDate" style="width: 100%; padding: 10px; border: 2px solid #ffc107; border-radius: 6px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #856404;">Notes (Optional):</label>
+                            <input type="text" id="archiveNotes" placeholder="e.g., Relocated, Work schedule" style="width: 100%; padding: 10px; border: 2px solid #ffc107; border-radius: 6px;">
+                        </div>
+                        <button onclick="moveToArchive()" style="background: #ffc107; color: #856404; font-weight: 600; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+                            Move to Archive
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Past Members List -->
+            <div style="margin-top: 30px;">
+                <h3 style="margin-bottom: 15px;">📦 Past Members</h3>
+                <div id="pastMembersTable" style="background: #f7fafc; border-radius: 10px; padding: 20px;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
         </div>
     </div>
     
@@ -527,6 +585,9 @@
             occasional: []
         };
         
+        // Past members archive
+        let pastMembers = [];
+        
         // Load members from JSON file
         async function loadMembers() {
             try {
@@ -542,6 +603,55 @@
             }
         }
         
+        // Load past members from archive
+        async function loadPastMembers() {
+            try {
+                const response = await fetch('../data/choir-members-archive.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    pastMembers = data.pastMembers || [];
+                    console.log('Past members loaded from archive');
+                } else {
+                    console.error('Failed to load archive');
+                }
+            } catch (error) {
+                console.error('Error loading past members:', error);
+            }
+        }
+        
+        // Clean up old attendance data (1 year after leave date)
+        function cleanupOldAttendance() {
+            const today = new Date();
+            let cleaned = false;
+            
+            pastMembers.forEach(member => {
+                if (member.leaveDate) {
+                    const leaveDate = new Date(member.leaveDate);
+                    const oneYearAfter = new Date(leaveDate);
+                    oneYearAfter.setFullYear(oneYearAfter.getFullYear() + 1);
+                    
+                    if (today > oneYearAfter) {
+                        // Remove attendance records for this member
+                        Object.keys(attendanceData).forEach(date => {
+                            if (attendanceData[date][member.name]) {
+                                delete attendanceData[date][member.name];
+                                cleaned = true;
+                            }
+                        });
+                    }
+                }
+            });
+            
+            if (cleaned) {
+                localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+                console.log('Old attendance data cleaned up');
+                // Sync cleaned data to cloud
+                if (gistId && gistToken) {
+                    syncToGist();
+                }
+            }
+        }
+        
         // Attendance data structure: { 'YYYY-MM-DD': { memberName: 'P' or 'A' } }
         let attendanceData = {};
         const savedAttendance = localStorage.getItem('choirAttendance');
@@ -552,6 +662,8 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             await loadMembers(); // Load members from JSON file first
+            await loadPastMembers(); // Load past members
+            cleanupOldAttendance(); // Clean up old attendance data
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             renderAttendance();
             loadAttendanceForDate();
@@ -582,6 +694,46 @@
             renderSection('femaleAttendance', members.female);
             renderSection('maleAttendance', members.male);
             renderSection('occasionalAttendance', members.occasional);
+            renderPastMembers();
+        }
+        
+        function togglePastMembers() {
+            const section = document.getElementById('pastMembersSection');
+            const toggle = document.getElementById('pastMembersToggle');
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                toggle.textContent = '▲';
+            } else {
+                section.style.display = 'none';
+                toggle.textContent = '▼';
+            }
+        }
+        
+        function renderPastMembers() {
+            const container = document.getElementById('pastMembersList');
+            if (!container) return;
+            
+            if (pastMembers.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">No past members</p>';
+                return;
+            }
+            
+            container.innerHTML = pastMembers.map(member => {
+                const joinDate = member.joinDate ? new Date(member.joinDate).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
+                const leaveDate = member.leaveDate ? new Date(member.leaveDate).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
+                
+                return `
+                    <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; color: #2d3748;">${member.name}</div>
+                            <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+                                ${joinDate} - ${leaveDate}
+                                ${member.notes ? ` • ${member.notes}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
         
         function renderSection(containerId, memberList) {
@@ -942,6 +1094,112 @@
             renderMemberList('femaleList', members.female, 'female');
             renderMemberList('maleList', members.male, 'male');
             renderMemberList('occasionalList', members.occasional, 'occasional');
+            populateArchiveDropdown();
+            renderPastMembersTable();
+        }
+        
+        function populateArchiveDropdown() {
+            const select = document.getElementById('archiveMemberSelect');
+            if (!select) return;
+            
+            const allMembers = [
+                ...members.female.map(name => ({name, category: 'female'})),
+                ...members.male.map(name => ({name, category: 'male'})),
+                ...members.occasional.map(name => ({name, category: 'occasional'}))
+            ];
+            
+            select.innerHTML = '<option value="">-- Select Member --</option>' + 
+                allMembers.map(m => `<option value="${m.name}" data-category="${m.category}">${m.name}</option>`).join('');
+        }
+        
+        function renderPastMembersTable() {
+            const container = document.getElementById('pastMembersTable');
+            if (!container) return;
+            
+            if (pastMembers.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; text-align: center;">No past members yet</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #cbd5e0;">
+                            <th style="text-align: left; padding: 12px; font-weight: 600; color: #2d3748;">Name</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 600; color: #2d3748;">Period</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 600; color: #2d3748;">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pastMembers.map(member => {
+                            const joinDate = member.joinDate ? new Date(member.joinDate).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
+                            const leaveDate = member.leaveDate ? new Date(member.leaveDate).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
+                            
+                            return `
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 12px; color: #2d3748;">${member.name}</td>
+                                    <td style="padding: 12px; color: #6c757d;">${joinDate} - ${leaveDate}</td>
+                                    <td style="padding: 12px; color: #6c757d;">${member.notes || '-'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        async function moveToArchive() {
+            if (!isAuthenticated) {
+                alert('🔒 Authentication required!\n\nPlease login first to move members to archive.');
+                return;
+            }
+            
+            const select = document.getElementById('archiveMemberSelect');
+            const memberName = select.value;
+            const leaveDate = document.getElementById('archiveLeaveDate').value;
+            const notes = document.getElementById('archiveNotes').value.trim();
+            
+            if (!memberName) {
+                alert('❌ Please select a member');
+                return;
+            }
+            
+            if (!leaveDate) {
+                alert('❌ Please enter a leave date');
+                return;
+            }
+            
+            const selectedOption = select.options[select.selectedIndex];
+            const category = selectedOption.getAttribute('data-category');
+            
+            // Confirm action
+            if (!confirm(`Move ${memberName} to Past Members?\n\nThis will:\n• Remove them from active member list\n• Keep their attendance for 1 year\n• Add them to archive\n\nContinue?`)) {
+                return;
+            }
+            
+            // Create archive entry
+            const archiveEntry = {
+                name: memberName,
+                gender: category === 'female' ? 'female' : 'male',
+                category: category,
+                joinDate: null, // Can be manually added to JSON if needed
+                leaveDate: leaveDate,
+                notes: notes || ''
+            };
+            
+            // Add to past members
+            pastMembers.push(archiveEntry);
+            
+            // Show instructions for manual file update
+            alert(`✅ Archive entry created for ${memberName}\n\n📝 MANUAL STEPS REQUIRED:\n\n1. Remove "${memberName}" from data/choir-members.json\n2. Add this entry to data/choir-members-archive.json:\n\n${JSON.stringify(archiveEntry, null, 2)}\n\n3. Refresh this page\n\nNote: Attendance data will be kept for 1 year from ${leaveDate}`);
+            
+            // Clear form
+            select.value = '';
+            document.getElementById('archiveLeaveDate').value = '';
+            document.getElementById('archiveNotes').value = '';
+            
+            // Refresh display
+            renderPastMembersTable();
         }
         
         function renderMemberList(containerId, memberList, category) {

@@ -42,10 +42,22 @@ Hymn_project/
 
 ## 📖 Documentation
 
+### General
 - **[Full Documentation](docs/README.md)** - Complete project details
-- **[Restructure Guide](docs/RESTRUCTURE.md)** - Project organization
-- **[UI Improvements](docs/INDEX_IMPROVEMENTS.md)** - Recent changes
+- **[UI Improvements](docs/INDEX_IMPROVEMENTS.md)** - Recent UI changes
 - **[Data Entry Guide](docs/MARAMON_DATA_ENTRY_GUIDE.md)** - Adding songs
+- **[Sync Setup](docs/SYNC_SETUP.md)** - Cloud sync configuration
+
+### Choir Attendance System
+- **[Quick Start](docs/choir-attendance/QUICKSTART.md)** - 5-minute overview
+- **[Archive Guide](docs/choir-attendance/ARCHIVE_QUICK_REFERENCE.md)** - Managing past members
+- **[Complete Guide](docs/choir-attendance/PAST_MEMBERS_GUIDE.md)** - Full documentation
+- **[All Choir Docs](docs/choir-attendance/)** - Complete choir attendance documentation
+
+### Project Information
+- **[Project Structure](docs/project-info/PROJECT_STRUCTURE.md)** - File organization
+- **[Restructure Guide](docs/project-info/RESTRUCTURE.md)** - Project reorganization
+- **[Maramon Compact View](docs/MARAMON_COMPACT_VIEW.md)** - Maramon songs display
 
 ---
 

@@ -45,7 +45,31 @@ Hymn_project/
 └── archive/                # Old/unused files
 ```
 
-See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed structure.
+See [project-info/PROJECT_STRUCTURE.md](project-info/PROJECT_STRUCTURE.md) for detailed structure.
+
+---
+
+## 📚 Documentation Index
+
+### Getting Started
+- **[Main README](../README.md)** - Project overview and quick start
+- **[UI Improvements](INDEX_IMPROVEMENTS.md)** - Recent UI changes
+- **[Data Entry Guide](MARAMON_DATA_ENTRY_GUIDE.md)** - Adding songs
+- **[Sync Setup](SYNC_SETUP.md)** - Cloud sync configuration
+
+### Choir Attendance System
+- **[Quick Start](choir-attendance/QUICKSTART.md)** - 5-minute overview
+- **[Archive Quick Reference](choir-attendance/ARCHIVE_QUICK_REFERENCE.md)** - Daily use guide
+- **[Complete Guide](choir-attendance/PAST_MEMBERS_GUIDE.md)** - Full documentation
+- **[All Choir Docs](choir-attendance/)** - Complete choir attendance documentation
+
+### Project Information
+- **[Project Structure](project-info/PROJECT_STRUCTURE.md)** - File organization
+- **[Restructure Guide](project-info/RESTRUCTURE.md)** - Reorganization history
+- **[Reorganization Summary](project-info/REORGANIZATION_SUMMARY.md)** - Summary of changes
+
+### Song Collections
+- **[Maramon Compact View](MARAMON_COMPACT_VIEW.md)** - Maramon songs display
 
 ---
 
