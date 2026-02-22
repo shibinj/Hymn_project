@@ -45,6 +45,7 @@ Hymn_project/
 
 ### General
 - **[Full Documentation](docs/README.md)** - Complete project details
+- **[New Features Guide](docs/NEW_FEATURES.md)** - Latest viewer features
 - **[UI Improvements](docs/INDEX_IMPROVEMENTS.md)** - Recent UI changes
 - **[Data Entry Guide](docs/MARAMON_DATA_ENTRY_GUIDE.md)** - Adding songs
 - **[Sync Setup](docs/SYNC_SETUP.md)** - Cloud sync configuration
@@ -75,9 +76,12 @@ Access at `/admin/admin.html` (password protected):
 
 ## 🎯 Features
 
-- ✅ 640+ songs with lyrics
+- ✅ 663+ songs with lyrics
 - ✅ YouTube video integration
 - ✅ Search functionality
+- ✅ **Next/Previous navigation** with keyboard shortcuts (← →)
+- ✅ **Quick jump** to song by number
+- ✅ **Favorites/bookmarks** system
 - ✅ Dark mode
 - ✅ Mobile responsive
 - ✅ Offline capable
