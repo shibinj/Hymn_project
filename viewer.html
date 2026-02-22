@@ -257,6 +257,108 @@
         .share-btn.twitter { background: #1DA1F2; color: white; }
         .share-btn.print { background: #6c757d; color: white; }
         
+        .nav-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .fav-btn {
+            background: #ff6b6b;
+            min-width: auto;
+            padding: 12px 16px;
+        }
+        
+        .fav-btn.active {
+            background: #c92a2a;
+        }
+        
+        .quick-jump {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .quick-jump input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+        
+        .quick-jump button {
+            padding: 10px 20px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .favorites-toggle {
+            padding: 8px 16px;
+            background: rgba(255,107,107,0.2);
+            border: 2px solid #ff6b6b;
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+        
+        .favorites-toggle:hover {
+            background: rgba(255,107,107,0.3);
+        }
+        
+        .favorites-toggle.active {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .song-item .fav-indicator {
+            color: #ff6b6b;
+            margin-right: 5px;
+        }
+        
+        .keyboard-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
         .song-lyrics { 
             font-family: 'Crimson Text', serif;
             white-space: pre-wrap; 
@@ -394,26 +496,193 @@
         <input type="text" id="searchInput" placeholder="🔍 Search by song number or name...">
     </div>
     
+    <div class="quick-jump">
+        <input type="text" id="jumpInput" placeholder="Jump to song number (e.g., 123 or HC5)">
+        <button onclick="jumpToSong()">Go</button>
+    </div>
+    
     <div class="loading" id="loading">Loading hymns...</div>
     
     <div class="container" id="container" style="display: none;">
-        <div class="song-list" id="songList"></div>
+        <div>
+            <button class="favorites-toggle" id="favToggle" onclick="toggleFavoritesView()">
+                ❤️ Show Favorites (<span id="favCount">0</span>)
+            </button>
+            <div class="song-list" id="songList"></div>
+        </div>
         <div class="song-display" id="songDisplay">
-            <div class="no-song">Select a song to view lyrics and video</div>
+            <div class="no-song">Select a song to view lyrics and video<br><br>
+                <div class="keyboard-hint">💡 Tip: Use ← → arrow keys to navigate songs</div>
+            </div>
         </div>
     </div>
 
     <script>
         let songs = [];
         let currentSong = null;
+        let currentSongIndex = -1;
+        let filteredSongs = [];
+        let showingFavorites = false;
         let player = null;
         let checkInterval = null;
+
+        // Get collection from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const collection = urlParams.get('collection') || 'kristheeya-keerthanangal';
+        
+        // Favorites management
+        function getFavorites() {
+            const favs = localStorage.getItem(`favorites_${collection}`);
+            return favs ? JSON.parse(favs) : [];
+        }
+        
+        function saveFavorites(favorites) {
+            localStorage.setItem(`favorites_${collection}`, JSON.stringify(favorites));
+            updateFavCount();
+        }
+        
+        function toggleFavorite(songNumber) {
+            let favorites = getFavorites();
+            const index = favorites.indexOf(songNumber);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(songNumber);
+            }
+            saveFavorites(favorites);
+            
+            // Update button if song is currently displayed
+            if (currentSong && currentSong.number == songNumber) {
+                updateFavButton();
+            }
+            
+            // Refresh list if showing favorites
+            if (showingFavorites) {
+                toggleFavoritesView();
+                toggleFavoritesView();
+            } else {
+                displaySongList(filteredSongs);
+            }
+        }
+        
+        function updateFavCount() {
+            const count = getFavorites().length;
+            document.getElementById('favCount').textContent = count;
+        }
+        
+        function updateFavButton() {
+            const favBtn = document.querySelector('.fav-btn');
+            if (!favBtn || !currentSong) return;
+            
+            const favorites = getFavorites();
+            const isFav = favorites.includes(currentSong.number);
+            favBtn.textContent = isFav ? '❤️ Favorited' : '🤍 Add to Favorites';
+            favBtn.classList.toggle('active', isFav);
+        }
+        
+        function toggleFavoritesView() {
+            showingFavorites = !showingFavorites;
+            const toggle = document.getElementById('favToggle');
+            
+            if (showingFavorites) {
+                const favorites = getFavorites();
+                filteredSongs = songs.filter(s => favorites.includes(s.number));
+                toggle.classList.add('active');
+                toggle.innerHTML = `✖️ Show All Songs (<span id="favCount">${favorites.length}</span>)`;
+            } else {
+                filteredSongs = songs;
+                toggle.classList.remove('active');
+                updateFavCount();
+            }
+            
+            displaySongList(filteredSongs);
+        }
+        
+        // Recently viewed
+        function addToRecentlyViewed(songNumber) {
+            let recent = JSON.parse(localStorage.getItem(`recent_${collection}`) || '[]');
+            recent = recent.filter(n => n != songNumber);
+            recent.unshift(songNumber);
+            recent = recent.slice(0, 10); // Keep last 10
+            localStorage.setItem(`recent_${collection}`, JSON.stringify(recent));
+        }
+        
+        // Navigation functions
+        function goToPrevious() {
+            if (currentSongIndex > 0) {
+                const prevSong = filteredSongs[currentSongIndex - 1];
+                selectSongByNumber(prevSong.number);
+            }
+        }
+        
+        function goToNext() {
+            if (currentSongIndex < filteredSongs.length - 1) {
+                const nextSong = filteredSongs[currentSongIndex + 1];
+                selectSongByNumber(nextSong.number);
+            }
+        }
+        
+        function updateNavButtons() {
+            const prevBtn = document.querySelector('.nav-btn.prev');
+            const nextBtn = document.querySelector('.nav-btn.next');
+            
+            if (prevBtn) prevBtn.disabled = currentSongIndex <= 0;
+            if (nextBtn) nextBtn.disabled = currentSongIndex >= filteredSongs.length - 1;
+        }
+        
+        // Quick jump function
+        function jumpToSong() {
+            const input = document.getElementById('jumpInput').value.trim().toUpperCase();
+            if (!input) return;
+            
+            const song = songs.find(s => {
+                const num = String(s.number).toUpperCase();
+                return num === input || num === '#' + input;
+            });
+            
+            if (song) {
+                // If filtering favorites, switch to all songs first
+                if (showingFavorites) {
+                    toggleFavoritesView();
+                }
+                selectSongByNumber(song.number);
+                document.getElementById('jumpInput').value = '';
+            } else {
+                alert('Song not found: ' + input);
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            // Ignore if typing in input fields
+            if (e.target.tagName === 'INPUT') return;
+            
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goToPrevious();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                goToNext();
+            }
+        });
+        
+        // Allow Enter key in jump input
+        document.addEventListener('DOMContentLoaded', () => {
+            const jumpInput = document.getElementById('jumpInput');
+            if (jumpInput) {
+                jumpInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') jumpToSong();
+                });
+            }
+        });
 
         // Load YouTube IFrame API
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        const collectionFile = `data/${collection}.json`;
 
         // Dark mode toggle
         function toggleDarkMode() {
@@ -512,6 +781,7 @@
             .then(res => res.json())
             .then(data => {
                 songs = data;
+                filteredSongs = songs;
                 document.getElementById('loading').style.display = 'none';
                 
                 if (songs.length === 0) {
@@ -530,7 +800,8 @@
                     `;
                 } else {
                     document.getElementById('container').style.display = 'grid';
-                    displaySongList(songs);
+                    updateFavCount();
+                    displaySongList(filteredSongs);
                 }
             })
             .catch(err => {
@@ -540,12 +811,16 @@
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
-            const filtered = songs.filter(song => 
+            
+            // Search in current view (all songs or favorites)
+            const searchBase = showingFavorites ? songs.filter(s => getFavorites().includes(s.number)) : songs;
+            
+            filteredSongs = searchBase.filter(song => 
                 song.number.toString().includes(query) || 
                 song.name.toLowerCase().includes(query) ||
                 (song.name2 && song.name2.toLowerCase().includes(query))
             );
-            displaySongList(filtered);
+            displaySongList(filteredSongs);
         });
 
         // Display song list
@@ -555,28 +830,46 @@
                 listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No songs found</p>';
                 return;
             }
+            
+            const favorites = getFavorites();
+            
             listEl.innerHTML = songList.map(song => {
                 const displayNumber = typeof song.number === 'string' ? song.number : `#${song.number}`;
+                const isFav = favorites.includes(song.number);
+                const favIcon = isFav ? '<span class="fav-indicator">❤️</span>' : '';
+                
                 return `
-                    <div class="song-item" onclick="selectSong('${song.number}')">
-                        <strong>${displayNumber}</strong> ${song.name}${song.name2 ? '<small>' + song.name2 + '</small>' : ''}
+                    <div class="song-item" onclick="selectSongByNumber('${song.number}')">
+                        ${favIcon}<strong>${displayNumber}</strong> ${song.name}${song.name2 ? '<small>' + song.name2 + '</small>' : ''}
                     </div>
                 `;
             }).join('');
         }
 
-        // Select and display song
-        function selectSong(number) {
+        // Select song by number (new wrapper function)
+        function selectSongByNumber(number) {
             currentSong = songs.find(s => s.number == number);
             if (!currentSong) return;
-
+            
+            // Update current index in filtered list
+            currentSongIndex = filteredSongs.findIndex(s => s.number == number);
+            
+            // Add to recently viewed
+            addToRecentlyViewed(number);
+            
             // Highlight selected
             document.querySelectorAll('.song-item').forEach(item => item.classList.remove('active'));
-            event.target.closest('.song-item').classList.add('active');
+            const activeItem = Array.from(document.querySelectorAll('.song-item')).find(item => 
+                item.textContent.includes(currentSong.number)
+            );
+            if (activeItem) {
+                activeItem.classList.add('active');
+                activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
 
             const displayNumber = typeof currentSong.number === 'string' ? currentSong.number : `#${currentSong.number}`;
 
-            // Display song with share buttons
+            // Display song with navigation and share buttons
             const videoId = currentSong.youtubeId.split('?')[0];
             const params = currentSong.youtubeId.includes('?') ? currentSong.youtubeId.split('?')[1] : '';
             
@@ -595,12 +888,18 @@
             
             document.getElementById('songDisplay').innerHTML = `
                 <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
+                <div class="nav-controls">
+                    <button class="nav-btn prev" onclick="goToPrevious()">← Previous</button>
+                    <button class="fav-btn" onclick="toggleFavorite('${currentSong.number}')">🤍 Add to Favorites</button>
+                    <button class="nav-btn next" onclick="goToNext()">Next →</button>
+                </div>
                 <div class="share-buttons">
                     <button class="share-btn whatsapp" onclick="shareWhatsApp()">📱 WhatsApp</button>
                     <button class="share-btn facebook" onclick="shareFacebook()">📘 Facebook</button>
                     <button class="share-btn twitter" onclick="shareTwitter()">🐦 Twitter</button>
                     <button class="share-btn print" onclick="printSong()">🖨️ Print</button>
                 </div>
+                <div class="keyboard-hint">💡 Use ← → arrow keys to navigate</div>
                 <div class="song-lyrics">${currentSong.lyrics || '<em style="color: #999;">Lyrics available in official song book</em>'}</div>
                 <div class="video-container">
                     <div style="position: relative;">
@@ -661,6 +960,10 @@
             
             // Scroll to top of song display
             document.getElementById('songDisplay').scrollTop = 0;
+            
+            // Update navigation buttons and favorite button
+            updateNavButtons();
+            updateFavButton();
         }
         
         function onPlayerStateChange(event) {
