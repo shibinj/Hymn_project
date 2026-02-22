@@ -8,9 +8,10 @@ Complete collection of Malayalam Christian hymns, convention songs, and worship 
 
 ## 📊 Quick Stats
 
-- **640+ Songs** across 10 collections
+- **663+ Songs** across 11 collections
 - **504 Hymns** from Kristheeya Keerthanangal
 - **96 Maramon Convention Songs** (2013-2026)
+- **23 Passion Week Songs**
 - **22 Holy Communion Songs**
 - **18 Kottarakara Convention Songs**
 
