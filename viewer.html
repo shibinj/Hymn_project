@@ -874,9 +874,9 @@
             let startTime = '';
             let endTime = '';
             if (params) {
-                const urlParams = new URLSearchParams(params);
-                startTime = urlParams.get('start') || '';
-                endTime = urlParams.get('end') || '';
+                const videoParams = new URLSearchParams(params);
+                startTime = videoParams.get('start') || '';
+                endTime = videoParams.get('end') || '';
             }
             
             const embedUrl = params 
