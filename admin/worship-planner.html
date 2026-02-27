@@ -210,6 +210,7 @@
     <script>
         let hymns = [];
         let conventions = {};
+        let celebrationSongs = [];
         let lastConvention = 'kottarakara';
         let serviceHistory = [];
         
@@ -223,11 +224,14 @@
         const categories = {
             opening: [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,429,430],
             bibleReading: [45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,431,432,433,434,435,436,437,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,452,453,454,455,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,409,410,411,412,413,414,415,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371],
+            celebration: [],
             qurbana: [166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,220,221,222,223,224,225,226,227,228,233,234,235,236,237,238,239,240,241,251,252,253,254,266,267,268,269,270,271,272,273,274,313,314,315,316,441,442,443,444,445,446,447,448,449,450,451,452,453,454,455,456,457,458,459,460,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500]
         };
 
         async function loadData() {
             hymns = await fetch('../data/kristheeya-keerthanangal.json').then(r => r.json());
+            celebrationSongs = await fetch('../data/birthday-anniversary.json').then(r => r.json());
+            categories.celebration = celebrationSongs.map(s => s.number);
             conventions['maramon-2025'] = await fetch('../data/maramon-2025.json').then(r => r.json());
             conventions['maramon-2026'] = await fetch('../data/maramon-2026.json').then(r => r.json());
             conventions['kottarakara-2025'] = await fetch('../data/kottarakara-2025.json').then(r => r.json());
@@ -450,6 +454,42 @@
             return availableSongs[Math.floor(Math.random() * availableSongs.length)];
         }
 
+        function getRandomCelebrationSong() {
+            if (celebrationSongs.length === 0) return null;
+            
+            const usedSongs = serviceHistory
+                .flatMap(s => s.songs.filter(song => song.category === 'celebration'))
+                .map(s => s.number);
+            
+            const frequency = {};
+            usedSongs.forEach(num => {
+                frequency[num] = (frequency[num] || 0) + 1;
+            });
+            
+            const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
+            const recentlyUsed = serviceHistory
+                .filter(s => s.date > twoMonthsAgo)
+                .flatMap(s => s.songs.filter(song => song.category === 'celebration'))
+                .map(s => s.number);
+            
+            const availableSongs = celebrationSongs.filter(s => !recentlyUsed.includes(s.number));
+            const songsToChooseFrom = availableSongs.length > 0 ? availableSongs : celebrationSongs;
+            
+            if (Math.random() < 0.7 && Object.keys(frequency).length > 0) {
+                const frequentSongs = Object.entries(frequency)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([num]) => isNaN(num) ? num : parseInt(num));
+                
+                const frequentAvailable = songsToChooseFrom.filter(s => frequentSongs.includes(s.number));
+                if (frequentAvailable.length > 0) {
+                    return frequentAvailable[Math.floor(Math.random() * frequentAvailable.length)];
+                }
+            }
+            
+            return songsToChooseFrom[Math.floor(Math.random() * songsToChooseFrom.length)];
+        }
+
         function getDoxology() {
             const doxSongs = hymns.filter(s => typeof s.number === 'string' && s.number.startsWith('DOX'));
             
@@ -485,7 +525,7 @@
             window.currentService = [
                 { title: '1. Opening Hymn', song: getRandomSong(categories.opening, 'opening'), collection: 'Kristheeya Keerthanangal', category: 'opening' },
                 { title: '2. Song for Bible Reading', song: getRandomSong(categories.bibleReading, 'bibleReading'), collection: 'Kristheeya Keerthanangal', category: 'bibleReading' },
-                { title: '3. Birthday/Anniversary Song', song: null, collection: 'Manual', category: 'celebration', manual: true },
+                { title: '3. Birthday/Anniversary Song', song: getRandomCelebrationSong(), collection: 'Birthday/Anniversary', category: 'celebration' },
                 { title: '4. Offertory Song', song: getRandomConventionSong(offertoryConvention), collection: offertoryConvention, category: 'offertory' },
                 { title: '5. Holy Qurbana - Song 1', song: getRandomSong(categories.qurbana, 'qurbana1'), collection: 'Kristheeya Keerthanangal', category: 'qurbana1' },
                 { title: '6. Holy Qurbana - Song 2', song: getRandomSong(categories.qurbana, 'qurbana2'), collection: 'Kristheeya Keerthanangal', category: 'qurbana2' },
@@ -542,9 +582,15 @@
         }
 
         function setManualSong(index, songNum) {
-            // Search in hymns first
-            let song = hymns.find(s => s.number == songNum);
-            let collection = 'Kristheeya Keerthanangal';
+            // Check birthday/anniversary collection first
+            let song = celebrationSongs.find(s => s.number == songNum);
+            let collection = 'Birthday/Anniversary';
+            
+            // Then check hymns
+            if (!song) {
+                song = hymns.find(s => s.number == songNum);
+                collection = 'Kristheeya Keerthanangal';
+            }
             
             // If not found, search in all conventions
             if (!song) {
@@ -579,7 +625,9 @@
             }
             
             let song;
-            if (selectedCollection === 'kristheeya-keerthanangal') {
+            if (selectedCollection === 'birthday-anniversary') {
+                song = celebrationSongs.find(s => s.number == songNum);
+            } else if (selectedCollection === 'kristheeya-keerthanangal') {
                 song = hymns.find(s => s.number == songNum);
             } else {
                 song = conventions[selectedCollection].find(s => s.number == songNum);
@@ -587,7 +635,11 @@
             
             if (song) {
                 window.currentService[index].song = song;
-                window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ? 
+                    'Birthday/Anniversary' : 
+                    selectedCollection === 'kristheeya-keerthanangal' ? 
+                    'Kristheeya Keerthanangal' : 
+                    selectedCollection;
                 displayService(window.currentService);
             } else {
                 // Song not found - offer to create custom entry
@@ -607,7 +659,11 @@
                     };
                     
                     window.currentService[index].song = customSong;
-                    window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                    window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ? 
+                        'Birthday/Anniversary' : 
+                        selectedCollection === 'kristheeya-keerthanangal' ? 
+                        'Kristheeya Keerthanangal' : 
+                        selectedCollection;
                     displayService(window.currentService);
                     
                     alert('✅ Custom song added!\n\nNote: This is a temporary entry and won\'t be added to the collection permanently.');
@@ -657,6 +713,7 @@
                                 <div class="song-item">
                                     <div class="manual-input">
                                         <select id="celebrationCollection${index}" style="flex: 1; min-width: 150px;">
+                                            <option value="birthday-anniversary">Birthday/Anniversary</option>
                                             <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
                                             <option value="maramon-2025">Maramon 2025</option>
                                             <option value="maramon-2026">Maramon 2026</option>
@@ -850,22 +907,24 @@
             const collection = prompt(
                 `Current: #${currentSong.number} - ${currentSong.name}\nFrom: ${item.collection}\n\n` +
                 `Choose collection:\n` +
-                `1 = Kristheeya Keerthanangal\n` +
-                `2 = Maramon 2025\n` +
-                `3 = Maramon 2026\n` +
-                `4 = Kottarakara 2025\n` +
-                `5 = Kottarakara 2026\n\n` +
-                `Enter collection number (1-5):`
+                `1 = Birthday/Anniversary Collection\n` +
+                `2 = Kristheeya Keerthanangal\n` +
+                `3 = Maramon 2025\n` +
+                `4 = Maramon 2026\n` +
+                `5 = Kottarakara 2025\n` +
+                `6 = Kottarakara 2026\n\n` +
+                `Enter collection number (1-6):`
             );
             
             if (!collection) return;
             
             const collectionMap = {
-                '1': 'kristheeya-keerthanangal',
-                '2': 'maramon-2025',
-                '3': 'maramon-2026',
-                '4': 'kottarakara-2025',
-                '5': 'kottarakara-2026'
+                '1': 'birthday-anniversary',
+                '2': 'kristheeya-keerthanangal',
+                '3': 'maramon-2025',
+                '4': 'maramon-2026',
+                '5': 'kottarakara-2025',
+                '6': 'kottarakara-2026'
             };
             
             const selectedCollection = collectionMap[collection];
@@ -878,7 +937,9 @@
             if (!songNum) return;
             
             let song;
-            if (selectedCollection === 'kristheeya-keerthanangal') {
+            if (selectedCollection === 'birthday-anniversary') {
+                song = celebrationSongs.find(s => s.number == songNum);
+            } else if (selectedCollection === 'kristheeya-keerthanangal') {
                 song = hymns.find(s => s.number == songNum);
             } else {
                 song = conventions[selectedCollection].find(s => s.number == songNum);
@@ -886,7 +947,11 @@
             
             if (song) {
                 window.currentService[index].song = song;
-                window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ? 
+                    'Birthday/Anniversary' : 
+                    selectedCollection === 'kristheeya-keerthanangal' ? 
+                    'Kristheeya Keerthanangal' : 
+                    selectedCollection;
                 displayService(window.currentService);
             } else {
                 // Song not found - offer to create custom entry
@@ -1209,10 +1274,17 @@
             
             // Reconstruct service with full song objects
             window.currentService = service.songs.map(savedSong => {
-                // Find the full song object
-                let song = hymns.find(s => s.number == savedSong.number);
-                let collection = 'Kristheeya Keerthanangal';
+                // Find the full song object - check celebration songs first
+                let song = celebrationSongs.find(s => s.number == savedSong.number);
+                let collection = 'Birthday/Anniversary';
                 
+                // Then check hymns
+                if (!song) {
+                    song = hymns.find(s => s.number == savedSong.number);
+                    collection = 'Kristheeya Keerthanangal';
+                }
+                
+                // Then check conventions
                 if (!song) {
                     for (const [collName, songs] of Object.entries(conventions)) {
                         song = songs.find(s => s.number == savedSong.number);
