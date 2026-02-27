@@ -584,6 +584,10 @@
         function setManualSong(index, songNum) {
             // Check birthday/anniversary collection first
             let song = celebrationSongs.find(s => s.number == songNum);
+            // If not found and input is numeric, try with "SS" prefix
+            if (!song && !isNaN(songNum)) {
+                song = celebrationSongs.find(s => s.number == `SS${songNum}`);
+            }
             let collection = 'Birthday/Anniversary';
             
             // Then check hymns
@@ -627,6 +631,10 @@
             let song;
             if (selectedCollection === 'birthday-anniversary') {
                 song = celebrationSongs.find(s => s.number == songNum);
+                // If not found and input is numeric, try with "SS" prefix
+                if (!song && !isNaN(songNum)) {
+                    song = celebrationSongs.find(s => s.number == `SS${songNum}`);
+                }
             } else if (selectedCollection === 'kristheeya-keerthanangal') {
                 song = hymns.find(s => s.number == songNum);
             } else {
@@ -938,7 +946,12 @@
             
             let song;
             if (selectedCollection === 'birthday-anniversary') {
+                // Try exact match first
                 song = celebrationSongs.find(s => s.number == songNum);
+                // If not found and input is numeric, try with "SS" prefix
+                if (!song && !isNaN(songNum)) {
+                    song = celebrationSongs.find(s => s.number == `SS${songNum}`);
+                }
             } else if (selectedCollection === 'kristheeya-keerthanangal') {
                 song = hymns.find(s => s.number == songNum);
             } else {
@@ -1274,18 +1287,30 @@
             
             // Reconstruct service with full song objects
             window.currentService = service.songs.map(savedSong => {
-                // Find the full song object - check celebration songs first
-                let song = celebrationSongs.find(s => s.number == savedSong.number);
-                let collection = 'Birthday/Anniversary';
+                let song, collection;
                 
-                // Then check hymns
-                if (!song) {
-                    song = hymns.find(s => s.number == savedSong.number);
-                    collection = 'Kristheeya Keerthanangal';
-                }
-                
-                // Then check conventions
-                if (!song) {
+                // Use category to determine which collection to search first
+                if (savedSong.category === 'celebration') {
+                    // For celebration, check birthday-anniversary first
+                    song = celebrationSongs.find(s => s.number == savedSong.number);
+                    collection = 'Birthday/Anniversary';
+                    
+                    // Fallback to other collections if not found
+                    if (!song) {
+                        song = hymns.find(s => s.number == savedSong.number);
+                        collection = 'Kristheeya Keerthanangal';
+                    }
+                    if (!song) {
+                        for (const [collName, songs] of Object.entries(conventions)) {
+                            song = songs.find(s => s.number == savedSong.number);
+                            if (song) {
+                                collection = collName;
+                                break;
+                            }
+                        }
+                    }
+                } else if (savedSong.category === 'offertory') {
+                    // For offertory, check conventions first
                     for (const [collName, songs] of Object.entries(conventions)) {
                         song = songs.find(s => s.number == savedSong.number);
                         if (song) {
@@ -1293,11 +1318,20 @@
                             break;
                         }
                     }
+                } else if (savedSong.category === 'doxology') {
+                    // For doxology, check hymns
+                    song = hymns.find(s => s.number == savedSong.number);
+                    collection = 'Doxology';
+                } else {
+                    // For other categories (opening, bibleReading, qurbana), check hymns
+                    song = hymns.find(s => s.number == savedSong.number);
+                    collection = 'Kristheeya Keerthanangal';
                 }
                 
                 if (!song) {
                     // Fallback if song not found
                     song = { number: savedSong.number, name: savedSong.name };
+                    collection = savedSong.collection || 'Unknown';
                 }
                 
                 const categoryTitles = {
@@ -1315,8 +1349,7 @@
                     title: categoryTitles[savedSong.category],
                     song: song,
                     collection: collection,
-                    category: savedSong.category,
-                    manual: savedSong.category === 'celebration'
+                    category: savedSong.category
                 };
             });
             
