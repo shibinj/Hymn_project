@@ -408,9 +408,9 @@
             <!-- Authentication Section -->
             <div id="authSection" style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
                 <h3 style="color: #856404; margin-bottom: 15px;">🔒 Authentication Required</h3>
-                <p style="margin-bottom: 15px; color: #856404;">Enter your GitHub username to mark or edit attendance:</p>
+                <p style="margin-bottom: 15px; color: #856404;">Enter your username to mark or edit attendance:</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" id="githubUsername" placeholder="GitHub username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;" onkeypress="if(event.key==='Enter') authenticate(event)">
+                    <input type="text" id="githubUsername" placeholder="Username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;" onkeypress="if(event.key==='Enter') authenticate(event)">
                     <button onclick="authenticate(event)" style="background: #ffc107; color: #856404; font-weight: 600; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Verify & Unlock</button>
                 </div>
                 <p style="margin-top: 10px; font-size: 12px; color: #856404;">
@@ -864,7 +864,7 @@
             updateSyncStatus('⬆️ Syncing to cloud...');
             syncToGist().then(success => {
                 if (success) {
-                    alert('✅ Successfully synced to cloud!\n\nYour attendance data is now saved to GitHub Gist.');
+                    alert('✅ Successfully synced to cloud!\n\nYour attendance data is now saved securely.');
                 } else {
                     alert('❌ Cloud sync failed!\n\nCheck:\n• Token has "gist" permission\n• Gist ID is correct\n• Internet connection\n\nToken will be cleared. Please try again.');
                     gistToken = '';
@@ -1011,7 +1011,7 @@
             const username = document.getElementById('githubUsername').value.trim();
             
             if (!username) {
-                alert('Please enter your GitHub username!');
+                alert('Please enter your username!');
                 return;
             }
             
@@ -1033,7 +1033,7 @@
                 
                 // Check if user is in whitelist
                 if (!whitelist.includes(username.toLowerCase())) {
-                    alert('❌ Access Denied!\n\nYour GitHub username is not authorized.');
+                    alert('❌ Access Denied!\n\nYour username is not authorized.');
                     btn.textContent = originalText;
                     btn.disabled = false;
                     return;

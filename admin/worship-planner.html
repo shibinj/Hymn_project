@@ -240,7 +240,7 @@
             // Auto-configure Gist ID if set in code
             if (SHARED_GIST_ID) {
                 gistId = SHARED_GIST_ID;
-                document.getElementById('gistId').value = gistId;
+                document.getElementById('gistId').value = '••••••••••••••••'; // Masked for security
                 document.getElementById('gistId').disabled = true;
                 
                 // Only prompt for token if not already dismissed
