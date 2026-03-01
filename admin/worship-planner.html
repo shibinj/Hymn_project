@@ -390,10 +390,19 @@
 
         function wasRecentlyUsed(songNum, category) {
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
-            return serviceHistory.some(service => 
+            
+            // Check saved history
+            const inHistory = serviceHistory.some(service => 
                 service.date > twoMonthsAgo && 
                 service.songs.some(s => s.number === songNum && s.category === category)
             );
+            
+            // Also check current unsaved service
+            const inCurrent = window.currentService && window.currentService.some(s => 
+                s.song && s.song.number === songNum && s.category === category
+            );
+            
+            return inHistory || inCurrent;
         }
 
         function getFrequentSongs(category, count = 5) {
