@@ -906,6 +906,11 @@
                 <div class="video-container">
                     <div style="position: relative;">
                         <div id="ytPlayer"></div>
+                        <div id="customThumbnail" onclick="startVideo()" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; cursor: pointer; z-index: 8;">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(255,0,0,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 0; height: 0; border-left: 25px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; margin-left: 8px;"></div>
+                            </div>
+                        </div>
                         <div id="pauseOverlay" onclick="togglePlayPause()" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.01); z-index: 5; cursor: pointer;"></div>
                         <div id="customControls" style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 15px; display: none; z-index: 6;">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -959,6 +964,12 @@
                         },
                         events: {
                             onReady: function(event) {
+                                // Show custom thumbnail with timestamp
+                                const thumbnailUrl = `https://img.youtube.com/vi/${window.currentVideoId}/maxresdefault.jpg`;
+                                const customThumb = document.getElementById('customThumbnail');
+                                customThumb.style.backgroundImage = `url(${thumbnailUrl})`;
+                                customThumb.style.display = 'block';
+                                
                                 document.getElementById('customControls').style.display = 'block';
                                 const segmentDuration = window.currentVideoEnd - window.currentVideoStart;
                                 document.getElementById('totalTime').textContent = formatTime(segmentDuration);
@@ -1040,6 +1051,13 @@
                 document.getElementById('playPauseBtn').textContent = '▶️';
                 document.getElementById('pauseOverlay').style.display = 'block';
                 if (checkInterval) clearInterval(checkInterval);
+            }
+        }
+        
+        function startVideo() {
+            document.getElementById('customThumbnail').style.display = 'none';
+            if (player && player.playVideo) {
+                player.playVideo();
             }
         }
         
