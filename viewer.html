@@ -700,7 +700,10 @@
 
         // Share functions
         function shareWhatsApp() {
-            const text = `${currentSong.name}\n\n${currentSong.lyrics}\n\nWatch: https://youtube.com/watch?v=${currentSong.youtubeId}\n\nMore hymns: https://shibinj.github.io/Hymn_project/`;
+            const videoUrl = window.currentVideoStart 
+                ? `https://youtube.com/watch?v=${window.currentVideoId}&t=${window.currentVideoStart}s`
+                : `https://youtube.com/watch?v=${window.currentVideoId}`;
+            const text = `${currentSong.name}\n\n${currentSong.lyrics}\n\nWatch: ${videoUrl}\n\nMore hymns: https://shibinj.github.io/Hymn_project/`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
@@ -950,15 +953,13 @@
                             modestbranding: 1,
                             showinfo: 0,
                             iv_load_policy: 3,
-                            autoplay: 1,
+                            autoplay: 0,
                             disablekb: 1,
                             fs: 0
                         },
                         events: {
                             onReady: function(event) {
-                                event.target.pauseVideo();
                                 document.getElementById('customControls').style.display = 'block';
-                                document.getElementById('pauseOverlay').style.display = 'block';
                                 const segmentDuration = window.currentVideoEnd - window.currentVideoStart;
                                 document.getElementById('totalTime').textContent = formatTime(segmentDuration);
                                 document.getElementById('currentTime').textContent = '0:00';
