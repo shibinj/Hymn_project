@@ -903,13 +903,18 @@
                 <div class="video-container">
                     <div style="position: relative;">
                         <div id="ytPlayer"></div>
-                        <div id="customProgress" style="position: absolute; bottom: 50px; left: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 5px; display: none;">
-                            <div style="display: flex; justify-content: space-between; color: white; font-size: 12px; margin-bottom: 5px;">
-                                <span id="currentTime">0:00</span>
-                                <span id="totalTime">0:00</span>
-                            </div>
-                            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden;">
-                                <div id="progressBar" style="width: 0%; height: 100%; background: #667eea; transition: width 0.1s;"></div>
+                        <div id="customControls" style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 15px; display: none;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button id="playPauseBtn" onclick="togglePlayPause()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">▶️</button>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; color: white; font-size: 11px; margin-bottom: 3px;">
+                                        <span id="currentTime">0:00</span>
+                                        <span id="totalTime">0:00</span>
+                                    </div>
+                                    <div onclick="seekVideo(event)" style="width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px; overflow: hidden; cursor: pointer;">
+                                        <div id="progressBar" style="width: 0%; height: 100%; background: #667eea;"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="replayOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
@@ -939,9 +944,11 @@
                         playerVars: {
                             start: window.currentVideoStart,
                             end: window.currentVideoEnd,
+                            controls: 0,
                             rel: 0,
                             modestbranding: 1,
-                            showinfo: 0
+                            showinfo: 0,
+                            iv_load_policy: 3
                         },
                         events: {
                             onStateChange: onPlayerStateChange
@@ -978,40 +985,65 @@
             // YT.PlayerState.ENDED = 0
             if (event.data === 0) {
                 document.getElementById('replayOverlay').style.display = 'flex';
-                document.getElementById('customProgress').style.display = 'none';
+                document.getElementById('customControls').style.display = 'none';
             }
             
-            // YT.PlayerState.PLAYING = 1 - Monitor when playing
-            if (event.data === 1 && window.currentVideoEnd > 0) {
-                document.getElementById('customProgress').style.display = 'block';
-                if (checkInterval) clearInterval(checkInterval);
+            // YT.PlayerState.PLAYING = 1
+            if (event.data === 1) {
+                document.getElementById('playPauseBtn').textContent = '⏸️';
+                document.getElementById('customControls').style.display = 'block';
                 
-                const segmentDuration = window.currentVideoEnd - window.currentVideoStart;
-                document.getElementById('totalTime').textContent = formatTime(segmentDuration);
-                
-                checkInterval = setInterval(() => {
-                    if (player && player.getCurrentTime) {
-                        const currentTime = player.getCurrentTime();
-                        const elapsed = currentTime - window.currentVideoStart;
-                        const progress = (elapsed / segmentDuration) * 100;
-                        
-                        document.getElementById('currentTime').textContent = formatTime(Math.max(0, elapsed));
-                        document.getElementById('progressBar').style.width = Math.min(100, Math.max(0, progress)) + '%';
-                        
-                        if (currentTime >= window.currentVideoEnd - 0.5) {
-                            player.pauseVideo();
-                            document.getElementById('replayOverlay').style.display = 'flex';
-                            document.getElementById('customProgress').style.display = 'none';
-                            clearInterval(checkInterval);
+                if (window.currentVideoEnd > 0) {
+                    if (checkInterval) clearInterval(checkInterval);
+                    
+                    const segmentDuration = window.currentVideoEnd - window.currentVideoStart;
+                    document.getElementById('totalTime').textContent = formatTime(segmentDuration);
+                    
+                    checkInterval = setInterval(() => {
+                        if (player && player.getCurrentTime) {
+                            const currentTime = player.getCurrentTime();
+                            const elapsed = currentTime - window.currentVideoStart;
+                            const progress = (elapsed / segmentDuration) * 100;
+                            
+                            document.getElementById('currentTime').textContent = formatTime(Math.max(0, elapsed));
+                            document.getElementById('progressBar').style.width = Math.min(100, Math.max(0, progress)) + '%';
+                            
+                            if (currentTime >= window.currentVideoEnd - 0.5) {
+                                player.pauseVideo();
+                                document.getElementById('replayOverlay').style.display = 'flex';
+                                document.getElementById('customControls').style.display = 'none';
+                                clearInterval(checkInterval);
+                            }
                         }
-                    }
-                }, 100);
+                    }, 100);
+                }
             }
             
             // YT.PlayerState.PAUSED = 2
             if (event.data === 2) {
+                document.getElementById('playPauseBtn').textContent = '▶️';
                 if (checkInterval) clearInterval(checkInterval);
             }
+        }
+        
+        function togglePlayPause() {
+            if (player && player.getPlayerState) {
+                const state = player.getPlayerState();
+                if (state === 1) {
+                    player.pauseVideo();
+                } else {
+                    player.playVideo();
+                }
+            }
+        }
+        
+        function seekVideo(event) {
+            if (!player || !window.currentVideoEnd) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            const segmentDuration = window.currentVideoEnd - window.currentVideoStart;
+            const seekTime = window.currentVideoStart + (segmentDuration * percent);
+            player.seekTo(seekTime);
         }
         
         function formatTime(seconds) {
