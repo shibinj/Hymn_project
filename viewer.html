@@ -882,8 +882,8 @@
             }
             
             const embedUrl = params 
-                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0&enablejsapi=1&autoplay=0&fs=1&iv_load_policy=3`
-                : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&enablejsapi=1&autoplay=0&fs=1&iv_load_policy=3`;
+                ? `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1&showinfo=0&enablejsapi=1`
+                : `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&enablejsapi=1`;
             
             document.getElementById('songDisplay').innerHTML = `
                 <div class="song-title">${displayNumber} - ${currentSong.name}${currentSong.name2 ? '<br>' + currentSong.name2 : ''}</div>
@@ -932,15 +932,10 @@
                             end: window.currentVideoEnd,
                             rel: 0,
                             modestbranding: 1,
-                            showinfo: 0,
-                            autoplay: 0,
-                            fs: 1,
-                            disablekb: 0,
-                            iv_load_policy: 3
+                            showinfo: 0
                         },
                         events: {
-                            onStateChange: onPlayerStateChange,
-                            onReady: onPlayerReady
+                            onStateChange: onPlayerStateChange
                         }
                     });
                 } else {
@@ -970,27 +965,25 @@
             updateFavButton();
         }
         
-        function onPlayerReady(event) {
-            // Player is ready, monitor time to stop at end
-            if (window.currentVideoEnd > 0) {
+        function onPlayerStateChange(event) {
+            // YT.PlayerState.ENDED = 0
+            if (event.data === 0) {
+                document.getElementById('replayOverlay').style.display = 'flex';
+            }
+            
+            // YT.PlayerState.PLAYING = 1 - Monitor when playing
+            if (event.data === 1 && window.currentVideoEnd > 0) {
+                if (checkInterval) clearInterval(checkInterval);
                 checkInterval = setInterval(() => {
                     if (player && player.getCurrentTime) {
                         const currentTime = player.getCurrentTime();
-                        if (currentTime >= window.currentVideoEnd - 0.3) {
+                        if (currentTime >= window.currentVideoEnd - 0.5) {
                             player.pauseVideo();
                             document.getElementById('replayOverlay').style.display = 'flex';
                             clearInterval(checkInterval);
                         }
                     }
                 }, 100);
-            }
-        }
-        
-        function onPlayerStateChange(event) {
-            // YT.PlayerState.ENDED = 0
-            if (event.data === 0) {
-                document.getElementById('replayOverlay').style.display = 'flex';
-                if (checkInterval) clearInterval(checkInterval);
             }
         }
         
@@ -1005,27 +998,13 @@
             if (player && player.seekTo) {
                 player.seekTo(window.currentVideoStart);
                 player.playVideo();
-                
-                // Restart end-time monitoring
-                if (window.currentVideoEnd > 0) {
-                    checkInterval = setInterval(() => {
-                        if (player && player.getCurrentTime) {
-                            const currentTime = player.getCurrentTime();
-                            if (currentTime >= window.currentVideoEnd - 0.3) {
-                                player.pauseVideo();
-                                document.getElementById('replayOverlay').style.display = 'flex';
-                                clearInterval(checkInterval);
-                            }
-                        }
-                    }, 100);
-                }
             } else {
                 // Fallback: reload iframe
                 const container = document.getElementById('ytPlayer');
                 const videoId = window.currentVideoId;
                 const params = window.currentVideoStart ? `start=${window.currentVideoStart}` : '';
                 const endParam = window.currentVideoEnd ? `&end=${window.currentVideoEnd}` : '';
-                const embedUrl = `https://www.youtube.com/embed/${videoId}?${params}${endParam}&rel=0&modestbranding=1&showinfo=0&autoplay=0&fs=1&iv_load_policy=3`;
+                const embedUrl = `https://www.youtube.com/embed/${videoId}?${params}${endParam}&rel=0&modestbranding=1&showinfo=0`;
                 container.innerHTML = `
                     <iframe src="${embedUrl}" style="width: 100%; height: 450px; border: none;"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
