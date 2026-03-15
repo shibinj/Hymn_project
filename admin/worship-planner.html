@@ -391,8 +391,13 @@
         function wasRecentlyUsed(songNum, category) {
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
             
-            // Check saved history only
+            // Exclude the service currently being edited
+            const editingDate = window.editingServiceIndex !== undefined 
+                ? serviceHistory[window.editingServiceIndex]?.date 
+                : undefined;
+            
             return serviceHistory.some(service => 
+                service.date !== editingDate &&
                 service.date > twoMonthsAgo && 
                 service.songs.some(s => s.number === songNum && s.category === category)
             );
