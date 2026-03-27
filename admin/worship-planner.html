@@ -799,8 +799,9 @@
                     `1 = Maramon 2025\n` +
                     `2 = Maramon 2026\n` +
                     `3 = Kottarakara 2025\n` +
-                    `4 = Kottarakara 2026\n\n` +
-                    `Enter collection number (1-4):`
+                    `4 = Kottarakara 2026\n` +
+                    `5 = Kristheeya Keerthanangal\n\n` +
+                    `Enter collection number (1-5):`
                 );
                 
                 if (!collection) return;
@@ -809,7 +810,8 @@
                     '1': 'maramon-2025',
                     '2': 'maramon-2026',
                     '3': 'kottarakara-2025',
-                    '4': 'kottarakara-2026'
+                    '4': 'kottarakara-2026',
+                    '5': 'kristheeya-keerthanangal'
                 };
                 
                 const selectedCollection = collectionMap[collection];
@@ -818,16 +820,22 @@
                     return;
                 }
                 
-                const songNum = prompt(`Enter song number from ${selectedCollection}:`);
+                const songNum = prompt(`Enter song number from ${selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection}:`);
                 if (!songNum) return;
                 
-                const song = conventions[selectedCollection].find(s => s.number == songNum);
+                let song;
+                if (selectedCollection === 'kristheeya-keerthanangal') {
+                    song = hymns.find(s => s.number == songNum);
+                } else {
+                    song = conventions[selectedCollection].find(s => s.number == songNum);
+                }
+                
                 if (song) {
                     window.currentService[index].song = song;
-                    window.currentService[index].collection = selectedCollection;
+                    window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     displayService(window.currentService);
                 } else {
-                    alert(`Song #${songNum} not found in ${selectedCollection}!`);
+                    alert(`Song #${songNum} not found!`);
                 }
                 return;
             }
