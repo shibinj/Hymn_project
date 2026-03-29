@@ -432,6 +432,10 @@
                 <span id="syncStatus" style="margin-left: 15px; font-size: 12px; color: #6c757d;"></span>
             </div>
             
+            <div style="text-align: right; margin-bottom: 10px; font-size: 15px; font-weight: 600; color: #2d3748;">
+                Total Present: <span id="totalPresentCount" style="color: #38a169;">0/0</span>
+            </div>
+
             <div class="section-header">👩 Female Members</div>
             <div id="femaleAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
             
@@ -695,6 +699,7 @@
             renderSection('maleAttendance', members.male);
             renderSection('occasionalAttendance', members.occasional);
             renderPastMembers();
+            updateTotalPresent();
         }
         
         function togglePastMembers() {
@@ -736,6 +741,15 @@
             }).join('');
         }
         
+        function updateTotalPresent() {
+            const date = document.getElementById('attendanceDate').value;
+            const dayData = attendanceData[date] || {};
+            const femaleTotal = members.female.length;
+            const maleTotal = members.male.length;
+            const present = [...members.female, ...members.male].filter(n => dayData[n] === 'P').length;
+            document.getElementById('totalPresentCount').textContent = `${present}/${femaleTotal + maleTotal}`;
+        }
+
         function renderSection(containerId, memberList) {
             const container = document.getElementById(containerId);
             const date = document.getElementById('attendanceDate').value;
@@ -794,6 +808,7 @@
             // Auto-save to localStorage
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
             updateSyncStatus('💾 Auto-saved');
+            updateTotalPresent();
             
             // Clear status after 2 seconds
             setTimeout(() => updateSyncStatus(''), 2000);
