@@ -68,7 +68,7 @@ Hymn_project/
 
 Access at `/admin/admin.html` (password protected):
 
-- **Worship Planner** - Plan worship services
+- **Worship Planner** - Plan worship services with smart song suggestions and "Mark as Sung" tracking
 - **Choir Attendance** - Track attendance
 - **Lyrics Editor** - Edit song lyrics
 - **Timestamp Converter** - YouTube timestamps
@@ -86,6 +86,7 @@ Access at `/admin/admin.html` (password protected):
 - ✅ Dark mode
 - ✅ Mobile responsive
 - ✅ Offline capable
+- ✅ **Worship Planner** - Smart suggestions based on actually sung services (Mark as Sung tracking)
 
 ---
 

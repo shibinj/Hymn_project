@@ -397,6 +397,7 @@
                 : undefined;
             
             return serviceHistory.some(service => 
+                service.confirmed === true &&
                 service.date !== editingDate &&
                 service.date > twoMonthsAgo && 
                 service.songs.some(s => s.number === songNum && s.category === category)
@@ -404,8 +405,9 @@
         }
 
         function getFrequentSongs(category, count = 5) {
-            // Get all songs from this category in history
+            // Only count confirmed (actually sung) services
             const categoryHistory = serviceHistory
+                .filter(s => s.confirmed === true)
                 .flatMap(s => s.songs.filter(song => song.category === category))
                 .map(s => s.number);
             
@@ -464,7 +466,10 @@
         function getRandomCelebrationSong() {
             if (celebrationSongs.length === 0) return null;
             
-            const usedSongs = serviceHistory
+            // Only use confirmed services for frequency and recency
+            const confirmedHistory = serviceHistory.filter(s => s.confirmed === true);
+
+            const usedSongs = confirmedHistory
                 .flatMap(s => s.songs.filter(song => song.category === 'celebration'))
                 .map(s => s.number);
             
@@ -474,7 +479,7 @@
             });
             
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
-            const recentlyUsed = serviceHistory
+            const recentlyUsed = confirmedHistory
                 .filter(s => s.date > twoMonthsAgo)
                 .flatMap(s => s.songs.filter(song => song.category === 'celebration'))
                 .map(s => s.number);
@@ -1250,7 +1255,8 @@
                 
                 // Find original index in serviceHistory
                 const originalIndex = serviceHistory.findIndex(s => s.date === service.date);
-                
+                const isSung = service.confirmed === true;
+
                 // Only show edit/delete for today or future dates
                 const isFutureOrToday = serviceDate >= today;
                 const actionButtons = isFutureOrToday ? `
@@ -1259,14 +1265,21 @@
                         <button onclick="deleteService(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #e53e3e;">🗑️ Delete</button>
                         <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
                     </div>
+                ` : isSung ? `
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
+                        <span style="font-size: 12px; color: #38a169; font-weight: 600;">✅ Sung</span>
+                        <button onclick="unmarkAsSung(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #718096;">↩️ Unmark</button>
+                        <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
+                    </div>
                 ` : `
-                    <div style="display: flex; gap: 5px;">
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button onclick="markAsSung(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #38a169;">✅ Mark as Sung</button>
                         <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
                     </div>
                 `;
                 
                 return `
-                    <div class="history-item">
+                    <div class="history-item" style="border-left-color: ${isSung ? '#38a169' : '#667eea'};">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                             <div>
                                 <div class="history-date">📅 ${date}</div>
@@ -1376,6 +1389,22 @@
             displayService(window.currentService);
             
             alert('✏️ Service loaded for editing!\n\nMake your changes and click "Save Service" to update.');
+        }
+
+        function markAsSung(index) {
+            if (index < 0 || index >= serviceHistory.length) return;
+            serviceHistory[index].confirmed = true;
+            localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+            if (gistId && gistToken) syncToGist();
+            displayFullHistory();
+        }
+
+        function unmarkAsSung(index) {
+            if (index < 0 || index >= serviceHistory.length) return;
+            serviceHistory[index].confirmed = false;
+            localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+            if (gistId && gistToken) syncToGist();
+            displayFullHistory();
         }
 
         function deleteService(index) {
