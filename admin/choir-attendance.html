@@ -4,6 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Choir Attendance Tracker</title>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, query, orderBy, Timestamp }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    window._db = getFirestore(app);
+    window._auth = auth;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user && ALLOWED_ADMINS.includes(user.email)) {
+        // ✅ Authorized
+        isAuthenticated = true;
+        currentUser = user.email;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('authInfo').style.display = 'block';
+        document.getElementById('authInfo').innerHTML = `
+            <span style="color:#155724; font-weight:600;">✅ Signed in as ${user.displayName} (${user.email})</span>
+            <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:8px 15px;
+            margin-left:15px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
+        `;
+        document.getElementById('saveBtn').disabled = false;
+        document.getElementById('saveBtn').style.opacity = '1';
+        document.getElementById('saveBtn').style.cursor = 'pointer';
+        // Load attendance from Firestore instead of localStorage
+        loadAttendanceFromFirestore();
+        } else if (user) {
+        // Signed in but not allowed
+        signOut(auth);
+        document.getElementById('authMessage').textContent =
+            `❌ ${user.email} is not an authorized admin.`;
+        } else {
+        // Not signed in
+        isAuthenticated = false;
+        currentUser = null;
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('authInfo').style.display = 'none';
+        document.getElementById('saveBtn').disabled = true;
+        }
+    });
+
+    window.signInWithGoogle = async function() {
+        const provider = new GoogleAuthProvider();
+        try {
+        await signInWithPopup(auth, provider);
+        } catch(err) {
+        document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message;
+        }
+    };
+    </script>
     <style>
         * { 
             margin: 0; 
@@ -404,19 +459,25 @@
         </div>
         
         <!-- Attendance Tab -->
-        <div id="attendance" class="tab-content active">
-            <!-- Authentication Section -->
-            <div id="authSection" style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                <h3 style="color: #856404; margin-bottom: 15px;">🔒 Authentication Required</h3>
-                <p style="margin-bottom: 15px; color: #856404;">Enter your username to mark or edit attendance:</p>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" id="githubUsername" placeholder="Username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;" onkeypress="if(event.key==='Enter') authenticate(event)">
-                    <button onclick="authenticate(event)" style="background: #ffc107; color: #856404; font-weight: 600; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Verify & Unlock</button>
-                </div>
-                <p style="margin-top: 10px; font-size: 12px; color: #856404;">
-                    💡 View-only mode: You can view past attendance without authentication.
-                </p>
-            </div>
+        <div id="authSection" style="background: #fff3cd; padding: 20px; border-radius: 10px;
+                margin-bottom: 20px; border-left: 4px solid #ffc107;">
+            <h3 style="color: #856404; margin-bottom: 15px;">🔒 Sign In Required</h3>
+            <p style="margin-bottom: 15px; color: #856404;">
+                Sign in with your Google account to mark or edit attendance.
+            </p>
+            <button onclick="signInWithGoogle()" style="
+                background: white; border: 2px solid #e2e8f0; padding: 12px 20px;
+                border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600;
+                color: #2d3748; display: inline-flex; align-items: center; gap: 10px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    width="20" height="20" alt="Google">
+                Sign in with Google
+            </button>
+            <p id="authMessage" style="color: #e53e3e; margin-top: 12px; font-size: 13px;"></p>
+            <p style="margin-top: 10px; font-size: 12px; color: #856404;">
+                💡 View-only mode: You can view past attendance without signing in.
+            </p>
+        </div>
             
             <!-- Authenticated User Info -->
             <div id="authInfo" style="display: none; background: #d4edda; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #28a745;">
@@ -569,19 +630,42 @@
     
     <script>
         // Cloud Sync Configuration (Admin: Set these values once)
-        const SHARED_GIST_ID = 'ac89975338bf079cff3f169477e3cce1'; // Admin: Set your Gist ID here
-        const SHARED_GIST_TOKEN = ''; // Admin: Set your GitHub token here (optional - for write access)
+        //const SHARED_GIST_ID = 'ac89975338bf079cff3f169477e3cce1'; // Admin: Set your Gist ID here
+        //const SHARED_GIST_TOKEN = ''; // Admin: Set your GitHub token here (optional - for write access)
         // IMPORTANT: Never commit your token to Git! Set it locally only.
         
         // Encrypted GitHub Username Whitelist (Admin: Generate using generate-whitelist.html)
-        const ENCRYPTED_WHITELIST = 'FnYwNwoKBgcYfW8='; // Admin: Paste encrypted whitelist here
-        const WHITELIST_KEY = 'MTC_choir_2026'; // Admin: Change this secret key
+        //const ENCRYPTED_WHITELIST = 'FnYwNwoKBgcYfW8='; // Admin: Paste encrypted whitelist here
+        //const WHITELIST_KEY = 'MTC_choir_2026'; // Admin: Change this secret key
         
-        let gistId = SHARED_GIST_ID;
-        let gistToken = SHARED_GIST_TOKEN || localStorage.getItem('gistToken') || ''; // Load from localStorage if available
+        //let gistId = SHARED_GIST_ID;
+        //let gistToken = SHARED_GIST_TOKEN || localStorage.getItem('gistToken') || ''; // Load from localStorage if available
+        //let isAuthenticated = false;
+        //let currentUser = null;
+        
+        // ✅ Firebase config — paste YOUR values from Firebase console
+        const firebaseConfig = {
+          apiKey: "AIzaSyDJ5-YBSIxm7HuZc2D82OkTxxBHNRw6Awk",
+          authDomain: "holy-hymns.firebaseapp.com",
+          projectId: "holy-hymns",
+          storageBucket: "holy-hymns.firebasestorage.app",
+          messagingSenderId: "895486383107",
+          appId: "1:895486383107:web:f2915742618cfd1e02aa36",
+          measurementId: "G-M2TNJFKSHF"
+        };
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        // ✅ Only these Google accounts can access admin
+        const ALLOWED_ADMINS = [
+        "shibin.john@gmail.com",
+        // add more if needed
+        ];
+
         let isAuthenticated = false;
         let currentUser = null;
-        
+        let db = null; // Will be set after Firebase loads
+
         // Members will be loaded from JSON file
         let members = {
             female: [],
