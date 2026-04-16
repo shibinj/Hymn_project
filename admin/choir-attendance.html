@@ -4,6 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Choir Attendance Tracker</title>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, setDoc }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    window._db = db;
+    window._auth = auth;
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user && ALLOWED_ADMINS.includes(user.email)) {
+            // ✅ Authorized
+            isAuthenticated = true;
+            currentUser = user.email;
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('authInfo').style.display = 'block';
+            document.getElementById('authInfo').innerHTML = `
+                <span style="color:#155724; font-weight:600;">✅ Signed in as ${user.displayName} (${user.email})</span>
+                <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:8px 15px;
+                margin-left:15px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
+            `;
+            document.getElementById('saveBtn').disabled = false;
+            document.getElementById('saveBtn').style.opacity = '1';
+            document.getElementById('saveBtn').style.cursor = 'pointer';
+            document.getElementById('syncBtn').disabled = false;
+            document.getElementById('syncBtn').style.opacity = '1';
+            document.getElementById('syncBtn').style.cursor = 'pointer';
+            // Reload from Firestore to get fresh data after sign-in
+            await loadAttendanceFromFirestore();
+        } else if (user) {
+            // Signed in but not allowed
+            signOut(auth);
+            document.getElementById('authMessage').textContent =
+                `❌ ${user.email} is not an authorized admin.`;
+        } else {
+            // Not signed in — load read-only data from Firestore
+            isAuthenticated = false;
+            currentUser = null;
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('authInfo').style.display = 'none';
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('saveBtn').style.opacity = '0.5';
+            document.getElementById('saveBtn').style.cursor = 'not-allowed';
+            await loadAttendanceFromFirestore();
+        }
+    });
+
+    window.signInWithGoogle = async function() {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+        } catch(err) {
+            document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message;
+        }
+    };
+
+    // Sanitize member names for use as Firestore field keys (dots cause nested path issues)
+    function toFirestoreKey(name)   { return name.replace(/\./g, '__dot__'); }
+    function fromFirestoreKey(name) { return name.replace(/__dot__/g, '.'); }
+
+    function encodeAttendanceRecord(record) {
+        const encoded = {};
+        for (const [name, status] of Object.entries(record)) {
+            encoded[toFirestoreKey(name)] = status;
+        }
+        return encoded;
+    }
+
+    function decodeAttendanceRecord(record) {
+        const decoded = {};
+        for (const [key, status] of Object.entries(record)) {
+            decoded[fromFirestoreKey(key)] = status;
+        }
+        return decoded;
+    }
+
+    // Load all data from Firestore: attendance + members + archive
+    window.loadAttendanceFromFirestore = async function() {
+        try {
+            updateSyncStatus('⬇️ Loading from cloud...');
+
+            // Load attendance
+            const attSnap = await getDocs(collection(db, 'choirAttendance'));
+            attendanceData = {};
+            attSnap.forEach(docSnap => {
+                attendanceData[docSnap.id] = decodeAttendanceRecord(docSnap.data());
+            });
+            localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+
+            // Load active members
+            const membersSnap = await getDocs(collection(db, 'members'));
+            membersSnap.forEach(docSnap => {
+                if (docSnap.id === 'active') {
+                    const d = docSnap.data();
+                    members.female   = d.female   || [];
+                    members.male     = d.male     || [];
+                    members.occasional = d.occasional || [];
+                }
+                if (docSnap.id === 'archive') {
+                    pastMembers = docSnap.data().pastMembers || [];
+                }
+            });
+
+            cleanupOldAttendance();
+            renderAttendance();
+            loadAttendanceForDate();
+            updateSyncStatus('✅ Loaded from cloud');
+            setTimeout(() => updateSyncStatus(''), 3000);
+        } catch(err) {
+            console.error('Firestore load error:', err);
+            updateSyncStatus('⚠️ Cloud load failed — using local data');
+            setTimeout(() => updateSyncStatus(''), 4000);
+        }
+    };
+
+    // Save only the current date's attendance record to Firestore
+    window.saveAttendanceToFirestore = async function(dateToSave) {
+        if (!isAuthenticated) return false;
+        try {
+            updateSyncStatus('⬆️ Saving to cloud...');
+            if (dateToSave) {
+                // Save a single date (called from markAttendanceAuto)
+                const data = encodeAttendanceRecord(attendanceData[dateToSave] || {});
+                await setDoc(doc(db, 'choirAttendance', dateToSave), data);
+            } else {
+                // Save all dates (called from Save button / manual sync)
+                for (const [date, data] of Object.entries(attendanceData)) {
+                    await setDoc(doc(db, 'choirAttendance', date), encodeAttendanceRecord(data));
+                }
+            }
+            updateSyncStatus(`✅ Saved to cloud ${new Date().toLocaleTimeString()}`);
+            setTimeout(() => updateSyncStatus(''), 3000);
+            return true;
+        } catch(err) {
+            console.error('Firestore save error:', err);
+            updateSyncStatus('❌ Cloud save failed');
+            setTimeout(() => updateSyncStatus(''), 4000);
+            return false;
+        }
+    };
+
+    // Save members list (active roster) to Firestore
+    window.saveMembersToFirestore = async function() {
+        if (!isAuthenticated) return false;
+        try {
+            await setDoc(doc(db, 'members', 'active'), {
+                female: members.female,
+                male: members.male,
+                occasional: members.occasional
+            });
+            return true;
+        } catch(err) {
+            console.error('Firestore members save error:', err);
+            return false;
+        }
+    };
+
+    // Save archive to Firestore
+    window.saveArchiveToFirestore = async function() {
+        if (!isAuthenticated) return false;
+        try {
+            await setDoc(doc(db, 'members', 'archive'), { pastMembers });
+            return true;
+        } catch(err) {
+            console.error('Firestore archive save error:', err);
+            return false;
+        }
+    };
+    </script>
     <style>
         * { 
             margin: 0; 
@@ -405,30 +582,29 @@
         
         <!-- Attendance Tab -->
         <div id="attendance" class="tab-content active">
-            <!-- Authentication Section -->
-            <div id="authSection" style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                <h3 style="color: #856404; margin-bottom: 15px;">🔒 Authentication Required</h3>
-                <p style="margin-bottom: 15px; color: #856404;">Enter your username to mark or edit attendance:</p>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" id="githubUsername" placeholder="Username (e.g., octocat)" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid #ffc107; border-radius: 8px;" onkeypress="if(event.key==='Enter') authenticate(event)">
-                    <button onclick="authenticate(event)" style="background: #ffc107; color: #856404; font-weight: 600; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Verify & Unlock</button>
-                </div>
-                <p style="margin-top: 10px; font-size: 12px; color: #856404;">
-                    💡 View-only mode: You can view past attendance without authentication.
-                </p>
-            </div>
+        <div id="authSection" style="background: #fff3cd; padding: 15px; border-radius: 10px;
+                margin-bottom: 20px; border-left: 4px solid #ffc107;">
+            <span style="color: #856404; font-weight: 600;">🔒 Sign in to mark or update attendance</span>
+            <button onclick="signInWithGoogle()" style="
+                background: white; border: 2px solid #e2e8f0; padding: 8px 16px;
+                margin-left: 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+                color: #2d3748; display: inline-flex; align-items: center; gap: 8px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    width="18" height="18" alt="Google">
+                Sign in with Google
+            </button>
+            <p style="margin-top: 6px; font-size: 12px; color: #856404;">💡 You can view attendance and reports without signing in.</p>
+            <p id="authMessage" style="color: #e53e3e; margin-top: 4px; font-size: 13px;"></p>
+        </div>
             
-            <!-- Authenticated User Info -->
-            <div id="authInfo" style="display: none; background: #d4edda; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #28a745;">
-                <span style="color: #155724; font-weight: 600;">✅ Admin Access Granted</span>
-                <button onclick="logout()" style="background: #dc3545; color: white; padding: 8px 15px; margin-left: 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">Logout</button>
-            </div>
+            <!-- Authenticated User Info — populated by onAuthStateChanged in module script -->
+            <div id="authInfo" style="display: none; background: #d4edda; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #28a745;"></div>
             
             <div class="date-selector">
                 <label>📅 Select Date:</label>
                 <input type="date" id="attendanceDate" onchange="loadAttendanceForDate()">
                 <button class="save-btn" onclick="saveAttendance()" id="saveBtn" disabled style="opacity: 0.5; cursor: not-allowed;">💾 Save Attendance</button>
-                <button class="save-btn" onclick="manualSync()" style="background: #667eea; margin-left: 10px;">☁️ Sync to Cloud</button>
+                <button id="syncBtn" class="save-btn" onclick="manualSync()" style="background: #667eea; margin-left: 10px; opacity: 0.5; cursor: not-allowed;" disabled>☁️ Sync to Cloud</button>
                 <span id="syncStatus" style="margin-left: 15px; font-size: 12px; color: #6c757d;"></span>
             </div>
             
@@ -455,20 +631,21 @@
                     <div id="pastMembersList"></div>
                 </div>
             </div>
-        </div>
-        
+        </div><!-- end #attendance tab -->
+
         <!-- Quarterly Report Tab -->
         <div id="quarterly" class="tab-content">
             <div class="report-controls">
                 <label>Select Quarter:</label>
                 <select id="quarterSelect" onchange="generateQuarterlyReport()">
                     <option value="Q1">Q1 (Jan-Mar)</option>
-                    <option value="Q2">Q2 (Apr-Jun)</option>
+                    <option value="Q2" selected>Q2 (Apr-Jun)</option>
                     <option value="Q3">Q3 (Jul-Sep)</option>
                     <option value="Q4">Q4 (Oct-Dec)</option>
                 </select>
                 <select id="quarterYear" onchange="generateQuarterlyReport()">
-                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
                     <option value="2027">2027</option>
                 </select>
                 <button class="export-btn" onclick="exportToPDF('quarterly')">📄 Export to PDF</button>
@@ -481,7 +658,8 @@
             <div class="report-controls">
                 <label>Select Year:</label>
                 <select id="yearSelect" onchange="generateYearlyReport()">
-                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
                     <option value="2027">2027</option>
                 </select>
                 <button class="export-btn" onclick="exportToPDF('yearly')">📄 Export to PDF</button>
@@ -494,24 +672,16 @@
             <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; border-left: 4px solid #2196f3;">
                 <h3 style="color: #1976d2; margin-bottom: 15px;">📝 Managing Choir Members</h3>
                 <p style="margin-bottom: 10px; line-height: 1.6;">
-                    To add, edit, or remove choir members, please edit the file:
-                </p>
-                <code style="background: white; padding: 10px; display: block; border-radius: 5px; margin: 10px 0; font-size: 14px;">
-                    data/choir-members.json
-                </code>
-                <p style="margin-top: 15px; line-height: 1.6; font-size: 14px;">
-                    <strong>Structure:</strong>
-                </p>
-                <pre style="background: white; padding: 15px; border-radius: 5px; margin: 10px 0; overflow-x: auto; font-size: 13px;">{
-  "female": ["Name 1", "Name 2", ...],
-  "male": ["Name 3", "Name 4", ...],
-  "occasional": ["Name 5", "Name 6", ...]
-}</pre>
-                <p style="margin-top: 15px; line-height: 1.6; font-size: 14px; color: #666;">
-                    💡 <strong>Tip:</strong> After editing the file, refresh this page to see the updated member list.
+                    The active member roster and archive are stored in <strong>Firebase Firestore</strong>
+                    (collection: <code>members</code>, documents: <code>active</code> and <code>archive</code>).
                 </p>
                 <p style="margin-top: 10px; line-height: 1.6; font-size: 14px; color: #666;">
-                    ✅ <strong>Benefit:</strong> Member names are stored in a file (easy to backup), while attendance data syncs to GitHub Gist.
+                    💡 <strong>To move a member out:</strong> Use the "Move to Archive" section below — it updates Firestore automatically.
+                </p>
+                <p style="margin-top: 10px; line-height: 1.6; font-size: 14px; color: #666;">
+                    💡 <strong>To add a new member:</strong> Edit the <code>members → active</code> document directly in the
+                    <a href="https://console.firebase.google.com/project/holy-hymns/firestore" target="_blank" style="color:#1976d2;">Firebase Console</a>
+                    and refresh this page.
                 </p>
             </div>
             
@@ -568,58 +738,43 @@
     </div>
     
     <script>
-        // Cloud Sync Configuration (Admin: Set these values once)
-        const SHARED_GIST_ID = 'ac89975338bf079cff3f169477e3cce1'; // Admin: Set your Gist ID here
-        const SHARED_GIST_TOKEN = ''; // Admin: Set your GitHub token here (optional - for write access)
-        // IMPORTANT: Never commit your token to Git! Set it locally only.
-        
-        // Encrypted GitHub Username Whitelist (Admin: Generate using generate-whitelist.html)
-        const ENCRYPTED_WHITELIST = 'FnYwNwoKBgcYfW8='; // Admin: Paste encrypted whitelist here
-        const WHITELIST_KEY = 'MTC_choir_2026'; // Admin: Change this secret key
-        
-        let gistId = SHARED_GIST_ID;
-        let gistToken = SHARED_GIST_TOKEN || localStorage.getItem('gistToken') || ''; // Load from localStorage if available
+        // Auth state — managed by Firebase module script above
         let isAuthenticated = false;
         let currentUser = null;
-        
-        // Members will be loaded from JSON file
+
+        // Members — loaded from Firestore after sign-in; fall back to JSON for view-only mode
         let members = {
             female: [],
             male: [],
             occasional: []
         };
-        
+
         // Past members archive
         let pastMembers = [];
-        
-        // Load members from JSON file
-        async function loadMembers() {
+
+        // Fallback: load members from local JSON (used in view-only / offline mode)
+        async function loadMembersFallback() {
             try {
                 const response = await fetch('../data/choir-members.json');
                 if (response.ok) {
                     members = await response.json();
-                    console.log('Members loaded from choir-members.json');
-                } else {
-                    console.error('Failed to load choir-members.json');
+                    console.log('Members loaded from choir-members.json (fallback)');
                 }
             } catch (error) {
-                console.error('Error loading members:', error);
+                console.error('Error loading members fallback:', error);
             }
         }
-        
-        // Load past members from archive
-        async function loadPastMembers() {
+
+        // Fallback: load archive from local JSON
+        async function loadPastMembersFallback() {
             try {
                 const response = await fetch('../data/choir-members-archive.json');
                 if (response.ok) {
                     const data = await response.json();
                     pastMembers = data.pastMembers || [];
-                    console.log('Past members loaded from archive');
-                } else {
-                    console.error('Failed to load archive');
                 }
             } catch (error) {
-                console.error('Error loading past members:', error);
+                console.error('Error loading archive fallback:', error);
             }
         }
         
@@ -649,9 +804,8 @@
             if (cleaned) {
                 localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
                 console.log('Old attendance data cleaned up');
-                // Sync cleaned data to cloud
-                if (gistId && gistToken) {
-                    syncToGist();
+                if (isAuthenticated) {
+                    saveAttendanceToFirestore();
                 }
             }
         }
@@ -665,32 +819,50 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadMembers(); // Load members from JSON file first
-            await loadPastMembers(); // Load past members
-            cleanupOldAttendance(); // Clean up old attendance data
+            // Load from local JSON as initial fallback (view-only / before sign-in)
+            // Load local JSON as initial fallback while Firebase auth resolves
+            await loadMembersFallback();
+            await loadPastMembersFallback();
+            cleanupOldAttendance();
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             renderAttendance();
             loadAttendanceForDate();
-            
-            // Auto-sync on load if configured
-            if (gistId) {
-                syncFromGist();
-                // Auto-sync every 5 minutes
-                setInterval(() => syncFromGist(), 5 * 60 * 1000);
-            }
+            // onAuthStateChanged (above) will call loadAttendanceFromFirestore() for all users
+            // once Firebase resolves, replacing local data with live Firestore data
         });
         
         function switchTab(tabName, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
+
             if (event && event.target) {
                 event.target.classList.add('active');
             }
             document.getElementById(tabName).classList.add('active');
-            
-            if (tabName === 'quarterly') generateQuarterlyReport();
-            if (tabName === 'yearly') generateYearlyReport();
+
+            if (tabName === 'quarterly') {
+                // Default to current quarter and year
+                const now = new Date();
+                const currentYear = String(now.getFullYear());
+                const currentQ = ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'][now.getMonth()];
+                const qSel = document.getElementById('quarterSelect');
+                const qySel = document.getElementById('quarterYear');
+                if (qySel && ![...qySel.options].some(o => o.value === currentYear)) {
+                    qySel.insertAdjacentHTML('afterbegin', `<option value="${currentYear}">${currentYear}</option>`);
+                }
+                if (qSel) qSel.value = currentQ;
+                if (qySel) qySel.value = currentYear;
+                generateQuarterlyReport();
+            }
+            if (tabName === 'yearly') {
+                const currentYear = String(new Date().getFullYear());
+                const ySel = document.getElementById('yearSelect');
+                if (ySel && ![...ySel.options].some(o => o.value === currentYear)) {
+                    ySel.insertAdjacentHTML('afterbegin', `<option value="${currentYear}">${currentYear}</option>`);
+                }
+                if (ySel) ySel.value = currentYear;
+                generateYearlyReport();
+            }
             if (tabName === 'manage') renderMemberLists();
         }
         
@@ -805,87 +977,45 @@
                 selectEl.style.color = '#742a2a';
             }
             
-            // Auto-save to localStorage
+            // Auto-save to localStorage and Firestore
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
-            updateSyncStatus('💾 Auto-saved');
             updateTotalPresent();
-            
-            // Clear status after 2 seconds
-            setTimeout(() => updateSyncStatus(''), 2000);
+            if (isAuthenticated) {
+                saveAttendanceToFirestore(date);
+            } else {
+                updateSyncStatus('💾 Saved locally');
+                setTimeout(() => updateSyncStatus(''), 2000);
+            }
         }
         
         function loadAttendanceForDate() {
             renderAttendance();
         }
         
-        function saveAttendance() {
+        async function saveAttendance() {
             if (!isAuthenticated) {
-                alert('🔒 Authentication required!\n\nPlease login to save attendance.');
+                alert('🔒 Authentication required!\n\nPlease sign in to save attendance.');
                 return;
             }
-            
+
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
-            
-            // Always try to sync to cloud if configured
-            if (gistId) {
-                // If token not set, prompt for it
-                if (!gistToken) {
-                    const token = prompt('🔑 Enter your GitHub Personal Access Token to sync:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens\n\nThis will be saved in browser storage.\n\nClick Cancel to save locally only.');
-                    
-                    if (token && token.trim() !== '') {
-                        gistToken = token.trim();
-                        localStorage.setItem('gistToken', gistToken);
-                    } else {
-                        alert('✅ Attendance saved locally only!\n\nUse "☁️ Sync to Cloud" button to sync later.');
-                        return;
-                    }
-                }
-                
-                updateSyncStatus('⬆️ Saving & syncing...');
-                syncToGist().then(success => {
-                    if (success) {
-                        alert('✅ Attendance saved and synced to cloud!');
-                    } else {
-                        alert('⚠️ Attendance saved locally, but cloud sync failed.\n\nToken will be cleared. Try "Sync to Cloud" button again.');
-                        gistToken = '';
-                        localStorage.removeItem('gistToken'); // Clear invalid token
-                    }
-                });
+            const success = await saveAttendanceToFirestore();
+            if (success) {
+                alert('✅ Attendance saved and synced to cloud!');
             } else {
-                alert('⚠️ Attendance saved locally only!\n\nGist ID not configured in code (line 485).');
+                alert('⚠️ Attendance saved locally, but cloud sync failed.\n\nCheck your internet connection and try "☁️ Sync to Cloud" again.');
             }
         }
-        
-        function manualSync() {
-            // If token is not configured, prompt for it
-            if (!gistToken) {
-                const token = prompt('🔑 Enter your GitHub Personal Access Token:\n\n(Token needs "gist" permission)\n\nGet one at: https://github.com/settings/tokens\n\nThis will be saved in browser storage.');
-                
-                if (!token || token.trim() === '') {
-                    alert('❌ Sync cancelled - no token provided');
-                    return;
-                }
-                
-                // Save the token to localStorage and memory
-                gistToken = token.trim();
-                localStorage.setItem('gistToken', gistToken);
-            }
-            
-            if (!gistId) {
-                alert('⚠️ Gist ID not configured!\n\nPlease set SHARED_GIST_ID in the code (line 485)');
+
+        async function manualSync() {
+            if (!isAuthenticated) {
+                alert('🔒 Please sign in with Google to sync to the cloud.');
                 return;
             }
-            
-            updateSyncStatus('⬆️ Syncing to cloud...');
-            syncToGist().then(success => {
-                if (success) {
-                    alert('✅ Successfully synced to cloud!\n\nYour attendance data is now saved securely.');
-                } else {
-                    alert('❌ Cloud sync failed!\n\nCheck:\n• Token has "gist" permission\n• Gist ID is correct\n• Internet connection\n\nToken will be cleared. Please try again.');
-                    gistToken = '';
-                    localStorage.removeItem('gistToken'); // Clear invalid token
-                }
-            });
+            const success = await saveAttendanceToFirestore();
+            if (!success) {
+                alert('❌ Cloud sync failed!\n\nCheck your internet connection and try again.');
+            }
         }
         
         function generateQuarterlyReport() {
@@ -1007,123 +1137,6 @@
             container.innerHTML = html;
         }
         
-        // Decrypt whitelist
-        async function decryptWhitelist() {
-            if (!ENCRYPTED_WHITELIST) {
-                return [];
-            }
-            
-            try {
-                // Simple XOR decryption (obscurity, not true security)
-                const key = WHITELIST_KEY;
-                const encrypted = atob(ENCRYPTED_WHITELIST);
-                let decrypted = '';
-                
-                for (let i = 0; i < encrypted.length; i++) {
-                    decrypted += String.fromCharCode(encrypted.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-                }
-                
-                return JSON.parse(decrypted);
-            } catch (error) {
-                console.error('Failed to decrypt whitelist');
-                return [];
-            }
-        }
-        
-        // Verify GitHub user exists
-        async function verifyGitHubUser(username) {
-            try {
-                const response = await fetch(`https://api.github.com/users/${username}`);
-                return response.ok;
-            } catch (error) {
-                return false;
-            }
-        }
-        
-        // Authentication functions
-        async function authenticate(event) {
-            console.log('Authenticate function called');
-            const username = document.getElementById('githubUsername').value.trim();
-            
-            if (!username) {
-                alert('Please enter your username!');
-                return;
-            }
-            
-            // Check if whitelist is configured
-            if (!ENCRYPTED_WHITELIST) {
-                alert('⚠️ Whitelist not configured!\n\nAdmin: Please generate and set the encrypted whitelist.');
-                return;
-            }
-            
-            // Show loading
-            const btn = event ? event.target : document.querySelector('button[onclick*="authenticate"]');
-            const originalText = btn.textContent;
-            btn.textContent = '⏳ Verifying...';
-            btn.disabled = true;
-            
-            try {
-                // Decrypt whitelist
-                const whitelist = await decryptWhitelist();
-                
-                // Check if user is in whitelist
-                if (!whitelist.includes(username.toLowerCase())) {
-                    alert('❌ Access Denied!\n\nYour username is not authorized.');
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                // Verify user exists on GitHub
-                const userExists = await verifyGitHubUser(username);
-                if (!userExists) {
-                    alert('❌ GitHub user not found!\n\nPlease check your username.');
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                // Grant access
-                isAuthenticated = true;
-                currentUser = username;
-                
-                // Update UI
-                document.getElementById('authSection').style.display = 'none';
-                document.getElementById('authInfo').style.display = 'block';
-                document.getElementById('saveBtn').disabled = false;
-                document.getElementById('saveBtn').style.opacity = '1';
-                document.getElementById('saveBtn').style.cursor = 'pointer';
-                
-                // Re-render attendance with edit buttons enabled
-                renderAttendance();
-                
-                alert(`✅ Welcome, ${username}!\n\nYou can now mark and edit attendance.`);
-            } catch (error) {
-                console.error('Authentication error:', error);
-                alert('❌ Authentication failed!\n\nPlease try again.');
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        function logout() {
-            isAuthenticated = false;
-            currentUser = null;
-            
-            // Update UI
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('authInfo').style.display = 'none';
-            document.getElementById('githubUsername').value = '';
-            document.getElementById('saveBtn').disabled = true;
-            document.getElementById('saveBtn').style.opacity = '0.5';
-            document.getElementById('saveBtn').style.cursor = 'not-allowed';
-            
-            // Re-render attendance in view-only mode
-            renderAttendance();
-            
-            alert('✅ Logged out successfully!');
-        }
-        
         function renderMemberLists() {
             renderMemberList('femaleList', members.female, 'female');
             renderMemberList('maleList', members.male, 'male');
@@ -1221,19 +1234,32 @@
                 notes: notes || ''
             };
             
-            // Add to past members
+            // Remove from active members
+            members[category] = members[category].filter(n => n !== memberName);
+
+            // Add to past members archive
             pastMembers.push(archiveEntry);
-            
-            // Show instructions for manual file update
-            alert(`✅ Archive entry created for ${memberName}\n\n📝 MANUAL STEPS REQUIRED:\n\n1. Remove "${memberName}" from data/choir-members.json\n2. Add this entry to data/choir-members-archive.json:\n\n${JSON.stringify(archiveEntry, null, 2)}\n\n3. Refresh this page\n\nNote: Attendance data will be kept for 1 year from ${leaveDate}`);
-            
+
+            // Save both to Firestore
+            const [membersSaved, archiveSaved] = await Promise.all([
+                saveMembersToFirestore(),
+                saveArchiveToFirestore()
+            ]);
+
+            if (membersSaved && archiveSaved) {
+                alert(`✅ ${memberName} moved to Past Members.\n\nAttendance history will be kept for 1 year from ${leaveDate}.`);
+            } else {
+                alert(`⚠️ Archive updated locally but cloud save failed.\n\nTry "☁️ Sync to Cloud" to retry.`);
+            }
+
             // Clear form
             select.value = '';
             document.getElementById('archiveLeaveDate').value = '';
             document.getElementById('archiveNotes').value = '';
-            
+
             // Refresh display
-            renderPastMembersTable();
+            renderMemberLists();
+            renderAttendance();
         }
         
         function renderMemberList(containerId, memberList, category) {
@@ -1487,97 +1513,6 @@
             return { totalMembers, avgAttendance, totalDays, insights };
         }
         
-        async function syncToGist() {
-            if (!gistId || !gistToken) {
-                return false;
-            }
-            
-            try {
-                updateSyncStatus('⬆️ Syncing...');
-                
-                // Only sync attendance data (members are in JSON file)
-                const data = {
-                    attendance: attendanceData,
-                    lastSync: new Date().toISOString()
-                };
-                
-                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${gistToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        files: {
-                            'choir-attendance-data.json': {
-                                content: JSON.stringify(data, null, 2)
-                            }
-                        }
-                    })
-                });
-                
-                if (response.ok) {
-                    updateSyncStatus(`✅ Synced ${new Date().toLocaleTimeString()}`);
-                    return true;
-                } else {
-                    const errorData = await response.json();
-                    console.error('Sync failed:', errorData);
-                    updateSyncStatus('❌ Sync failed');
-                    return false;
-                }
-            } catch (error) {
-                console.error('Sync error:', error);
-                updateSyncStatus('❌ Sync error');
-                return false;
-            }
-        }
-        
-        async function syncFromGist() {
-            if (!gistId) {
-                return false;
-            }
-            
-            try {
-                updateSyncStatus('⬇️ Syncing...');
-                
-                const headers = gistToken ? {
-                    'Authorization': `token ${gistToken}`
-                } : {};
-                
-                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: headers
-                });
-                
-                if (response.ok) {
-                    const gist = await response.json();
-                    const file = gist.files['choir-attendance-data.json'];
-                    
-                    if (file) {
-                        const data = JSON.parse(file.content);
-                        
-                        // Only update attendance (members are loaded from JSON file)
-                        if (data.attendance) {
-                            attendanceData = data.attendance;
-                            localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
-                        }
-                        
-                        renderAttendance();
-                        loadAttendanceForDate();
-                        
-                        const syncTime = data.lastSync ? new Date(data.lastSync).toLocaleString() : 'Unknown';
-                        updateSyncStatus(`✅ Synced ${new Date().toLocaleTimeString()}`);
-                        return true;
-                    }
-                    return false;
-                } else {
-                    updateSyncStatus('');
-                    return false;
-                }
-            } catch (error) {
-                updateSyncStatus('');
-                return false;
-            }
-        }
     </script>
 </body>
 </html>
