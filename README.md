@@ -20,9 +20,28 @@ Complete collection of Malayalam Christian hymns, convention songs, and worship 
 
 ## 🚀 Quick Start
 
+<<<<<<< HEAD
 1. Open `index.html` in your browser
 2. Browse collections
 3. Click any song to view lyrics and video
+=======
+**Public**
+- Browse all song collections
+- View lyrics with Malayalam and English titles
+- YouTube video playback
+- Search by song number or name
+- Next / Previous navigation with keyboard shortcuts (← →)
+- Quick-jump to song by number
+- Favorites / bookmarks
+- Dark mode
+- Mobile responsive
+
+**Admin** *(view-only is public; sign-in required to make changes)*
+- **Worship Service Planner** — View service history and search by song (public); create/edit/delete services and mark as sung (sign-in required)
+- **Choir Attendance Tracker** — View attendance by date and quarterly/yearly reports with PDF export (public); mark/update attendance (sign-in required)
+- **Lyrics Editor** — Add and edit song data *(sign-in required)*
+- **Timestamp Converter** — Generate YouTube deep-link timestamps
+>>>>>>> 45f7d4b (updated readme)
 
 ---
 
@@ -68,10 +87,21 @@ Hymn_project/
 
 Access at `/admin/admin.html` (password protected):
 
+<<<<<<< HEAD
 - **Worship Planner** - Plan worship services with smart song suggestions and "Mark as Sung" tracking
 - **Choir Attendance** - Track attendance
 - **Lyrics Editor** - Edit song lyrics
 - **Timestamp Converter** - YouTube timestamps
+=======
+**View service history / attendance / reports (public)**
+1. Navigate to `admin/admin.html`
+2. Select a tool — history and reports load without sign-in
+
+**Make changes (sign-in required)**
+1. Navigate to `admin/admin.html`
+2. Sign in with an authorized Google account
+3. Select a tool to create/edit services or mark attendance
+>>>>>>> 45f7d4b (updated readme)
 
 ---
 
