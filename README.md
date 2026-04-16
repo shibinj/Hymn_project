@@ -1,24 +1,26 @@
-# 🎵 Holy Hymns - Malayalam Christian Songs Collection
+# Holy Hymns — Malayalam Christian Songs Collection
 
-Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos.
+A web-based platform for browsing, searching, and playing Malayalam Christian hymns and convention songs, with admin tools for worship planning and choir management.
 
 **Live Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
 
 ---
 
-## 📊 Quick Stats
+## Song Collections
 
-- **663+ Songs** across 11 collections
-- **504 Hymns** from Kristheeya Keerthanangal
-- **96 Maramon Convention Songs** (2013-2026)
-- **23 Passion Week Songs**
-- **22 Holy Communion Songs**
-- **18 Kottarakara Convention Songs**
-- **11 Birthday/Anniversary Songs** (dedicated celebration songs)
+| Collection | Songs | Notes |
+|---|---|---|
+| Kristheeya Keerthanangal | 517 | Complete Malayalam hymn book |
+| Maramon Convention | 96 | 2013, 2021, 2023–2026 |
+| Passion Week | 23 | Lent and Easter songs |
+| Holy Communion | 22 | Qurbana songs |
+| Kottarakara Convention | 18 | 2025–2026 |
+| Birthday / Anniversary | 15 | Celebration songs |
+| **Total** | **681+** | **11 collections** |
 
 ---
 
-## 🚀 Quick Start
+## Features
 
 **Public**
 - Browse all song collections
@@ -39,47 +41,60 @@ Complete collection of Malayalam Christian hymns, convention songs, and worship 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-Hymn_project/
-├── index.html              # Main landing page
-├── viewer.html             # Song viewer
-├── admin/                  # Admin tools (password protected)
-├── data/                   # JSON song data
-├── docs/                   # Documentation
-├── tools/                  # Utility scripts
-├── assets/                 # Large files (PDFs, Excel)
-└── archive/                # Old/unused files
+Hymn_DEV/
+├── index.html                  # Main landing page
+├── viewer.html                 # Song viewer (lyrics + video)
+├── admin/
+│   ├── admin.html              # Admin dashboard
+│   ├── worship-planner.html    # Worship service planner
+│   ├── choir-attendance.html   # Choir attendance tracker
+│   ├── lyrics-editor.html      # Lyrics editor
+│   ├── timestamp-converter.html
+│   ├── firebase-config.js      # Firebase config (not committed)
+│   └── docs/                   # Admin-specific guides
+├── data/
+│   ├── kristheeya-keerthanangal.json
+│   ├── maramon-20XX.json       # One file per convention year
+│   ├── kottarakara-20XX.json
+│   ├── holy-communion.json
+│   ├── passion-week.json
+│   ├── birthday-anniversary.json
+│   ├── choir-members.json      # Active member roster
+│   └── choir-members-archive.json
+├── docs/                       # Project documentation
+│   ├── choir-attendance/       # Choir attendance guides
+│   └── project-info/           # Architecture and structure notes
+├── tools/                      # Utility scripts
+├── assets/                     # Large static files
+└── archive/                    # Old / unused files
 ```
 
 ---
 
-## 📖 Documentation
+## Firebase / Cloud Sync
 
-### General
-- **[Full Documentation](docs/README.md)** - Complete project details
-- **[New Features Guide](docs/NEW_FEATURES.md)** - Latest viewer features
-- **[UI Improvements](docs/INDEX_IMPROVEMENTS.md)** - Recent UI changes
-- **[Data Entry Guide](docs/MARAMON_DATA_ENTRY_GUIDE.md)** - Adding songs
-- **[Sync Setup](docs/SYNC_SETUP.md)** - Cloud sync configuration
+The admin tools use Firebase Firestore for cloud data persistence. Collection names:
 
-### Choir Attendance System
-- **[Quick Start](docs/choir-attendance/QUICKSTART.md)** - 5-minute overview
-- **[Archive Guide](docs/choir-attendance/ARCHIVE_QUICK_REFERENCE.md)** - Managing past members
-- **[Complete Guide](docs/choir-attendance/PAST_MEMBERS_GUIDE.md)** - Full documentation
-- **[All Choir Docs](docs/choir-attendance/)** - Complete choir attendance documentation
+| Tool | Firestore Collection |
+|---|---|
+| Worship Planner (services) | `worshipHistory` |
+| Choir Attendance | `choirAttendance` |
+| Choir Members (active roster) | `members` → doc `active` |
+| Choir Members (archive) | `members` → doc `archive` |
 
-### Project Information
-- **[Project Structure](docs/project-info/PROJECT_STRUCTURE.md)** - File organization
-- **[Restructure Guide](docs/project-info/RESTRUCTURE.md)** - Project reorganization
-- **[Maramon Compact View](docs/MARAMON_COMPACT_VIEW.md)** - Maramon songs display
+To configure, copy `admin/firebase-config.template.js` to `admin/firebase-config.js` and fill in your project credentials and allowed admin emails.
 
 ---
 
-## 🛠️ Admin Tools
+## Quick Start
 
-Access at `/admin/admin.html` (password protected):
+**Browse songs (public)**
+1. Open `index.html`
+2. Pick a collection
+3. Click a song to view lyrics and video
 
 **View service history / attendance / reports (public)**
 1. Navigate to `admin/admin.html`
@@ -92,34 +107,24 @@ Access at `/admin/admin.html` (password protected):
 
 ---
 
-## 🎯 Features
+## Documentation
 
-- ✅ 663+ songs with lyrics
-- ✅ YouTube video integration
-- ✅ Search functionality
-- ✅ **Next/Previous navigation** with keyboard shortcuts (← →)
-- ✅ **Quick jump** to song by number
-- ✅ **Favorites/bookmarks** system
-- ✅ Dark mode
-- ✅ Mobile responsive
-- ✅ Offline capable
-- ✅ **Worship Planner** - Smart suggestions based on actually sung services (Mark as Sung tracking)
+| Guide | Location |
+|---|---|
+| Choir Attendance — Quick Start | `docs/choir-attendance/QUICKSTART.md` |
+| Choir Attendance — Full Guide | `docs/choir-attendance/COMPLETE.md` |
+| Managing Past Members | `docs/choir-attendance/PAST_MEMBERS_GUIDE.md` |
+| Adding Songs (Data Entry) | `docs/MARAMON_DATA_ENTRY_GUIDE.md` |
+| Project Structure (detailed) | `docs/project-info/PROJECT_STRUCTURE.md` |
+| New Viewer Features | `docs/NEW_FEATURES.md` |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-This is a community resource. To add songs or report issues:
-
-1. Use admin tools (if you have access)
-2. Contact: shibinjohn@live.com
+This is a community resource for the Malayalam Christian community.  
+To add songs, report issues, or request access: **shibinjohn@live.com**
 
 ---
 
-## 📜 License
-
-Non-commercial community resource for the Malayalam Christian community.
-
----
-
-**Made with ❤️ for the Malayalam Christian community**
+*Non-commercial community resource.*

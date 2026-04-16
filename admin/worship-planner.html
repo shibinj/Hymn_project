@@ -140,8 +140,22 @@
         <h1>🎵 Worship Service Planner</h1>
         <p class="subtitle">Generate random song selections for Sunday worship</p>
         
+        <!-- Auth Section -->
+        <div id="authSection" style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+            <span style="color: #856404; font-weight: 600;">🔒 Sign in to create or edit services</span>
+            <button onclick="signInWithGoogle()" style="background: white; border: 2px solid #e2e8f0; padding: 8px 16px;
+                margin-left: 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+                color: #2d3748; display: inline-flex; align-items: center; gap: 8px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
+                Sign in with Google
+            </button>
+            <p style="margin-top: 6px; font-size: 12px; color: #856404;">💡 You can view service history without signing in.</p>
+            <p id="authMessage" style="color: #e53e3e; margin-top: 4px; font-size: 12px;"></p>
+        </div>
+        <div id="authInfo" style="display: none; background: #d4edda; padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #28a745;"></div>
+
         <div class="service-info" style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">📅 Service Date</label>
                     <input type="date" id="serviceDate" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
@@ -150,22 +164,17 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">📖 Theme of the Week</label>
                     <input type="text" id="serviceTheme" placeholder="Enter theme..." style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
                 </div>
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748;">🔗 GitHub Gist ID <span style="font-size: 11px; font-weight: normal; color: #6c757d;">(optional)</span></label>
-                    <input type="text" id="gistId" placeholder="Enter Gist ID..." style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" />
-                </div>
             </div>
             <div id="syncStatus" style="margin-top: 10px; font-size: 12px; color: #6c757d;"></div>
         </div>
-        
+
         <div class="controls">
-            <button onclick="generateService()">🎲 Generate New Service</button>
-            <button class="save-btn" onclick="saveService()">💾 Save Service</button>
+            <button id="btnGenerate" onclick="generateService()" disabled style="opacity:0.45; cursor:not-allowed;">🎲 Generate New Service</button>
+            <button id="btnSave" class="save-btn" onclick="saveService()" disabled style="opacity:0.45; cursor:not-allowed;">💾 Save Service</button>
             <button class="whatsapp-btn" onclick="shareToWhatsApp()">📱 Share to WhatsApp</button>
             <button class="history-btn" onclick="showHistory()">📜 View History</button>
             <button class="print-btn" onclick="window.print()">🖨️ Print</button>
-            <button onclick="setupGist()" style="background: #4299e1;">⚙️ Setup Cloud Sync</button>
-            <button onclick="syncFromGist()" style="background: #48bb78;">🔄 Sync Now</button>
+            <button id="btnSync" onclick="manualSync()" style="background: #48bb78; opacity:0.45; cursor:not-allowed;" disabled>🔄 Sync Now</button>
             <select id="offertoryConvention">
                 <option value="alternate">Alternate Conventions</option>
                 <option value="maramon-2025">Maramon 2025</option>
@@ -207,18 +216,126 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    window._db = db;
+    window._auth = auth;
+
+    function setWriteButtonsEnabled(enabled) {
+        ['btnGenerate', 'btnSave', 'btnSync'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.disabled = !enabled;
+            btn.style.opacity = enabled ? '1' : '0.45';
+            btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user && ALLOWED_ADMINS.includes(user.email)) {
+            isAuthenticated = true;
+            currentUser = user.email;
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('authInfo').style.display = 'block';
+            document.getElementById('authInfo').innerHTML = `
+                <span style="color:#155724; font-weight:600;">✅ Signed in as ${user.displayName} (${user.email})</span>
+                <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:6px 12px;
+                margin-left:12px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
+            `;
+            setWriteButtonsEnabled(true);
+            await loadFromFirestore();
+        } else if (user) {
+            signOut(auth);
+            document.getElementById('authMessage').textContent =
+                `❌ ${user.email} is not an authorized admin.`;
+        } else {
+            isAuthenticated = false;
+            currentUser = null;
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('authInfo').style.display = 'none';
+            setWriteButtonsEnabled(false);
+            // Load history publicly so anyone can view it
+            await loadFromFirestore();
+        }
+    });
+
+    window.signInWithGoogle = async function() {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+        } catch(err) {
+            document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message;
+        }
+    };
+
+    // Load full service history from Firestore
+    window.loadFromFirestore = async function() {
+        try {
+            updateSyncStatus('⬇️ Loading from cloud...');
+            const snapshot = await getDocs(collection(db, 'worshipHistory'));
+            const loaded = [];
+            snapshot.forEach(docSnap => loaded.push(docSnap.data()));
+            // Sort by date descending — no cap, Firestore supports full history
+            serviceHistory = loaded
+                .sort((a, b) => b.date - a.date);
+            localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+            displayRecentlyUsed();
+            updateSyncStatus(`✅ Loaded ${serviceHistory.length} services from cloud`);
+            setTimeout(() => updateSyncStatus(''), 3000);
+        } catch(err) {
+            console.error('Firestore load error:', err);
+            updateSyncStatus('⚠️ Cloud load failed — using local data');
+            setTimeout(() => updateSyncStatus(''), 4000);
+        }
+    };
+
+    // Save a single service to Firestore (document ID = date timestamp as string)
+    window.saveToFirestore = async function(service) {
+        if (!isAuthenticated) return false;
+        try {
+            const docId = String(service.date);
+            await setDoc(doc(db, 'worshipHistory', docId), service);
+            return true;
+        } catch(err) {
+            console.error('Firestore save error:', err);
+            return false;
+        }
+    };
+
+    // Delete a single service from Firestore by date timestamp
+    window.deleteFromFirestore = async function(dateTimestamp) {
+        if (!isAuthenticated) return false;
+        try {
+            await deleteDoc(doc(db, 'worshipHistory', String(dateTimestamp)));
+            return true;
+        } catch(err) {
+            console.error('Firestore delete error:', err);
+            return false;
+        }
+    };
+    </script>
+
     <script>
         let hymns = [];
         let conventions = {};
         let celebrationSongs = [];
         let lastConvention = 'kottarakara';
         let serviceHistory = [];
-        
-        // CONFIGURE THIS: Your GitHub Gist ID (leave empty to disable cloud sync)
-        const SHARED_GIST_ID = 'db9382e61d3f976d88eb0c9d0a643b7d'; // Paste your Gist ID here, e.g., 'abc123def456'
-        
-        let gistId = SHARED_GIST_ID || localStorage.getItem('gistId') || '';
-        let gistToken = localStorage.getItem('gistToken') || '';
+
+        // Auth state — managed by Firebase module script above
+        let isAuthenticated = false;
+        let currentUser = null;
 
         // Song categories
         const categories = {
@@ -236,156 +353,25 @@
             conventions['maramon-2026'] = await fetch('../data/maramon-2026.json').then(r => r.json());
             conventions['kottarakara-2025'] = await fetch('../data/kottarakara-2025.json').then(r => r.json());
             conventions['kottarakara-2026'] = await fetch('../data/kottarakara-2026.json').then(r => r.json());
-            
-            // Auto-configure Gist ID if set in code
-            if (SHARED_GIST_ID) {
-                gistId = SHARED_GIST_ID;
-                document.getElementById('gistId').value = '••••••••••••••••'; // Masked for security
-                document.getElementById('gistId').disabled = true;
-                
-                // Only prompt for token if not already dismissed
-                const tokenDismissed = localStorage.getItem('tokenPromptDismissed');
-                
-                if (!gistToken && !tokenDismissed) {
-                    // Show a less intrusive prompt
-                    setTimeout(() => {
-                        const enableSync = confirm('🔄 Enable Cloud Sync?\n\nSync your worship services across all devices.\n\nClick OK to set up (requires GitHub token for editing)\nClick Cancel to view-only mode (no token needed)');
-                        
-                        if (enableSync) {
-                            const token = prompt('Enter your GitHub Personal Access Token:\n\n1. Go to: https://github.com/settings/tokens\n2. Generate new token (classic)\n3. Check "gist" permission\n4. Copy and paste here\n\n(Stored locally in your browser only)');
-                            
-                            if (token) {
-                                gistToken = token;
-                                localStorage.setItem('gistToken', gistToken);
-                                syncFromGist();
-                            } else {
-                                localStorage.setItem('tokenPromptDismissed', 'true');
-                                updateSyncStatus('ℹ️ View-only mode. You can view history but cannot save services.');
-                                syncFromGist(); // Sync without token for read-only
-                            }
-                        } else {
-                            localStorage.setItem('tokenPromptDismissed', 'true');
-                            updateSyncStatus('ℹ️ View-only mode. You can view history but cannot save services.');
-                            syncFromGist(); // Sync without token for read-only
-                        }
-                    }, 1000);
-                } else if (gistToken) {
-                    await syncFromGist();
-                } else {
-                    // No token but dismissed - still try to sync for read-only
-                    await syncFromGist();
-                }
-            } else if (gistId) {
-                document.getElementById('gistId').value = gistId;
-                await syncFromGist();
-            }
-            
-            // Always load local data as fallback
+
+            // Load from localStorage as fallback (Firestore loads after Google sign-in)
             if (serviceHistory.length === 0) {
                 serviceHistory = JSON.parse(localStorage.getItem('serviceHistory') || '[]');
             }
-            
+
             displayRecentlyUsed();
-        }
-
-        async function syncFromGist() {
-            if (!gistId) return;
-            
-            try {
-                updateSyncStatus('🔄 Syncing from cloud...');
-                
-                // Try with token first (if available)
-                const headers = gistToken ? {
-                    'Authorization': `token ${gistToken}`
-                } : {};
-                
-                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: headers
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch Gist');
-                }
-                
-                const gist = await response.json();
-                const file = gist.files['worship-service-history.json'];
-                
-                if (file) {
-                    serviceHistory = JSON.parse(file.content);
-                    localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
-                    updateSyncStatus(`✅ Synced ${serviceHistory.length} services from cloud`);
-                } else {
-                    updateSyncStatus('⚠️ No data found in Gist');
-                }
-            } catch (error) {
-                console.error('Sync error:', error);
-                updateSyncStatus('❌ Sync failed - using local data');
-                serviceHistory = JSON.parse(localStorage.getItem('serviceHistory') || '[]');
-            }
-        }
-
-        async function syncToGist() {
-            if (!gistId || !gistToken) {
-                return false;
-            }
-            
-            try {
-                updateSyncStatus('🔄 Saving to cloud...');
-                
-                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${gistToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        files: {
-                            'worship-service-history.json': {
-                                content: JSON.stringify(serviceHistory, null, 2)
-                            }
-                        }
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to update Gist');
-                }
-                
-                updateSyncStatus(`✅ Saved to cloud (${serviceHistory.length} services)`);
-                return true;
-            } catch (error) {
-                console.error('Sync error:', error);
-                updateSyncStatus('❌ Cloud save failed - saved locally only');
-                return false;
-            }
         }
 
         function updateSyncStatus(message) {
             document.getElementById('syncStatus').textContent = message;
         }
 
-        function setupGist() {
-            const newGistId = document.getElementById('gistId').value.trim();
-            
-            if (!newGistId) {
-                alert('Please enter a Gist ID');
+        async function manualSync() {
+            if (!isAuthenticated) {
+                alert('🔒 Please sign in with Google to sync changes to the cloud.');
                 return;
             }
-            
-            const token = prompt('Enter your GitHub Personal Access Token (with gist permission):\n\nThis will be stored locally in your browser.');
-            
-            if (!token) {
-                return;
-            }
-            
-            gistId = newGistId;
-            gistToken = token;
-            
-            localStorage.setItem('gistId', gistId);
-            localStorage.setItem('gistToken', gistToken);
-            
-            alert('✅ GitHub Gist configured! Data will now sync automatically.');
-            syncFromGist();
+            await loadFromFirestore();
         }
 
         function wasRecentlyUsed(songNum, category) {
@@ -1012,7 +998,7 @@
             }
         }
 
-        function saveService() {
+        async function saveService() {
             if (!window.currentService || !window.currentService[2].song) {
                 alert('Please set Birthday/Anniversary song before saving!');
                 return;
@@ -1047,28 +1033,23 @@
                 serviceHistory.unshift(service);
             }
             
-            serviceHistory = serviceHistory.slice(0, 50); // Keep last 50 services
+            // No cap — full history kept in Firestore for better pattern recognition
             
             // Save to localStorage
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
-            
-            // Sync to Gist if configured and token available
-            if (gistId && gistToken) {
-                syncToGist().then(success => {
-                    if (success) {
-                        alert('✅ Service saved and synced to cloud!');
-                    } else {
-                        alert('✅ Service saved locally (cloud sync failed)');
-                    }
-                    displayRecentlyUsed();
-                });
-            } else if (gistId && !gistToken) {
-                alert('⚠️ View-only mode: Cannot save to cloud.\n\nYour service is saved locally only.\n\nTo enable cloud saving, click "Setup Cloud Sync" and enter your GitHub token.');
-                displayRecentlyUsed();
+
+            // Save to Firestore if authenticated
+            if (isAuthenticated) {
+                const success = await saveToFirestore(service);
+                if (success) {
+                    alert('✅ Service saved and synced to cloud!');
+                } else {
+                    alert('⚠️ Service saved locally, but cloud sync failed.\n\nTry "🔄 Sync Now" to retry.');
+                }
             } else {
-                alert('✅ Service saved locally!');
-                displayRecentlyUsed();
+                alert('✅ Service saved locally!\n\nSign in with Google to sync to cloud.');
             }
+            displayRecentlyUsed();
         }
 
         function displayRecentlyUsed() {
@@ -1095,12 +1076,7 @@
                 populateTheme(e.target.value);
             });
             
-            // Auto-sync every 5 minutes if Gist is configured
-            if (gistId && gistToken) {
-                setInterval(() => {
-                    syncFromGist();
-                }, 5 * 60 * 1000);
-            }
+            // Firestore data is loaded by onAuthStateChanged above (for all users, signed-in or not)
         });
 
         // Weekly themes for 2026 (add more years as needed)
@@ -1207,8 +1183,12 @@
             document.getElementById('serviceTheme').value = matchedTheme;
         }
 
-        function showHistory() {
+        async function showHistory() {
             document.getElementById('historyModal').style.display = 'block';
+            if (serviceHistory.length === 0) {
+                document.getElementById('historyList').innerHTML = '<p style="color:#6c757d;">⬇️ Loading from cloud...</p>';
+                await loadFromFirestore();
+            }
             displayFullHistory();
         }
 
@@ -1220,7 +1200,7 @@
             const historyToShow = filtered || serviceHistory;
             
             if (historyToShow.length === 0) {
-                document.getElementById('historyList').innerHTML = '<p>No services saved yet.</p>';
+                document.getElementById('historyList').innerHTML = '<p style="color:#6c757d;">No services saved yet.</p>';
                 return;
             }
             
@@ -1257,23 +1237,28 @@
                 const originalIndex = serviceHistory.findIndex(s => s.date === service.date);
                 const isSung = service.confirmed === true;
 
-                // Only show edit/delete for today or future dates
+                // Edit/delete/mark-as-sung require authentication; share is always available
                 const isFutureOrToday = serviceDate >= today;
-                const actionButtons = isFutureOrToday ? `
+                const actionButtons = isAuthenticated && isFutureOrToday ? `
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                         <button onclick="loadServiceForEdit(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #ed8936;">✏️ Edit</button>
                         <button onclick="deleteService(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #e53e3e;">🗑️ Delete</button>
                         <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
                     </div>
-                ` : isSung ? `
+                ` : isAuthenticated && isSung ? `
                     <div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
                         <span style="font-size: 12px; color: #38a169; font-weight: 600;">✅ Sung</span>
                         <button onclick="unmarkAsSung(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #718096;">↩️ Unmark</button>
                         <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
                     </div>
-                ` : `
+                ` : isAuthenticated ? `
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                         <button onclick="markAsSung(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #38a169;">✅ Mark as Sung</button>
+                        <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
+                    </div>
+                ` : `
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
+                        ${isSung ? '<span style="font-size: 12px; color: #38a169; font-weight: 600;">✅ Sung</span>' : ''}
                         <button onclick="shareServiceFromHistory(${originalIndex})" style="padding: 6px 12px; font-size: 12px; background: #25d366;">📱 Share</button>
                     </div>
                 `;
@@ -1395,7 +1380,7 @@
             if (index < 0 || index >= serviceHistory.length) return;
             serviceHistory[index].confirmed = true;
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
-            if (gistId && gistToken) syncToGist();
+            if (isAuthenticated) saveToFirestore(serviceHistory[index]);
             displayFullHistory();
         }
 
@@ -1403,7 +1388,7 @@
             if (index < 0 || index >= serviceHistory.length) return;
             serviceHistory[index].confirmed = false;
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
-            if (gistId && gistToken) syncToGist();
+            if (isAuthenticated) saveToFirestore(serviceHistory[index]);
             displayFullHistory();
         }
 
@@ -1420,13 +1405,11 @@
                 return;
             }
             
+            const deletedDate = service.date;
             serviceHistory.splice(index, 1);
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
-            
-            // Sync to cloud if available
-            if (gistId && gistToken) {
-                syncToGist();
-            }
+
+            if (isAuthenticated) deleteFromFirestore(deletedDate);
             
             alert('✅ Service deleted!');
             displayFullHistory();
@@ -1711,11 +1694,17 @@
                     const newServices = importedData.filter(s => !existingDates.has(s.date));
                     
                     serviceHistory = [...serviceHistory, ...newServices]
-                        .sort((a, b) => b.date - a.date)
-                        .slice(0, 50); // Keep last 50 services
+                        .sort((a, b) => b.date - a.date);
                     
                     localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
-                    
+
+                    if (isAuthenticated) {
+                        Promise.all(newServices.map(s => saveToFirestore(s))).then(() => {
+                            updateSyncStatus(`✅ Imported & synced ${newServices.length} services to cloud`);
+                            setTimeout(() => updateSyncStatus(''), 4000);
+                        });
+                    }
+
                     alert(`✅ Imported ${newServices.length} new services!\nTotal services: ${serviceHistory.length}`);
                     displayRecentlyUsed();
                 } catch (error) {

@@ -35,7 +35,8 @@
         .hymn-item:hover { background: #f0f0f0; }
         .hymn-item.active { background: #007bff; color: white; }
         .hymn-item.has-lyrics { border-left: 4px solid #28a745; }
-        .hymn-item.no-lyrics { border-left: 4px solid #dc3545; }
+        .hymn-item.has-draft  { border-left: 4px solid #fd7e14; }
+        .hymn-item.no-lyrics  { border-left: 4px solid #dc3545; }
         .editor {
             background: white;
             padding: 20px;
@@ -59,36 +60,42 @@
             margin-top: 15px;
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         button {
             padding: 10px 20px;
-            font-size: 16px;
+            font-size: 14px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .save-btn {
-            background: #28a745;
-            color: white;
-        }
+        .save-btn     { background: #28a745; color: white; }
         .save-btn:hover { background: #218838; }
-        .download-btn {
-            background: #007bff;
-            color: white;
-        }
+        .download-btn { background: #007bff; color: white; }
         .download-btn:hover { background: #0056b3; }
-        .clear-btn {
-            background: #dc3545;
-            color: white;
-        }
+        .clear-btn    { background: #dc3545; color: white; }
         .clear-btn:hover { background: #c82333; }
+        .clear-drafts-btn { background: #6c757d; color: white; }
+        .clear-drafts-btn:hover { background: #545b62; }
         .stats {
             margin-bottom: 15px;
-            padding: 10px;
+            padding: 10px 15px;
             background: #e9ecef;
             border-radius: 5px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
+        .legend {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #555;
+        }
+        .legend span { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
         .no-selection {
             display: flex;
             align-items: center;
@@ -97,6 +104,36 @@
             color: #999;
             font-size: 18px;
         }
+        .draft-badge {
+            display: inline-block;
+            background: #fd7e14;
+            color: white;
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        #syncStatus {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: auto;
+        }
+        .auth-bar {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .auth-bar.signed-in {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -104,25 +141,50 @@
         <a href="../admin.html" style="background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block;">← Admin Home</a>
     </div>
     <h1>📝 Hymn Lyrics Editor</h1>
-    
-    <div class="stats">
-        <label for="collectionSelect"><strong>Collection:</strong></label>
-        <select id="collectionSelect" onchange="loadCollection()" style="padding: 5px 10px; margin-left: 10px; border-radius: 5px;">
-            <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
-            <option value="birthday-anniversary">Birthday/Anniversary Songs</option>
-            <option value="holy-communion">Holy Communion Songs</option>
-            <option value="maramon-2013">Maramon Convention 2013</option>
-            <option value="maramon-2021">Maramon Convention 2021</option>
-            <option value="maramon-2023">Maramon Convention 2023</option>
-            <option value="maramon-2024">Maramon Convention 2024</option>
-            <option value="maramon-2025">Maramon Convention 2025</option>
-            <option value="maramon-2026">Maramon Convention 2026</option>
-            <option value="kottarakara-2025">Kottarakara Convention 2025</option>
-            <option value="kottarakara-2026">Kottarakara Convention 2026</option>
-        </select>
-        <span style="margin-left: 20px;"><strong>Progress:</strong> <span id="progress">0/0</span> hymns have lyrics</span>
+
+    <!-- Auth bar -->
+    <div class="auth-bar" id="authBar">
+        <span style="color: #856404; font-weight: 600;">🔒 Sign in to save lyrics to the cloud</span>
+        <button onclick="signInWithGoogle()" style="background: white; border: 2px solid #e2e8f0; padding: 7px 14px;
+            border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+            color: #2d3748; display: inline-flex; align-items: center; gap: 8px;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" height="16" alt="Google">
+            Sign in with Google
+        </button>
+        <p id="authMessage" style="color: #e53e3e; font-size: 12px; margin: 0;"></p>
     </div>
-    
+
+    <div class="stats">
+        <div>
+            <label for="collectionSelect"><strong>Collection:</strong></label>
+            <select id="collectionSelect" onchange="loadCollection()" style="padding: 5px 10px; margin-left: 10px; border-radius: 5px;">
+                <option value="kristheeya-keerthanangal">Kristheeya Keerthanangal</option>
+                <option value="birthday-anniversary">Birthday/Anniversary Songs</option>
+                <option value="holy-communion">Holy Communion Songs</option>
+                <option value="maramon-2013">Maramon Convention 2013</option>
+                <option value="maramon-2021">Maramon Convention 2021</option>
+                <option value="maramon-2023">Maramon Convention 2023</option>
+                <option value="maramon-2024">Maramon Convention 2024</option>
+                <option value="maramon-2025">Maramon Convention 2025</option>
+                <option value="maramon-2026">Maramon Convention 2026</option>
+                <option value="kottarakara-2025">Kottarakara Convention 2025</option>
+                <option value="kottarakara-2026">Kottarakara Convention 2026</option>
+            </select>
+        </div>
+
+        <div><strong>Progress:</strong> <span id="progress">0/0</span> have lyrics
+            &nbsp;|&nbsp; <span id="draftCount">0</span> unsaved drafts
+        </div>
+
+        <div class="legend">
+            <span><span class="dot" style="background:#28a745;"></span> Has lyrics</span>
+            <span><span class="dot" style="background:#fd7e14;"></span> Draft (unsaved)</span>
+            <span><span class="dot" style="background:#dc3545;"></span> No lyrics</span>
+        </div>
+
+        <span id="syncStatus"></span>
+    </div>
+
     <div class="container">
         <div class="hymn-list" id="hymnList"></div>
         <div class="editor" id="editor">
@@ -130,27 +192,151 @@
         </div>
     </div>
 
-    <script>
-        let songs = [];
-        let currentSong = null;
-        let currentCollection = 'kristheeya-keerthanangal';
+    <!-- Firebase SDKs -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        function loadCollection() {
+    import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    window._db   = db;
+    window._auth = auth;
+
+    // ── Auth ──────────────────────────────────────────────────────────────────
+    onAuthStateChanged(auth, async (user) => {
+        if (user && ALLOWED_ADMINS.includes(user.email)) {
+            isAuthenticated = true;
+            currentUser = user.email;
+            const bar = document.getElementById('authBar');
+            bar.className = 'auth-bar signed-in';
+            bar.innerHTML = `
+                <span style="color:#155724; font-weight:600;">✅ Signed in as ${user.displayName} (${user.email})</span>
+                <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:6px 12px;
+                    border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
+            `;
+            await loadDraftsFromFirestore();
+        } else if (user) {
+            signOut(auth);
+            document.getElementById('authMessage').textContent = `❌ ${user.email} is not an authorized admin.`;
+        } else {
+            isAuthenticated = false;
+            currentUser = null;
+        }
+    });
+
+    window.signInWithGoogle = async function() {
+        const provider = new GoogleAuthProvider();
+        try { await signInWithPopup(auth, provider); }
+        catch(err) { document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message; }
+    };
+
+    // ── Firestore: load all drafts for current collection ────────────────────
+    window.loadDraftsFromFirestore = async function() {
+        if (!isAuthenticated || !currentCollection) return;
+        try {
+            updateSyncStatus('⬇️ Loading drafts...');
+            const snap = await getDocs(collection(db, 'lyricsEdits', currentCollection, 'songs'));
+            drafts = {};
+            snap.forEach(d => { drafts[d.id] = d.data().lyrics; });
+            mergeDraftsIntoSongs();
+            displayHymnList();
+            updateStats();
+            updateSyncStatus(`✅ ${Object.keys(drafts).length} draft(s) loaded`);
+            setTimeout(() => updateSyncStatus(''), 3000);
+        } catch(err) {
+            console.error('Firestore load error:', err);
+            updateSyncStatus('⚠️ Could not load drafts');
+            setTimeout(() => updateSyncStatus(''), 4000);
+        }
+    };
+
+    // ── Firestore: save a single song's draft ────────────────────────────────
+    window.saveDraftToFirestore = async function(songNumber, lyrics) {
+        if (!isAuthenticated) return false;
+        try {
+            updateSyncStatus('⬆️ Saving...');
+            const key = String(songNumber);
+            await setDoc(doc(db, 'lyricsEdits', currentCollection, 'songs', key), { lyrics });
+            updateSyncStatus(`✅ Saved ${new Date().toLocaleTimeString()}`);
+            setTimeout(() => updateSyncStatus(''), 3000);
+            return true;
+        } catch(err) {
+            console.error('Firestore save error:', err);
+            updateSyncStatus('❌ Save failed');
+            setTimeout(() => updateSyncStatus(''), 4000);
+            return false;
+        }
+    };
+
+    // ── Firestore: clear all drafts for current collection ───────────────────
+    window.clearDraftsFromFirestore = async function() {
+        if (!isAuthenticated) return false;
+        try {
+            updateSyncStatus('🗑️ Clearing drafts...');
+            const snap = await getDocs(collection(db, 'lyricsEdits', currentCollection, 'songs'));
+            const batch = writeBatch(db);
+            snap.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+            updateSyncStatus('✅ Drafts cleared');
+            setTimeout(() => updateSyncStatus(''), 3000);
+            return true;
+        } catch(err) {
+            console.error('Firestore clear error:', err);
+            updateSyncStatus('❌ Clear failed');
+            setTimeout(() => updateSyncStatus(''), 4000);
+            return false;
+        }
+    };
+    </script>
+
+    <script>
+        let songs            = [];   // base data from JSON
+        let drafts           = {};   // { songNumber: lyrics } — from Firestore
+        let mergedSongs      = [];   // songs with drafts applied on top
+        let currentSong      = null;
+        let currentCollection = 'kristheeya-keerthanangal';
+        let isAuthenticated  = false;
+        let currentUser      = null;
+
+        // Apply drafts on top of base JSON songs
+        function mergeDraftsIntoSongs() {
+            mergedSongs = songs.map(s => {
+                const key = String(s.number);
+                if (drafts[key] !== undefined) {
+                    return { ...s, lyrics: drafts[key], _isDraft: true };
+                }
+                return { ...s, _isDraft: false };
+            });
+        }
+
+        function updateSyncStatus(msg) {
+            document.getElementById('syncStatus').textContent = msg;
+        }
+
+        async function loadCollection() {
             currentCollection = document.getElementById('collectionSelect').value;
-            const collectionFile = `../data/${currentCollection}.json`;
-            
-            // Load songs
-            fetch(collectionFile)
-                .then(res => res.json())
-                .then(data => {
-                    songs = data;
-                    displayHymnList();
-                    updateStats();
-                    document.getElementById('editor').innerHTML = '<div class="no-selection">Select a hymn to edit lyrics</div>';
-                })
-                .catch(err => {
-                    alert('Error loading collection: ' + err.message);
-                });
+            drafts = {};
+            mergedSongs = [];
+            currentSong = null;
+            document.getElementById('editor').innerHTML = '<div class="no-selection">Select a hymn to edit lyrics</div>';
+
+            try {
+                const res = await fetch(`../data/${currentCollection}.json`);
+                songs = await res.json();
+                mergeDraftsIntoSongs();
+                displayHymnList();
+                updateStats();
+                // Pull drafts from Firestore if signed in
+                if (isAuthenticated) await loadDraftsFromFirestore();
+            } catch(err) {
+                alert('Error loading collection: ' + err.message);
+            }
         }
 
         // Load default collection on page load
@@ -158,57 +344,81 @@
 
         function displayHymnList() {
             const listEl = document.getElementById('hymnList');
-            listEl.innerHTML = songs.map(song => {
-                const hasLyrics = song.lyrics && song.lyrics.trim().length > 0;
-                const className = hasLyrics ? 'has-lyrics' : 'no-lyrics';
+            listEl.innerHTML = mergedSongs.map(song => {
+                let className;
+                if (song._isDraft)                                  className = 'has-draft';
+                else if (song.lyrics && song.lyrics.trim().length > 0) className = 'has-lyrics';
+                else                                                    className = 'no-lyrics';
+
                 const displayNumber = typeof song.number === 'string' ? song.number : `#${song.number}`;
+                const draftBadge    = song._isDraft ? '<span class="draft-badge">draft</span>' : '';
+
                 return `
                     <div class="hymn-item ${className}" onclick="selectHymn('${song.number}')">
-                        <strong>${displayNumber}</strong> - ${song.name}
+                        <strong>${displayNumber}</strong>${draftBadge} — ${song.name}
                     </div>
                 `;
             }).join('');
         }
 
         function selectHymn(number) {
-            currentSong = songs.find(s => s.number == number);
+            currentSong = mergedSongs.find(s => s.number == number);
             if (!currentSong) return;
 
-            // Highlight selected
             document.querySelectorAll('.hymn-item').forEach(item => item.classList.remove('active'));
             event.target.closest('.hymn-item').classList.add('active');
 
             const displayNumber = typeof currentSong.number === 'string' ? currentSong.number : `#${currentSong.number}`;
-            
-            // Show editor
+            const draftNote = currentSong._isDraft
+                ? `<span class="draft-badge">unsaved draft</span>`
+                : '';
+
             document.getElementById('editor').innerHTML = `
-                <h2>${displayNumber} - ${currentSong.name}</h2>
+                <h2>${displayNumber} — ${currentSong.name} ${draftNote}</h2>
                 <textarea id="lyricsInput" placeholder="Enter lyrics in Malayalam...">${currentSong.lyrics || ''}</textarea>
                 <div class="buttons">
-                    <button class="save-btn" onclick="saveLyrics()">💾 Save</button>
+                    <button class="save-btn" onclick="saveLyrics()">💾 Save to Cloud</button>
                     <button class="clear-btn" onclick="clearLyrics()">🗑️ Clear</button>
                     <button class="download-btn" onclick="downloadJSON()">⬇️ Download JSON</button>
+                    <button class="clear-drafts-btn" onclick="confirmClearDrafts()">🧹 Clear All Drafts</button>
                 </div>
+                <p style="margin-top:10px; font-size:12px; color:#6c757d;">
+                    💡 <strong>Save to Cloud</strong> stores a draft in Firestore instantly.
+                    Once you're done editing, <strong>Download JSON</strong> and commit the file to make changes permanent.
+                    Then use <strong>Clear All Drafts</strong> to reset the draft layer.
+                </p>
             `;
         }
 
-        function saveLyrics() {
+        async function saveLyrics() {
             if (!currentSong) return;
-            
+
             const lyrics = document.getElementById('lyricsInput').value;
-            currentSong.lyrics = lyrics;
-            
-            // Update in songs array
-            const index = songs.findIndex(s => s.number == currentSong.number);
-            if (index !== -1) {
-                songs[index].lyrics = lyrics;
-            }
-            
-            // Update display
+            const key    = String(currentSong.number);
+
+            // Update in-memory
+            currentSong.lyrics  = lyrics;
+            currentSong._isDraft = true;
+            drafts[key] = lyrics;
+
+            const idx = mergedSongs.findIndex(s => s.number == currentSong.number);
+            if (idx !== -1) mergedSongs[idx] = { ...mergedSongs[idx], lyrics, _isDraft: true };
+
             displayHymnList();
             updateStats();
-            
-            alert('✓ Lyrics saved! Don\'t forget to download the updated JSON.');
+
+            // Re-highlight the active item
+            document.querySelectorAll('.hymn-item').forEach(item => {
+                if (item.querySelector('strong')?.textContent.replace('#','') == String(currentSong.number).replace('#','')) {
+                    item.classList.add('active');
+                }
+            });
+
+            if (isAuthenticated) {
+                await saveDraftToFirestore(currentSong.number, lyrics);
+            } else {
+                alert('⚠️ Not signed in — lyrics saved in memory only.\n\nSign in to persist drafts to the cloud.');
+            }
         }
 
         function clearLyrics() {
@@ -218,19 +428,47 @@
         }
 
         function downloadJSON() {
-            const dataStr = JSON.stringify(songs, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${currentCollection}_updated.json`;
+            // Merge drafts into base songs for the final output
+            const output = songs.map(s => {
+                const key = String(s.number);
+                if (drafts[key] !== undefined) return { ...s, lyrics: drafts[key] };
+                return s;
+            });
+
+            const dataStr = JSON.stringify(output, null, 2);
+            const blob    = new Blob([dataStr], { type: 'application/json' });
+            const url     = URL.createObjectURL(blob);
+            const a       = document.createElement('a');
+            a.href        = url;
+            a.download    = `${currentCollection}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
 
+        async function confirmClearDrafts() {
+            const draftKeys = Object.keys(drafts);
+            if (draftKeys.length === 0) {
+                alert('No drafts to clear for this collection.');
+                return;
+            }
+            if (!confirm(`Clear all ${draftKeys.length} draft(s) for "${currentCollection}"?\n\nOnly do this after you have committed the downloaded JSON file.`)) return;
+
+            drafts = {};
+            mergeDraftsIntoSongs();
+            displayHymnList();
+            updateStats();
+            document.getElementById('editor').innerHTML = '<div class="no-selection">Select a hymn to edit lyrics</div>';
+
+            if (isAuthenticated) {
+                await clearDraftsFromFirestore();
+            }
+        }
+
         function updateStats() {
-            const withLyrics = songs.filter(s => s.lyrics && s.lyrics.trim().length > 0).length;
-            document.getElementById('progress').textContent = `${withLyrics}/${songs.length}`;
+            const withLyrics = mergedSongs.filter(s => s.lyrics && s.lyrics.trim().length > 0).length;
+            const draftCount = mergedSongs.filter(s => s._isDraft).length;
+            document.getElementById('progress').textContent   = `${withLyrics}/${mergedSongs.length}`;
+            document.getElementById('draftCount').textContent = draftCount;
         }
     </script>
 </body>
