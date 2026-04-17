@@ -7,14 +7,14 @@
     <title>Holy Hymns | Malayalam Christian Songs Collection</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos. 663+ songs including Kristheeya Keerthanangal, Maramon Convention, Passion Week, and Holy Communion songs.">
+    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos. 678+ songs including Kristheeya Keerthanangal, Maramon Convention, Passion Week, and Holy Communion songs.">
     <meta name="keywords" content="Malayalam Christian hymns, ക്രിസ്തീയ കീർത്തനങ്ങൾ, Maramon convention songs, Kottarakara convention, worship songs, Malayalam worship, Christian keerthanangal">
     <link rel="canonical" href="https://shibinj.github.io/Hymn_project/">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Holy Hymns | Malayalam Christian Songs Collection">
-    <meta property="og:description" content="663+ Malayalam Christian hymns with lyrics and videos. Kristheeya Keerthanangal, Maramon Convention, Passion Week, and more.">
+    <meta property="og:description" content="678+ Malayalam Christian hymns with lyrics and videos. Kristheeya Keerthanangal, Maramon Convention, Passion Week, and more.">
     <meta property="og:url" content="https://shibinj.github.io/Hymn_project/">
     <meta property="og:image" content="https://shibinj.github.io/Hymn_project/favicon.ico">
     <meta property="og:site_name" content="Holy Hymns">
@@ -75,25 +75,34 @@
         }
         
         :root {
-            --bg-gradient-start: #667eea;
-            --bg-gradient-end: #764ba2;
-            --card-bg: white;
+            --bg-gradient-start: #2c4a7c;
+            --bg-gradient-end: #3b5998;
+            --card-bg: #fafbff;
             --text-primary: #2d3748;
             --text-secondary: #6c757d;
             --text-muted: #6c757d;
-            --border-color: #f1f1f1;
-            --accent-color: #667eea;
+            --border-color: #e8ecf8;
+            --accent-color: #b8860b;
+            --chat-start: #2c4a7c;
+            --chat-end: #3b5998;
         }
 
         body.dark-mode {
-            --bg-gradient-start: #1a202c;
-            --bg-gradient-end: #2d3748;
-            --card-bg: #2d3748;
+            --bg-gradient-start: #1a2a4a;
+            --bg-gradient-end: #243660;
+            --card-bg: #1a2035;
             --text-primary: #e2e8f0;
             --text-secondary: #a0aec0;
             --text-muted: #a0aec0;
-            --border-color: #4a5568;
-            --accent-color: #9f7aea;
+            --border-color: #2a3560;
+            --accent-color: #d4a843;
+            --chat-start: #1a2a4a;
+            --chat-end: #243660;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
         }
         
         body { 
@@ -119,13 +128,14 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 20px;
+            line-height: 1;
             transition: all 0.3s ease;
         }
-        
+
         .dark-mode-toggle:hover {
             background: rgba(255,255,255,0.3);
         }
@@ -163,6 +173,8 @@
             margin: 30px auto;
             max-width: 600px;
             backdrop-filter: blur(10px);
+            border: 1.5px solid #d4a843;
+            box-shadow: 0 0 0 1px rgba(212,168,67,0.2), 0 4px 20px rgba(0,0,0,0.15);
         }
         
         .stat-item {
@@ -192,6 +204,10 @@
             margin-left: 8px;
             font-weight: 600;
             animation: pulse 2s infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .new-badge { animation: none; }
+            #chatBtn.pulsing::before { animation: none; }
         }
         
         @keyframes pulse {
@@ -244,8 +260,8 @@
         
         .expand-btn {
             background: rgba(102, 126, 234, 0.1);
-            border: 2px solid #667eea;
-            color: #667eea;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
@@ -254,9 +270,9 @@
             transition: all 0.3s ease;
             white-space: nowrap;
         }
-        
+
         .expand-btn:hover {
-            background: #667eea;
+            background: var(--accent-color);
             color: white;
         }
         
@@ -286,8 +302,8 @@
         }
         
         .collection-item:hover {
-            background: rgba(102, 126, 234, 0.1);
-            border-left-color: #667eea;
+            background: rgba(44, 74, 124, 0.08);
+            border-left-color: var(--accent-color);
             transform: translateX(5px);
         }
         
@@ -313,7 +329,7 @@
         
         .collection-item-arrow {
             font-size: 1.2rem;
-            color: #667eea;
+            color: var(--accent-color);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -368,8 +384,8 @@
         .section-count {
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 2px solid #f0f0f0;
-            color: #667eea;
+            border-top: 2px solid var(--border-color);
+            color: var(--accent-color);
             font-weight: 600;
         }
         
@@ -378,7 +394,7 @@
             font-size: 1.8rem;
             margin: 40px 0 20px 0;
             padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255,255,255,0.3);
+            border-bottom: 2px solid #d4a843;
         }
         
         footer {
@@ -396,18 +412,16 @@
         }
         
         .disclaimer {
+            display: none;
             background: rgba(255,255,255,0.15);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: left;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
         }
-        
+
         .disclaimer.expanded {
-            max-height: 500px;
+            display: block;
         }
         
         .disclaimer h3 {
@@ -516,19 +530,67 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #b8860b, #d4a843);
             border: none;
             color: white;
             font-size: 22px;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(118,75,162,0.5);
+            box-shadow: 0 4px 16px rgba(184,134,11,0.5);
             z-index: 1000;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        #chatBtn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(118,75,162,0.7); }
+        #chatBtn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(184,134,11,0.7); }
+        #chatBtn.pulsing::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 3px solid rgba(212,168,67,0.6);
+            animation: chatPulseRing 1.4s ease-out infinite;
+        }
+        @keyframes chatPulseRing {
+            0%   { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        #chatGreeting {
+            position: fixed;
+            bottom: 92px;
+            right: 24px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 12px 15px;
+            border-radius: 16px 16px 4px 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+            font-size: 14px;
+            font-weight: 500;
+            max-width: 220px;
+            line-height: 1.5;
+            z-index: 998;
+            display: none;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            animation: greetSlideIn 0.35s ease;
+        }
+        #chatGreeting::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            right: 20px;
+            border-left: 9px solid transparent;
+            border-right: 0 solid transparent;
+            border-top: 9px solid var(--card-bg);
+            filter: drop-shadow(0 2px 1px rgba(0,0,0,0.08));
+        }
+        @keyframes greetSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 430px) {
+            #chatGreeting { right: 16px; bottom: 88px; max-width: 200px; font-size: 13px; }
+        }
 
         #chatPanel {
             position: fixed;
@@ -550,7 +612,7 @@
             to   { opacity: 1; transform: scale(1)    translateY(0);    }
         }
         .chat-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--chat-start), var(--chat-end));
             color: white;
             padding: 14px 16px;
             display: flex;
@@ -586,7 +648,7 @@
             max-height: 340px;
         }
         .chat-messages::-webkit-scrollbar { width: 4px; }
-        .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
         .chat-bubble {
             max-width: 85%;
             padding: 10px 13px;
@@ -597,7 +659,7 @@
         }
         .chat-bubble.user {
             align-self: flex-end;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--chat-start), var(--chat-end));
             color: white;
             border-bottom-right-radius: 4px;
         }
@@ -651,7 +713,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--chat-start), var(--chat-end));
             border: none;
             color: white;
             font-size: 16px;
@@ -666,8 +728,9 @@
         @media (max-width: 430px) {
             #chatPanel {
                 right: 0;
+                left: 0;
                 bottom: 80px;
-                width: 100vw;
+                width: 100%;
                 border-radius: 16px 16px 0 0;
                 max-height: 60vh;
             }
@@ -678,18 +741,18 @@
 <body>
     <div class="container">
         <div class="header-controls">
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
         </div>
         
         <header>
             <h1>🎵 Holy Hymns</h1>
             <p class="subtitle">Malayalam Christian Songs & Worship Collection</p>
-            <p class="intro-text">Browse 663+ Malayalam Christian hymns with lyrics and videos</p>
+            <p class="intro-text">Browse 678+ Malayalam Christian hymns with lyrics and videos</p>
         </header>
         
         <div class="stats-banner">
             <div class="stat-item">
-                <div class="stat-number">663+</div>
+                <div class="stat-number">678+</div>
                 <div class="stat-label">Songs</div>
             </div>
             <div class="stat-item">
@@ -736,10 +799,10 @@
         <h2 class="category-header">🎪 Maramon Convention Songs</h2>
         <div class="sections">
             <div class="collection-group">
-                <div class="collection-group-header" onclick="toggleMaramonList()">
+                <div class="collection-group-header" onclick="toggleMaramonList()" tabindex="0" role="button" aria-expanded="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMaramonList()}">
                     <div class="collection-group-info">
                         <div class="collection-group-title">🎪 Maramon Convention (2013-2026)</div>
-                        <div class="collection-group-subtitle">96 songs across 6 years</div>
+                        <div class="collection-group-subtitle">112 songs across 6 years</div>
                     </div>
                     <button class="expand-btn" id="maramon-toggle">▼ Show All Years</button>
                 </div>
@@ -843,7 +906,13 @@
     </div>
     
     <!-- Chat Widget -->
-    <button id="chatBtn" onclick="toggleChat()" title="Ask about hymns">💬</button>
+    <div id="chatGreeting" onclick="dismissGreeting(true)">🎵 Hello! Looking for a hymn?<br><span style="font-size:12px;opacity:0.75;">I can find songs by theme, occasion, or lyrics.</span></div>
+    <button id="chatBtn" onclick="toggleChat()" title="Ask about hymns">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+            <text x="7" y="13.5" font-size="8" fill="rgba(102,126,234,1)" font-family="serif" font-weight="bold">♪</text>
+        </svg>
+    </button>
 
     <div id="chatPanel">
         <div class="chat-header">
@@ -861,7 +930,7 @@
             </div>
         </div>
         <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="Ask about hymns..." maxlength="300">
+            <input type="text" id="chatInput" placeholder="Ask about hymns..." maxlength="300" aria-label="Ask about hymns">
             <button id="chatSend" onclick="sendChatMessage()">➤</button>
         </div>
     </div>
@@ -872,13 +941,13 @@
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('darkMode', isDark);
-            document.querySelector('.dark-mode-toggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            document.querySelector('.dark-mode-toggle').textContent = isDark ? '☀️' : '🌙';
         }
 
         // Load dark mode preference
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
-            document.querySelector('.dark-mode-toggle').textContent = '☀️ Light Mode';
+            document.querySelector('.dark-mode-toggle').textContent = '☀️';
         }
         
         // Disclaimer toggle
@@ -893,8 +962,11 @@
         function toggleMaramonList() {
             const list = document.getElementById('maramon-list');
             const button = document.getElementById('maramon-toggle');
+            const header = document.querySelector('.collection-group-header');
             list.classList.toggle('expanded');
-            button.textContent = list.classList.contains('expanded') ? '▲ Hide Years' : '▼ Show All Years';
+            const isExpanded = list.classList.contains('expanded');
+            button.textContent = isExpanded ? '▲ Hide Years' : '▼ Show All Years';
+            if (header) header.setAttribute('aria-expanded', isExpanded);
         }
 
         // ── Chat Widget ───────────────────────────────────────────────
@@ -906,7 +978,33 @@
             chatOpen = !chatOpen;
             const panel = document.getElementById('chatPanel');
             panel.style.display = chatOpen ? 'flex' : 'none';
-            if (chatOpen) document.getElementById('chatInput').focus();
+            if (chatOpen) {
+                dismissGreeting(false);
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        let greetingTimer = null;
+        function dismissGreeting(openChat) {
+            const g = document.getElementById('chatGreeting');
+            const btn = document.getElementById('chatBtn');
+            if (greetingTimer) clearTimeout(greetingTimer);
+            g.style.display = 'none';
+            btn.classList.remove('pulsing');
+            if (openChat && !chatOpen) toggleChat();
+        }
+
+        // Show greeting once per session after 2.5s
+        if (!sessionStorage.getItem('greetingShown')) {
+            sessionStorage.setItem('greetingShown', '1');
+            setTimeout(() => {
+                if (chatOpen) return;
+                const g = document.getElementById('chatGreeting');
+                const btn = document.getElementById('chatBtn');
+                g.style.display = 'block';
+                btn.classList.add('pulsing');
+                greetingTimer = setTimeout(() => dismissGreeting(false), 7000);
+            }, 2500);
         }
 
         document.addEventListener('keydown', (e) => {
