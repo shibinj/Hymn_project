@@ -471,25 +471,27 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #b8860b, #d4a843);
+            background: linear-gradient(135deg, #18181b, #27272a);
             border: none;
             color: white;
             font-size: 22px;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(184,134,11,0.5);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
             z-index: 1000;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0;
         }
-        #chatBtn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(184,134,11,0.7); }
+        #chatBtn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.65); }
+        #chatBtn lottie-player { width: 44px; height: 44px; pointer-events: none; }
         #chatBtn.pulsing::before {
             content: '';
             position: absolute;
             inset: -6px;
             border-radius: 50%;
-            border: 3px solid rgba(212,168,67,0.6);
+            border: 3px solid rgba(82,82,91,0.55);
             animation: chatPulseRing 1.4s ease-out infinite;
         }
         @keyframes chatPulseRing {
@@ -685,6 +687,7 @@
             #chatBtn { bottom: 20px; right: 16px; }
         }
     </style>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body>
     <div class="header-controls">
@@ -718,11 +721,8 @@
 
     <!-- Chat Widget -->
     <div id="chatGreeting" onclick="dismissGreeting(true)">🎵 Hello! Looking for a hymn?<br><span style="font-size:12px;opacity:0.75;">I can find songs by theme, occasion, or lyrics.</span></div>
-    <button id="chatBtn" onclick="toggleChat()" title="Ask about hymns" style="position:fixed;">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-            <text x="7" y="13.5" font-size="8" fill="rgba(102,126,234,1)" font-family="serif" font-weight="bold">♪</text>
-        </svg>
+    <button id="chatBtn" onclick="toggleChat()" title="Ask about hymns" aria-label="Open hymn assistant" style="position:fixed;">
+        <lottie-player src="assets/happy-bird.json" autoplay loop background="transparent" speed="1"></lottie-player>
     </button>
 
     <div id="chatPanel">
