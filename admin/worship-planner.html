@@ -17,7 +17,7 @@
             -ms-text-size-adjust: 100%;
         }
         
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; background: linear-gradient(135deg, #0f1d2e 0%, #1a2f47 100%); min-height: 100vh; }
         .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         h1 { color: #2d3748; margin-bottom: 10px; font-size: 24px; }
         .subtitle { color: #6c757d; margin-bottom: 20px; font-size: 14px; }
@@ -26,14 +26,14 @@
         .service-info label { display: block; font-weight: 600; margin-bottom: 5px; color: #2d3748; font-size: 13px; }
         .service-info input, .service-info select { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
         .controls { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        button { padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
-        button:hover { background: #5568d3; }
+        button { padding: 10px 16px; background: #b87333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+        button:hover { background: #9a5e26; }
         button:active { transform: scale(0.98); }
         select { padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; }
-        .service-section { background: #f7fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+        .service-section { background: #f7fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #b87333; }
         .section-title { font-size: 15px; font-weight: 600; color: #2d3748; margin-bottom: 12px; }
         .song-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-        .song-number { font-weight: 700; color: #667eea; font-size: 16px; display: block; margin-bottom: 5px; }
+        .song-number { font-weight: 700; color: #b87333; font-size: 16px; display: block; margin-bottom: 5px; }
         .song-name { color: #2d3748; display: block; margin-bottom: 5px; font-size: 14px; }
         .song-collection { font-size: 11px; color: #6c757d; background: #e2e8f0; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
         .manual-input { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -55,9 +55,9 @@
         .modal-header h2 { font-size: 20px; }
         .close-btn { font-size: 28px; cursor: pointer; color: #6c757d; line-height: 1; }
         .close-btn:hover { color: #2d3748; }
-        .history-item { background: #f7fafc; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #667eea; }
+        .history-item { background: #f7fafc; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #b87333; }
         .history-date { font-weight: 700; color: #2d3748; font-size: 14px; }
-        .history-theme { color: #667eea; font-size: 13px; margin: 5px 0; }
+        .history-theme { color: #b87333; font-size: 13px; margin: 5px 0; }
         .history-songs { font-size: 12px; color: #4a5568; margin-top: 8px; }
         .filter-section { background: #f7fafc; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         .filter-section label { font-weight: 600; font-size: 13px; }
@@ -135,7 +135,7 @@
 <body>
     <div class="container">
         <div style="margin-bottom: 15px;">
-            <a href="../admin.html" style="background: #667eea; border: none; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease; font-weight: 600;">← Admin Home</a>
+            <a href="../admin.html" style="background: #b87333; border: none; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease; font-weight: 600;">← Admin Home</a>
         </div>
         <h1>🎵 Worship Service Planner</h1>
         <p class="subtitle">Generate random song selections for Sunday worship</p>
@@ -1229,7 +1229,7 @@
                     const category = categoryTitles[song.category] || song.category;
                     // Get collection info if available (for newer entries)
                     const collectionInfo = (song.category === 'celebration' || song.category === 'offertory') && song.collection ? 
-                        ` <span style="color: #667eea;">(${song.collection})</span>` : '';
+                        ` <span style="color: #b87333;">(${song.collection})</span>` : '';
                     return `<div><strong>${category}:</strong> #${song.number} - ${song.name}${collectionInfo}</div>`;
                 }).join('');
                 
@@ -1264,7 +1264,7 @@
                 `;
                 
                 return `
-                    <div class="history-item" style="border-left-color: ${isSung ? '#38a169' : '#667eea'};">
+                    <div class="history-item" style="border-left-color: ${isSung ? '#38a169' : '#b87333'};">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                             <div>
                                 <div class="history-date">📅 ${date}</div>
@@ -1544,7 +1544,7 @@
                 document.getElementById('historyList').innerHTML = `
                     <div style="background: #f7fafc; padding: 20px; border-radius: 8px;">
                         <h3 style="color: #2d3748;">🎵 Song #${songInfo.number} - ${songInfo.name}</h3>
-                        <p style="color: #667eea; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
+                        <p style="color: #b87333; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
                         <p style="color: #6c757d; margin-top: 15px;">✅ This song has never been used in saved services.</p>
                     </div>
                 `;
@@ -1574,7 +1574,7 @@
                     <div class="history-item">
                         <div class="history-date">📅 ${date}</div>
                         <div class="history-theme">📖 Theme: ${theme}</div>
-                        <div style="margin-top: 10px; color: #667eea; font-weight: 600;">Used as: ${category}</div>
+                        <div style="margin-top: 10px; color: #b87333; font-weight: 600;">Used as: ${category}</div>
                     </div>
                 `;
             }).join('');
@@ -1583,7 +1583,7 @@
                 <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <h3 style="color: #2d3748;">🎵 Song #${songInfo.number} - ${songInfo.name}</h3>
                     ${songInfo.name2 ? `<p style="color: #6c757d;">${songInfo.name2}</p>` : ''}
-                    <p style="color: #667eea; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
+                    <p style="color: #b87333; margin: 5px 0;"><strong>Collection:</strong> ${collection}</p>
                     <p style="color: #6c757d; margin-top: 10px;">Used ${servicesWithSong.length} time(s) in last ${serviceHistory.length} services</p>
                 </div>
                 <h3 style="margin-bottom: 15px;">Last ${servicesWithSong.length} Usage(s):</h3>
