@@ -47,6 +47,25 @@
         .history-btn:hover { background: #6b46c1; }
         .whatsapp-btn { background: #25d366; }
         .whatsapp-btn:hover { background: #1da851; }
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            padding: 0;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+        .icon-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            background: inherit;
+        }
+        .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
         .warning { color: #e53e3e; font-size: 11px; margin-top: 5px; }
         .recently-used { font-size: 12px; color: #718096; margin-top: 10px; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; padding: 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -75,7 +94,7 @@
             .service-info label { font-size: 12px; margin-bottom: 4px; }
             .service-info input, .service-info select { padding: 10px; font-size: 14px; }
             .controls { gap: 6px; margin-bottom: 15px; }
-            button { padding: 10px 14px; font-size: 12px; min-height: 44px; }
+            button:not(.icon-btn) { padding: 10px 14px; font-size: 12px; min-height: 44px; }
             select { font-size: 13px; width: 100%; padding: 10px; }
             .service-section { padding: 12px; margin-bottom: 12px; }
             .section-title { font-size: 14px; margin-bottom: 10px; }
@@ -112,7 +131,7 @@
             .service-info { padding: 10px; }
             .service-info label { font-size: 11px; }
             .service-info input, .service-info select { padding: 9px; font-size: 14px; }
-            button { padding: 10px 12px; font-size: 11px; }
+            button:not(.icon-btn) { padding: 10px 12px; font-size: 11px; }
             .section-title { font-size: 13px; }
             .song-item { padding: 8px; }
             .song-number { font-size: 14px; }
@@ -169,12 +188,12 @@
         </div>
 
         <div class="controls">
-            <button id="btnGenerate" onclick="generateService()" disabled style="opacity:0.45; cursor:not-allowed;">🎲 Generate New Service</button>
-            <button id="btnSave" class="save-btn" onclick="saveService()" disabled style="opacity:0.45; cursor:not-allowed;">💾 Save Service</button>
-            <button class="whatsapp-btn" onclick="shareToWhatsApp()">📱 Share to WhatsApp</button>
-            <button class="history-btn" onclick="showHistory()">📜 View History</button>
-            <button class="print-btn" onclick="window.print()">🖨️ Print</button>
-            <button id="btnSync" onclick="manualSync()" style="background: #48bb78; opacity:0.45; cursor:not-allowed;" disabled>🔄 Sync Now</button>
+            <button id="btnGenerate" class="icon-btn" onclick="generateService()" disabled title="Generate New Service" aria-label="Generate New Service" style="opacity:0.45; cursor:not-allowed;">🎲</button>
+            <button id="btnSave" class="icon-btn save-btn" onclick="saveService()" disabled title="Save Service" aria-label="Save Service" style="opacity:0.45; cursor:not-allowed;">💾</button>
+            <button class="icon-btn whatsapp-btn" onclick="shareToWhatsApp()" title="Share to WhatsApp" aria-label="Share to WhatsApp">📱</button>
+            <button class="icon-btn history-btn" onclick="showHistory()" title="View History" aria-label="View History">📜</button>
+            <button class="icon-btn print-btn" onclick="window.print()" title="Print" aria-label="Print">🖨️</button>
+            <button id="btnSync" class="icon-btn" onclick="manualSync()" disabled title="Sync Now" aria-label="Sync Now" style="background:#48bb78; opacity:0.45; cursor:not-allowed;">🔄</button>
             <select id="offertoryConvention">
                 <option value="alternate">Alternate Conventions</option>
                 <option value="maramon-2025">Maramon 2025</option>
@@ -187,6 +206,17 @@
         <div id="serviceOrder"></div>
         
         <div class="recently-used" id="recentlyUsed"></div>
+    </div>
+
+    <!-- Unconfirmed History Check Modal -->
+    <div id="unconfirmedModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:480px;">
+            <div class="modal-header">
+                <h2>🎵 Song History Check</h2>
+                <span class="close-btn" onclick="closeUnconfirmedModal()">&times;</span>
+            </div>
+            <div id="unconfirmedModalBody"></div>
+        </div>
     </div>
 
     <!-- History Modal -->
@@ -374,18 +404,73 @@
             await loadFromFirestore();
         }
 
+        function checkUnconfirmedHistory(songNum, category) {
+            const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
+            const today = Date.now();
+
+            // Find past services (date already passed) that are unconfirmed and contain this song
+            const pending = serviceHistory.filter(service =>
+                service.confirmed !== true &&
+                service.date < today &&
+                service.date > twoMonthsAgo &&
+                service.songs.some(s => s.number === songNum && s.category === category)
+            );
+
+            if (pending.length === 0) return;
+
+            const dateList = pending.map(service => {
+                const d = new Date(service.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                return `<div style="background:#f7fafc; border-left:3px solid #b87333; padding:8px 12px; border-radius:6px; margin-bottom:8px;">
+                    📅 <strong>${d}</strong>
+                    <div style="font-size:12px; color:#6c757d; margin-top:3px;">Theme: ${service.theme || '—'}</div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('unconfirmedModalBody').innerHTML = `
+                <p style="margin-bottom:14px; color:#2d3748;">
+                    Song <strong>#${songNum}</strong> was planned on the following date(s) within the last 2 months but hasn't been confirmed as sung:
+                </p>
+                ${dateList}
+                <p style="margin-bottom:16px; color:#2d3748;">Was this song actually sung on ${pending.length === 1 ? 'that date' : 'any of those dates'}?</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button onclick="confirmSongSung(${JSON.stringify(pending.map(s => s.date))})" style="background:#38a169; flex:1; min-width:120px;">✅ Yes, mark as sung</button>
+                    <button onclick="closeUnconfirmedModal()" style="background:#718096; flex:1; min-width:120px;">✖️ No / Not sure</button>
+                </div>
+            `;
+            document.getElementById('unconfirmedModal').style.display = 'block';
+        }
+
+        function confirmSongSung(dates) {
+            dates.forEach(date => {
+                const idx = serviceHistory.findIndex(s => s.date === date);
+                if (idx === -1) return;
+                serviceHistory[idx].confirmed = true;
+                localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
+                if (isAuthenticated) saveToFirestore(serviceHistory[idx]);
+            });
+            closeUnconfirmedModal();
+            // Re-render so the ⚠️ warning appears immediately on the current plan
+            if (window.currentService) displayService(window.currentService);
+        }
+
+        function closeUnconfirmedModal() {
+            document.getElementById('unconfirmedModal').style.display = 'none';
+        }
+
         function wasRecentlyUsed(songNum, category) {
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
-            
+
             // Exclude the service currently being edited
-            const editingDate = window.editingServiceIndex !== undefined 
-                ? serviceHistory[window.editingServiceIndex]?.date 
+            const editingDate = window.editingServiceIndex !== undefined
+                ? serviceHistory[window.editingServiceIndex]?.date
                 : undefined;
-            
-            return serviceHistory.some(service => 
-                service.confirmed === true &&
+
+            // Any saved service (confirmed or not) counts — confirmed check was
+            // preventing warnings for services saved before being marked as sung
+            return serviceHistory.some(service =>
+                service.confirmed !== false &&
                 service.date !== editingDate &&
-                service.date > twoMonthsAgo && 
+                service.date > twoMonthsAgo &&
                 service.songs.some(s => s.number === songNum && s.category === category)
             );
         }
@@ -609,6 +694,7 @@
                 window.currentService[index].song = song;
                 window.currentService[index].collection = collection;
                 displayService(window.currentService);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category);
             } else {
                 alert('Song not found!');
             }
@@ -641,12 +727,13 @@
             
             if (song) {
                 window.currentService[index].song = song;
-                window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ? 
-                    'Birthday/Anniversary' : 
-                    selectedCollection === 'kristheeya-keerthanangal' ? 
-                    'Kristheeya Keerthanangal' : 
+                window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ?
+                    'Birthday/Anniversary' :
+                    selectedCollection === 'kristheeya-keerthanangal' ?
+                    'Kristheeya Keerthanangal' :
                     selectedCollection;
                 displayService(window.currentService);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category);
             } else {
                 // Song not found - offer to create custom entry
                 const customName = prompt(
@@ -654,7 +741,7 @@
                     `Would you like to add it manually?\n\n` +
                     `Enter song name (or click Cancel to try again):`
                 );
-                
+
                 if (customName && customName.trim()) {
                     // Create custom song object
                     const customSong = {
@@ -663,12 +750,12 @@
                         name2: '',
                         youtubeId: ''
                     };
-                    
+
                     window.currentService[index].song = customSong;
-                    window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ? 
-                        'Birthday/Anniversary' : 
-                        selectedCollection === 'kristheeya-keerthanangal' ? 
-                        'Kristheeya Keerthanangal' : 
+                    window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ?
+                        'Birthday/Anniversary' :
+                        selectedCollection === 'kristheeya-keerthanangal' ?
+                        'Kristheeya Keerthanangal' :
                         selectedCollection;
                     displayService(window.currentService);
                     
@@ -690,6 +777,7 @@
             if (song) {
                 window.currentService[index].song = song;
                 displayService(window.currentService);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category);
             } else {
                 alert(`Song #${songNum} not found in Kristheeya Keerthanangal!`);
             }
@@ -825,12 +913,13 @@
                     window.currentService[index].song = song;
                     window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     displayService(window.currentService);
+                    checkUnconfirmedHistory(song.number, 'offertory');
                 } else {
                     alert(`Song #${songNum} not found!`);
                 }
                 return;
             }
-            
+
             // Special handling for Doxology - convert number to DOX-Roman
             if (item.category === 'doxology') {
                 const input = prompt(
@@ -859,6 +948,7 @@
                     if (song) {
                         window.currentService[index].song = song;
                         displayService(window.currentService);
+                        checkUnconfirmedHistory(song.number, 'doxology');
                     } else {
                         alert(`Doxology ${doxNumber} not found!`);
                     }
@@ -899,12 +989,13 @@
                     window.currentService[index].song = song;
                     window.currentService[index].collection = collection;
                     displayService(window.currentService);
+                    checkUnconfirmedHistory(song.number, 'celebration');
                 } else {
                     alert(`Song #${input} not found in any collection!`);
                 }
                 return;
             }
-            
+
             // Default handling for other categories
             const newNum = prompt(`Current: #${currentSong.number} - ${currentSong.name}\n\nEnter new song number:`);
             
@@ -966,12 +1057,13 @@
             
             if (song) {
                 window.currentService[index].song = song;
-                window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ? 
-                    'Birthday/Anniversary' : 
-                    selectedCollection === 'kristheeya-keerthanangal' ? 
-                    'Kristheeya Keerthanangal' : 
+                window.currentService[index].collection = selectedCollection === 'birthday-anniversary' ?
+                    'Birthday/Anniversary' :
+                    selectedCollection === 'kristheeya-keerthanangal' ?
+                    'Kristheeya Keerthanangal' :
                     selectedCollection;
                 displayService(window.currentService);
+                checkUnconfirmedHistory(song.number, 'celebration');
             } else {
                 // Song not found - offer to create custom entry
                 const customName = prompt(
@@ -979,7 +1071,7 @@
                     `Would you like to add it manually?\n\n` +
                     `Enter song name (or click Cancel to try again):`
                 );
-                
+
                 if (customName && customName.trim()) {
                     // Create custom song object
                     const customSong = {
@@ -988,11 +1080,11 @@
                         name2: '',
                         youtubeId: ''
                     };
-                    
+
                     window.currentService[index].song = customSong;
                     window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     displayService(window.currentService);
-                    
+
                     alert('✅ Custom song added!\n\nNote: This is a temporary entry and won\'t be added to the collection permanently.');
                 }
             }
