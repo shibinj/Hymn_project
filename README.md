@@ -2,7 +2,7 @@
 
 A web-based platform for browsing, searching, and playing Malayalam Christian hymns and convention songs, with admin tools for worship planning and choir management.
 
-**Live Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
+**Dev Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
 
 ---
 
@@ -32,9 +32,10 @@ A web-based platform for browsing, searching, and playing Malayalam Christian hy
 - Favorites / bookmarks
 - Dark mode
 - Mobile responsive
+- **Hymn Assistant chatbot** — Find songs by theme, occasion, lyrics fragment, or name (English or Malayalam); powered by Gemini AI with full category awareness
 
 **Admin** *(view-only is public; sign-in required to make changes)*
-- **Worship Service Planner** — View service history and search by song (public); create/edit/delete services and mark as sung (sign-in required)
+- **Worship Service Planner** — Auto-generates weekly service song selections avoiding songs used in the last 2 months; flags recently planned songs when manually overriding; view history and search by song (public); create/edit/delete services (sign-in required)
 - **Choir Attendance Tracker** — View attendance by date and quarterly/yearly reports with PDF export (public); mark/update attendance (sign-in required)
 - **Lyrics Editor** — Add and edit song data *(sign-in required)*
 - **Timestamp Converter** — Generate YouTube deep-link timestamps
@@ -62,6 +63,7 @@ Hymn_DEV/
 │   ├── holy-communion.json
 │   ├── passion-week.json
 │   ├── birthday-anniversary.json
+│   ├── song-categories.json    # 40 thematic categories for Kristheeya Keerthanangal
 │   ├── choir-members.json      # Active member roster
 │   └── choir-members-archive.json
 ├── docs/                       # Project documentation
@@ -86,6 +88,22 @@ The admin tools use Firebase Firestore for cloud data persistence. Collection na
 | Choir Members (archive) | `members` → doc `archive` |
 
 To configure, copy `admin/firebase-config.template.js` to `admin/firebase-config.js` and fill in your project credentials and allowed admin emails.
+
+---
+
+## Hymn Assistant (Chatbot)
+
+A Gemini-powered chatbot embedded in the song viewer helps users find songs by theme, occasion, name, or lyrics.
+
+- **Backend:** Firebase Cloud Function (`functions/index.js`) — deployed to Cloud Run
+- **Model:** Gemini 2.5 Flash
+- **Index:** `functions/hymn-index.json` — 691 songs across all collections, with `cat` field for Kristheeya Keerthanangal songs
+- **Categories:** 40 thematic categories (Morning Songs, Christmas, Passion Week, Resurrection, Belief, Prayer, Second Coming, etc.) — see `data/song-categories.json`
+
+To deploy the chatbot backend after changes:
+```bash
+cd functions && firebase deploy --only functions
+```
 
 ---
 
