@@ -1520,15 +1520,15 @@
             });
             const theme = service.theme || 'No theme';
             
-            const categoryTitles = {
-                'opening': '1. Opening Hymn',
-                'bibleReading': '2. Bible Reading',
-                'celebration': '3. Birthday/Anniversary',
-                'offertory': '4. Offertory',
-                'qurbana1': '5. Holy Qurbana - Song 1',
-                'qurbana2': '6. Holy Qurbana - Song 2',
-                'qurbana3': '7. Holy Qurbana - Song 3',
-                'doxology': '8. Doxology'
+            const categoryBaseNames = {
+                'opening': 'Opening Hymn',
+                'bibleReading': 'Bible Reading',
+                'celebration': 'Birthday/Anniversary',
+                'offertory': 'Offertory',
+                'qurbana1': 'Holy Qurbana - Song 1',
+                'qurbana2': 'Holy Qurbana - Song 2',
+                'qurbana3': 'Holy Qurbana - Song 3',
+                'doxology': 'Doxology'
             };
 
             let message = `*WORSHIP SERVICE SONGS*\n\n`;
@@ -1536,8 +1536,8 @@
             message += `Theme: ${theme}\n\n`;
             message += `------------------------\n\n`;
 
-            service.songs.forEach(song => {
-                const title = categoryTitles[song.category] || song.category;
+            service.songs.forEach((song, i) => {
+                const title = `${i + 1}. ${categoryBaseNames[song.category] || song.category}`;
                 message += `${title}\n`;
                 message += `#${song.number} - ${song.name}\n`;
                 
@@ -1707,15 +1707,15 @@
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
             });
 
-            const categoryTitles = {
-                'opening': '1. Opening Hymn',
-                'bibleReading': '2. Bible Reading',
-                'celebration': '3. Birthday/Anniversary',
-                'offertory': '4. Offertory',
-                'qurbana1': '5. Holy Qurbana - Song 1',
-                'qurbana2': '6. Holy Qurbana - Song 2',
-                'qurbana3': '7. Holy Qurbana - Song 3',
-                'doxology': '8. Doxology'
+            const categoryBaseNames = {
+                'opening': 'Opening Hymn',
+                'bibleReading': 'Bible Reading',
+                'celebration': 'Birthday/Anniversary',
+                'offertory': 'Offertory',
+                'qurbana1': 'Holy Qurbana - Song 1',
+                'qurbana2': 'Holy Qurbana - Song 2',
+                'qurbana3': 'Holy Qurbana - Song 3',
+                'doxology': 'Doxology'
             };
 
             let message = `*WORSHIP SERVICE SONGS*\n\n`;
@@ -1725,9 +1725,9 @@
 
             // Filter out optional songs that are not set
             const songsToShare = window.currentService.filter(item => item.song !== null);
-            
-            songsToShare.forEach(item => {
-                const title = categoryTitles[item.category] || item.title;
+
+            songsToShare.forEach((item, i) => {
+                const title = `${i + 1}. ${categoryBaseNames[item.category] || item.title}`;
                 message += `${title}\n`;
                 message += `#${item.song.number} - ${item.song.name}\n`;
                 if (item.song.name2) {
