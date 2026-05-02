@@ -596,6 +596,14 @@
             let offertoryConvention;
             if (offertoryPref === 'alternate') {
                 const year = new Date().getFullYear();
+                // Determine last used convention from saved history so alternation
+                // survives page reloads and sessions
+                const lastSaved = serviceHistory
+                    .flatMap(s => s.songs)
+                    .find(s => s.category === 'offertory' && s.collection);
+                if (lastSaved) {
+                    lastConvention = lastSaved.collection.startsWith('maramon') ? 'maramon' : 'kottarakara';
+                }
                 lastConvention = lastConvention === 'kottarakara' ? 'maramon' : 'kottarakara';
                 offertoryConvention = `${lastConvention}-${year}`;
                 if (!conventions[offertoryConvention]) {
