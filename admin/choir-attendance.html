@@ -29,7 +29,7 @@
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('authInfo').style.display = 'block';
             document.getElementById('authInfo').innerHTML = `
-                <span style="color:#155724; font-weight:600;">✅ Signed in as ${user.displayName} (${user.email})</span>
+                <span style="color:#155724; font-weight:600;">Welcome ${user.displayName}</span>
                 <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:8px 15px;
                 margin-left:15px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
             `;
