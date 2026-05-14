@@ -2,7 +2,7 @@
 
 A web-based platform for browsing, searching, and playing Malayalam Christian hymns and convention songs, with admin tools for worship planning and choir management.
 
-**Dev Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
+**PROD Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
 
 ---
 
@@ -36,6 +36,7 @@ A web-based platform for browsing, searching, and playing Malayalam Christian hy
 
 **Admin** *(view-only is public; sign-in required to make changes)*
 - **Worship Service Planner** — Auto-generates weekly service song selections avoiding songs used in the last 2 months; flags recently planned songs when manually overriding; view history and search by song (public); create/edit/delete services (sign-in required)
+- **DSMC Sunday Planner** — Assigns members to the 9 Sunday service roles (Prasangam, Part 1/2 Assistance, Bible Readings, Sthothrakazcha, Prayer, Kaiyassoori, Thubden Bhagangal) with Malayalam labels; smart auto-fill avoids last year's assignments and deprioritises continuously absent members; full history, WhatsApp share, and print support *(sign-in required to save)*
 - **Choir Attendance Tracker** — View attendance by date and quarterly/yearly reports with PDF export (public); mark/update attendance (sign-in required)
 - **Lyrics Editor** — Add and edit song data *(sign-in required)*
 - **Timestamp Converter** — Generate YouTube deep-link timestamps
@@ -45,12 +46,13 @@ A web-based platform for browsing, searching, and playing Malayalam Christian hy
 ## Project Structure
 
 ```
-Hymn_DEV/
+Hymn_project/
 ├── index.html                  # Main landing page
 ├── viewer.html                 # Song viewer (lyrics + video)
 ├── admin/
 │   ├── admin.html              # Admin dashboard
 │   ├── worship-planner.html    # Worship service planner
+│   ├── dsmc-planner.html       # DSMC Sunday service role planner
 │   ├── choir-attendance.html   # Choir attendance tracker
 │   ├── lyrics-editor.html      # Lyrics editor
 │   ├── timestamp-converter.html
@@ -83,6 +85,7 @@ The admin tools use Firebase Firestore for cloud data persistence. Collection na
 | Tool | Firestore Collection |
 |---|---|
 | Worship Planner (services) | `worshipHistory` |
+| DSMC Sunday Planner | `dsmcSchedule` |
 | Choir Attendance | `choirAttendance` |
 | Choir Members (active roster) | `members` → doc `active` |
 | Choir Members (archive) | `members` → doc `archive` |

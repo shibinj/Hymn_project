@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>DSMC Sunday Planner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; background: linear-gradient(135deg, #0f1d2e 0%, #1a2f47 100%); min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        h1 { color: #2d3748; margin-bottom: 4px; font-size: 24px; }
+        .subtitle { color: #6c757d; margin-bottom: 18px; font-size: 14px; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+        .ml { font-family: 'Noto Sans Malayalam', 'Manjari', 'Rachana', sans-serif; }
+
+        /* Auth */
+        #authSection { background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #ffc107; }
+        #authInfo { display: none; background: #d4edda; padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #28a745; }
+
+        /* Date row */
+        .date-row { background: #f7fafc; padding: 14px; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .date-row label { font-weight: 600; color: #2d3748; font-size: 13px; white-space: nowrap; }
+        .date-row input[type=date] { padding: 9px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+        #syncStatus { font-size: 12px; color: #6c757d; }
+
+        /* Controls */
+        .controls { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+        button { padding: 10px 16px; background: #b87333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background 0.15s, transform 0.1s; }
+        button:hover:not(:disabled) { background: #9a5e26; }
+        button:active:not(:disabled) { transform: scale(0.98); }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-save { background: #ed8936; } .btn-save:hover:not(:disabled) { background: #dd6b20; }
+        .btn-history { background: #805ad5; } .btn-history:hover:not(:disabled) { background: #6b46c1; }
+        .btn-whatsapp { background: #25d366; display: inline-flex; align-items: center; gap: 6px; } .btn-whatsapp:hover:not(:disabled) { background: #1da851; }
+        .btn-print { background: #48bb78; } .btn-print:hover:not(:disabled) { background: #38a169; }
+        .btn-danger { background: #e53e3e; } .btn-danger:hover:not(:disabled) { background: #c53030; }
+        .btn-edit { background: #ed8936; } .btn-edit:hover:not(:disabled) { background: #dd6b20; }
+
+        /* Groups */
+        .group-section { background: #f7fafc; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #b87333; }
+        .group-header { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+        .group-number { background: #b87333; color: white; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+        .group-title { font-size: 16px; font-weight: 700; color: #2d3748; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+
+        /* Slot rows */
+        .slot-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }
+        .slot-label { font-size: 12px; color: #718096; min-width: 140px; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+        .slot-wrap { flex: 1; min-width: 190px; }
+        .slot-select { width: 100%; padding: 9px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
+        .slot-select:focus { outline: none; border-color: #b87333; }
+        .slot-select:disabled { background: #f0f0f0; cursor: not-allowed; }
+        .slot-hint { font-size: 11px; color: #b87333; margin-top: 3px; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; padding: 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .modal-content { background: white; margin: 20px auto; padding: 20px; border-radius: 15px; max-width: 800px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-header h2 { font-size: 20px; }
+        .close-btn { font-size: 30px; cursor: pointer; color: #6c757d; line-height: 1; padding: 4px; }
+        .close-btn:hover { color: #2d3748; }
+
+        /* History */
+        .history-item { background: #f7fafc; padding: 14px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #b87333; }
+        .history-date { font-weight: 700; color: #2d3748; font-size: 14px; margin-bottom: 8px; }
+        .history-slot-row { font-size: 13px; color: #4a5568; margin-bottom: 3px; }
+        .history-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .controls, .modal, #authSection, #authInfo, .back-link { display: none !important; }
+            .container { box-shadow: none; padding: 20px; max-width: 100%; }
+            .slot-select { border: none; appearance: none; background: transparent; padding: 0; font-size: 14px; pointer-events: none; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            .container { padding: 15px; }
+            h1 { font-size: 20px; }
+            .group-title { font-size: 15px; }
+            .slot-label { min-width: 110px; font-size: 11px; }
+            .slot-select { min-width: 150px; font-size: 13px; padding: 8px; }
+            button:not(.btn-whatsapp) { padding: 10px 13px; font-size: 12px; }
+        }
+
+        @media (max-width: 430px) {
+            .controls { gap: 6px; }
+            .group-section { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="back-link" style="margin-bottom: 15px;">
+        <a href="../admin.html" style="background: #b87333; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600;">← Admin Home</a>
+    </div>
+
+    <h1>⛪ DSMC Sunday Planner</h1>
+    <p class="subtitle ml">ഞായറാഴ്ച ശുശ്രൂഷ ആസൂത്രണം</p>
+
+    <!-- Auth -->
+    <div id="authSection">
+        <span style="color:#856404; font-weight:600;">🔒 Sign in to create or edit schedules</span>
+        <button onclick="signInWithGoogle()" style="background:white; border:2px solid #e2e8f0; padding:8px 16px; margin-left:12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600; color:#2d3748; display:inline-flex; align-items:center; gap:8px;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
+            Sign in with Google
+        </button>
+        <p style="margin-top:6px; font-size:12px; color:#856404;">💡 You can view history without signing in.</p>
+        <p id="authMessage" style="color:#e53e3e; margin-top:4px; font-size:12px;"></p>
+    </div>
+    <div id="authInfo"></div>
+
+    <!-- Date -->
+    <div class="date-row">
+        <label>📅 തീയതി:</label>
+        <input type="date" id="scheduleDate" />
+        <span id="syncStatus"></span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="controls">
+        <button id="btnSave" class="btn-save" onclick="saveSchedule()" disabled>💾 സേവ് ചെയ്യുക</button>
+        <button id="btnAutoFill" onclick="autoFill()" disabled>🎲 Auto-fill</button>
+        <button class="btn-whatsapp" onclick="shareToWhatsApp()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            ഷെയർ
+        </button>
+        <button class="btn-history" onclick="showHistory()">📅 ചരിത്രം</button>
+        <button class="btn-print" onclick="window.print()">🖨️ പ്രിന്റ്</button>
+    </div>
+
+    <!-- Schedule form rendered by JS -->
+    <div id="scheduleForm"></div>
+
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="ml">📜 ഷെഡ്യൂൾ ചരിത്രം</h2>
+            <span class="close-btn" onclick="closeHistory()">&times;</span>
+        </div>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+window._db = db;
+window._auth = auth;
+
+onAuthStateChanged(auth, async (user) => {
+    if (user && ALLOWED_ADMINS.includes(user.email)) {
+        isAuthenticated = true;
+        currentUser = user.email;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('authInfo').style.display = 'block';
+        document.getElementById('authInfo').innerHTML = `
+            <span style="color:#155724; font-weight:600;">Welcome ${user.displayName}</span>
+            <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:6px 12px; margin-left:12px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
+        `;
+        document.getElementById('btnSave').disabled = false;
+        document.getElementById('btnAutoFill').disabled = false;
+        setSelectsDisabled(false);
+        await loadFromFirestore();
+    } else if (user) {
+        signOut(auth);
+        document.getElementById('authMessage').textContent = `❌ ${user.email} is not an authorized admin.`;
+    } else {
+        isAuthenticated = false;
+        currentUser = null;
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('authInfo').style.display = 'none';
+        document.getElementById('btnSave').disabled = true;
+        setSelectsDisabled(true);
+        await loadFromFirestore();
+    }
+});
+
+window.signInWithGoogle = async function() {
+    const provider = new GoogleAuthProvider();
+    try { await signInWithPopup(auth, provider); }
+    catch(err) { document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message; }
+};
+
+window.loadFromFirestore = async function() {
+    try {
+        updateSyncStatus('⬇️ Loading...');
+        const [schedSnap, attSnap] = await Promise.all([
+            getDocs(collection(db, 'dsmcSchedule')),
+            getDocs(collection(db, 'choirAttendance'))
+        ]);
+        scheduleHistory = [];
+        schedSnap.forEach(d => scheduleHistory.push(d.data()));
+        scheduleHistory.sort((a, b) => b.date - a.date);
+
+        attendanceData = {};
+        attSnap.forEach(d => {
+            const decoded = {};
+            for (const [k, v] of Object.entries(d.data())) {
+                decoded[k.replace(/__dot__/g, '.')] = v;
+            }
+            attendanceData[d.id] = decoded;
+        });
+
+        updateSyncStatus(`✅ ${scheduleHistory.length} schedules loaded`);
+        setTimeout(() => updateSyncStatus(''), 3000);
+        loadScheduleForCurrentDate();
+    } catch(err) {
+        console.error(err);
+        updateSyncStatus('⚠️ Cloud load failed');
+        setTimeout(() => updateSyncStatus(''), 3000);
+    }
+};
+
+window.saveToFirestore = async function(record) {
+    if (!isAuthenticated) return false;
+    try {
+        await setDoc(doc(db, 'dsmcSchedule', record.dateStr), record);
+        return true;
+    } catch(err) { console.error(err); return false; }
+};
+
+window.deleteFromFirestore = async function(dateStr) {
+    if (!isAuthenticated) return false;
+    try {
+        await deleteDoc(doc(db, 'dsmcSchedule', dateStr));
+        return true;
+    } catch(err) { console.error(err); return false; }
+};
+</script>
+
+<script>
+let isAuthenticated = false;
+let currentUser = null;
+let scheduleHistory = [];
+let attendanceData = {};
+let members = { female: [], male: [], occasional: [] };
+
+const SLOT_DEFS = [
+    { id: 'prasangam',       ml: 'പ്രസംഗം',                              gender: 'any'    },
+    { id: 'part1_lady',      ml: 'ഭാഗം 1 – സ്ത്രീ',                     gender: 'female' },
+    { id: 'part1_man',       ml: 'ഭാഗം 1 – പുരുഷൻ',                    gender: 'male'   },
+    { id: 'part2_man',       ml: 'ഭാഗം 2 – മദ്ബഹ',                      gender: 'male'   },
+    { id: 'bible1',          ml: 'പാഠം വായന 1 – പുരുഷൻ',                  gender: 'male'   },
+    { id: 'bible2',          ml: 'പാഠം വായന 2 – സ്ത്രീ',                   gender: 'female' },
+    { id: 'sthothrakazcha1', ml: 'സ്തോത്ര കാഴ്ച 1',                     gender: 'any'    },
+    { id: 'sthothrakazcha2', ml: 'സ്തോത്ര കാഴ്ച 2',                     gender: 'any'    },
+    { id: 'prayer',          ml: 'പ്രസംഗത്തിനുശേഷം പ്രാർത്ഥന',           gender: 'any'    },
+    { id: 'kaiyassoori1',    ml: 'കൈയ്യസൂരി 1',                         gender: 'any'    },
+    { id: 'kaiyassoori2',    ml: 'കൈയ്യസൂരി 2',                         gender: 'any'    },
+    { id: 'thubden1',        ml: 'തൂബ്ദേൻ ഭാഗം 1',                      gender: 'any'    },
+    { id: 'thubden2',        ml: 'തൂബ്ദേൻ ഭാഗം 2',                      gender: 'any'    },
+    { id: 'thubden3',        ml: 'തൂബ്ദേൻ ഭാഗം 3',                      gender: 'any'    },
+    { id: 'thubden4',        ml: 'തൂബ്ദേൻ ഭാഗം 4',                      gender: 'any'    },
+    { id: 'thubden5',        ml: 'തൂബ്ദേൻ ഭാഗം 5',                      gender: 'any'    },
+];
+
+const GROUPS = [
+    { number: 1, ml: 'പ്രസംഗം',                            slots: ['prasangam']                                          },
+    { number: 2, ml: 'ഭാഗം 1 സഹായം',                      slots: ['part1_lady', 'part1_man']                            },
+    { number: 3, ml: 'ഭാഗം 2 സഹായം (മദ്ബഹ)',              slots: ['part2_man']                                          },
+    { number: 4, ml: 'പാഠം വായന 1',                    slots: ['bible1']                                             },
+    { number: 5, ml: 'പാഠം വായന 2',                    slots: ['bible2']                                             },
+    { number: 6, ml: 'സ്തോത്ര കാഴ്ച',                     slots: ['sthothrakazcha1', 'sthothrakazcha2']                 },
+    { number: 7, ml: 'പ്രസംഗത്തിനുശേഷം പ്രാർത്ഥന',        slots: ['prayer']                                             },
+    { number: 8, ml: 'കൈയ്യസൂരി',                         slots: ['kaiyassoori1', 'kaiyassoori2']                       },
+    { number: 9, ml: 'തൂബ്ദേൻ ഭാഗങ്ങൾ',                   slots: ['thubden1','thubden2','thubden3','thubden4','thubden5']},
+];
+
+const slotMap = Object.fromEntries(SLOT_DEFS.map(s => [s.id, s]));
+
+function getMemberList(gender) {
+    const f = members.female || [];
+    const m = members.male   || [];
+    // occasional members are excluded from all auto-fill and dropdowns
+    if (gender === 'female') return [...f].sort();
+    if (gender === 'male')   return [...m].sort();
+    return [...f, ...m].sort();
+}
+
+// Returns true if the member has no 'P' record in the last 2 months of attendance data
+function isContinuouslyAbsent(name) {
+    const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
+    const recentDates = Object.keys(attendanceData).filter(d => new Date(d).getTime() >= twoMonthsAgo);
+    if (!recentDates.length) return false; // no data → don't penalise
+    const wasPresent = recentDates.some(d => attendanceData[d][name] === 'P');
+    return !wasPresent;
+}
+
+function renderForm(slots, lastYearSlots) {
+    const html = GROUPS.map(group => {
+        const slotsHtml = group.slots.map(slotId => {
+            const def = slotMap[slotId];
+            const list = getMemberList(def.gender);
+            const selected = slots[slotId] || '';
+            const lastYearPerson = lastYearSlots?.[slotId] || '';
+
+            let options = `<option value="">-- തിരഞ്ഞെടുക്കുക --</option>`;
+            list.forEach(name => {
+                options += `<option value="${name}"${name === selected ? ' selected' : ''}>${name}</option>`;
+            });
+            if (selected && !list.includes(selected)) {
+                options += `<option value="${selected}" selected>${selected}</option>`;
+            }
+
+            const hint = lastYearPerson
+                ? `<div class="slot-hint">⚠️ കഴിഞ്ഞ വർഷം: ${lastYearPerson}</div>`
+                : '';
+
+            return `
+                <div class="slot-row">
+                    <span class="slot-label ml">${def.ml}</span>
+                    <div class="slot-wrap">
+                        <select class="slot-select" id="slot_${slotId}">${options}</select>
+                        ${hint}
+                    </div>
+                </div>`;
+        }).join('');
+
+        return `
+            <div class="group-section">
+                <div class="group-header">
+                    <span class="group-number">${group.number}</span>
+                    <span class="group-title ml">${group.ml}</span>
+                </div>
+                ${slotsHtml}
+            </div>`;
+    }).join('');
+
+    document.getElementById('scheduleForm').innerHTML = html;
+    if (!isAuthenticated) setSelectsDisabled(true);
+}
+
+function setSelectsDisabled(disabled) {
+    document.querySelectorAll('.slot-select').forEach(el => el.disabled = disabled);
+    const btn = document.getElementById('btnAutoFill');
+    if (btn) { btn.disabled = disabled; btn.style.opacity = disabled ? '0.45' : '1'; }
+}
+
+function getCurrentSlots() {
+    const slots = {};
+    SLOT_DEFS.forEach(def => {
+        const el = document.getElementById(`slot_${def.id}`);
+        if (el) slots[def.id] = el.value;
+    });
+    return slots;
+}
+
+function getLastYearMaySlots(currentDateStr) {
+    if (!currentDateStr) return null;
+    const year = parseInt(currentDateStr.split('-')[0]);
+    const lastYear = year - 1;
+    // Find any saved May schedule from last year
+    const lastYearRecord = scheduleHistory.find(s => {
+        const [y, m] = s.dateStr.split('-').map(Number);
+        return y === lastYear && m === 5;
+    });
+    return lastYearRecord ? (lastYearRecord.slots || {}) : null;
+}
+
+function loadScheduleForCurrentDate() {
+    const dateStr = document.getElementById('scheduleDate').value;
+    if (!dateStr) return;
+    const existing = scheduleHistory.find(s => s.dateStr === dateStr);
+    const lastYearSlots = getLastYearMaySlots(dateStr);
+    renderForm(existing ? (existing.slots || {}) : {}, lastYearSlots);
+}
+
+function autoFill() {
+    const dateStr = document.getElementById('scheduleDate').value;
+    if (!dateStr) { alert('Please select a date first.'); return; }
+
+    const lastYearSlots = getLastYearMaySlots(dateStr) || {};
+    const assigned = new Set();
+
+    const suggested = {};
+    SLOT_DEFS.forEach(def => {
+        const pool = getMemberList(def.gender);
+        const lastYearPerson = lastYearSlots[def.id] || '';
+
+        // Tier 1: not last year's person, not continuously absent, not yet assigned
+        let preferred = pool.filter(p =>
+            p !== lastYearPerson && !isContinuouslyAbsent(p) && !assigned.has(p));
+
+        // Tier 2: relax last-year constraint (still present, not yet assigned)
+        if (!preferred.length)
+            preferred = pool.filter(p => !isContinuouslyAbsent(p) && !assigned.has(p));
+
+        // Tier 3: relax absence constraint (not last year, not yet assigned)
+        if (!preferred.length)
+            preferred = pool.filter(p => p !== lastYearPerson && !assigned.has(p));
+
+        // Tier 4: anyone not yet assigned
+        if (!preferred.length)
+            preferred = pool.filter(p => !assigned.has(p));
+
+        // Last resort: full pool
+        if (!preferred.length) preferred = pool;
+
+        const pick = preferred[Math.floor(Math.random() * preferred.length)];
+        suggested[def.id] = pick;
+        assigned.add(pick);
+    });
+
+    // Only fill empty slots — respect any manual selections already made
+    SLOT_DEFS.forEach(def => {
+        const el = document.getElementById(`slot_${def.id}`);
+        if (!el || el.value) return;
+        el.value = suggested[def.id] || '';
+    });
+}
+
+function updateSyncStatus(msg) {
+    document.getElementById('syncStatus').textContent = msg;
+}
+
+async function saveSchedule() {
+    if (!isAuthenticated) { alert('🔒 Please sign in to save.'); return; }
+    const dateStr = document.getElementById('scheduleDate').value;
+    if (!dateStr) { alert('Please select a date.'); return; }
+
+    const slots = getCurrentSlots();
+    const record = { dateStr, date: new Date(dateStr).getTime(), slots };
+
+    const existingIdx = scheduleHistory.findIndex(s => s.dateStr === dateStr);
+    if (existingIdx >= 0) scheduleHistory[existingIdx] = record;
+    else scheduleHistory.unshift(record);
+    scheduleHistory.sort((a, b) => b.date - a.date);
+
+    const ok = await saveToFirestore(record);
+    if (ok) {
+        updateSyncStatus('✅ Saved!');
+        setTimeout(() => updateSyncStatus(''), 3000);
+    } else {
+        alert('⚠️ Save failed. Please try again.');
+    }
+}
+
+function showHistory() {
+    document.getElementById('historyModal').style.display = 'block';
+    renderHistory();
+}
+
+function closeHistory() {
+    document.getElementById('historyModal').style.display = 'none';
+}
+
+function renderHistory() {
+    if (scheduleHistory.length === 0) {
+        document.getElementById('historyList').innerHTML = '<p style="color:#6c757d; padding:10px;">ഡേറ്റ ഒന്നും ഇല്ല.</p>';
+        return;
+    }
+
+    const html = scheduleHistory.map(record => {
+        const d = new Date(record.date).toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        const slotsHtml = GROUPS.map(group => {
+            const filled = group.slots.map(sid => record.slots?.[sid]).filter(Boolean);
+            if (!filled.length) return '';
+            return `<div class="history-slot-row"><strong class="ml">${group.ml}:</strong> ${filled.join(', ')}</div>`;
+        }).join('');
+
+        const ds = record.dateStr;
+        const actions = isAuthenticated
+            ? `<div class="history-actions">
+                   <button class="btn-edit" onclick="loadForEdit('${ds}')" style="padding:6px 12px; font-size:12px;">✏️ Edit</button>
+                   <button class="btn-danger" onclick="deleteSchedule('${ds}')" style="padding:6px 12px; font-size:12px;">🗑️ Delete</button>
+                   <button class="btn-whatsapp" onclick="shareHistoryItem('${ds}')" style="padding:6px 12px; font-size:12px;">📱 Share</button>
+               </div>`
+            : `<div class="history-actions">
+                   <button class="btn-whatsapp" onclick="shareHistoryItem('${ds}')" style="padding:6px 12px; font-size:12px;">📱 Share</button>
+               </div>`;
+
+        return `
+            <div class="history-item">
+                <div class="history-date">📅 ${d}</div>
+                <div style="margin-top:6px;">${slotsHtml || '<span style="color:#aaa;font-size:12px;">No assignments saved.</span>'}</div>
+                ${actions}
+            </div>`;
+    }).join('');
+
+    document.getElementById('historyList').innerHTML = html;
+}
+
+function loadForEdit(dateStr) {
+    document.getElementById('scheduleDate').value = dateStr;
+    loadScheduleForCurrentDate();
+    closeHistory();
+    window.scrollTo(0, 0);
+}
+
+async function deleteSchedule(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    if (!confirm(`Delete schedule for ${d}?`)) return;
+    scheduleHistory = scheduleHistory.filter(s => s.dateStr !== dateStr);
+    await deleteFromFirestore(dateStr);
+    renderHistory();
+    if (document.getElementById('scheduleDate').value === dateStr) renderForm({});
+}
+
+function buildShareMessage(record) {
+    const d = new Date(record.date).toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+    let msg = `*DSMC SUNDAY PROGRAMME*\n`;
+    msg += `\u{1F4C5} ${d}\n\n`;
+    msg += `━━━━━━━━━━━━━━━\n\n`;
+    GROUPS.forEach(group => {
+        const filled = group.slots.map(sid => record.slots?.[sid]).filter(Boolean);
+        if (!filled.length) return;
+        msg += `*${group.number}. ${group.ml}*\n`;
+        msg += filled.join('\n') + '\n\n';
+    });
+    msg += `━━━━━━━━━━━━━━━\n`;
+    msg += `KTR MTC DSMC`;
+    return msg;
+}
+
+function shareToWhatsApp() {
+    const dateStr = document.getElementById('scheduleDate').value;
+    if (!dateStr) { alert('Please select a date.'); return; }
+    const record = { dateStr, date: new Date(dateStr).getTime(), slots: getCurrentSlots() };
+    window.open(`https://wa.me/?text=${encodeURIComponent(buildShareMessage(record))}`, '_blank');
+}
+
+function shareHistoryItem(dateStr) {
+    const record = scheduleHistory.find(s => s.dateStr === dateStr);
+    if (!record) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(buildShareMessage(record))}`, '_blank');
+}
+
+window.onclick = function(e) {
+    if (e.target === document.getElementById('historyModal')) closeHistory();
+};
+
+async function init() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('scheduleDate').value = today;
+    document.getElementById('scheduleDate').addEventListener('change', loadScheduleForCurrentDate);
+
+    try {
+        const resp = await fetch('../data/choir-members.json');
+        members = await resp.json();
+    } catch(e) {
+        console.error('Could not load choir-members.json:', e);
+    }
+
+    renderForm({});
+}
+
+init();
+</script>
+</body>
+</html>
