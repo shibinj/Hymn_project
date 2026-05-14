@@ -34,7 +34,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_ALLOWED_ADMINS: ${{ secrets.FIREBASE_ALLOWED_ADMINS }}
         run: |
-          ADMINS_JSON=$(printf '%s' "$FIREBASE_ALLOWED_ADMINS" | python3 -c 'import sys,json; emails=[e.strip() for e in sys.stdin.read().splitlines() if e.strip()]; print(json.dumps(emails))')
+          ADMINS_JSON=$(printf '%s' "$FIREBASE_ALLOWED_ADMINS" | python3 -c 'import sys,json; raw=sys.stdin.read().strip(); parsed=json.loads(raw) if raw.startswith("[") else [e.strip() for e in raw.splitlines() if e.strip()]; print(json.dumps(parsed))')
           cat > admin/firebase-config.js <<EOF
           export const firebaseConfig = {
               apiKey: "${FIREBASE_API_KEY}",
