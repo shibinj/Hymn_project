@@ -1276,9 +1276,24 @@
             document.getElementById('serviceDate').value = today;
             populateTheme(today);
             
-            // Auto-populate theme when date changes
+            // Auto-populate theme and load history when date changes
             document.getElementById('serviceDate').addEventListener('change', (e) => {
                 populateTheme(e.target.value);
+                const dateStr = e.target.value;
+                if (dateStr && serviceHistory.length > 0) {
+                    const selectedTimestamp = new Date(dateStr).getTime();
+                    const existingIndex = serviceHistory.findIndex(s => s.date === selectedTimestamp);
+                    if (existingIndex !== -1) {
+                        reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
+                        const dateLabel = new Date(selectedTimestamp).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                        const banner = document.createElement('div');
+                        banner.style.cssText = 'background:#ebf8ff;border:1px solid #90cdf4;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2b6cb0;';
+                        banner.textContent = `📋 Loaded existing service for ${dateLabel}`;
+                        const order = document.getElementById('serviceOrder');
+                        order.insertBefore(banner, order.firstChild);
+                        setTimeout(() => banner.remove(), 4000);
+                    }
+                }
             });
             
             // Firestore data is loaded by onAuthStateChanged above (for all users, signed-in or not)
