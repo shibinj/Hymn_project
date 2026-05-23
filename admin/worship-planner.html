@@ -704,7 +704,16 @@
                 displayService(window.currentService);
                 checkUnconfirmedHistory(song.number, window.currentService[index].category);
             } else {
-                alert('Song not found!');
+                const customName = prompt(
+                    `Song #${songNum} not found in any collection.\n\n` +
+                    `Enter song name to add as a custom entry (or Cancel to skip):`
+                );
+                if (customName && customName.trim()) {
+                    const customSong = { number: songNum, name: customName.trim(), name2: '', youtubeId: '' };
+                    window.currentService[index].song = customSong;
+                    window.currentService[index].collection = 'Custom';
+                    displayService(window.currentService);
+                }
             }
         }
 
@@ -787,7 +796,16 @@
                 displayService(window.currentService);
                 checkUnconfirmedHistory(song.number, window.currentService[index].category);
             } else {
-                alert(`Song #${songNum} not found in Kristheeya Keerthanangal!`);
+                const customName = prompt(
+                    `Song #${songNum} not found in Kristheeya Keerthanangal.\n\n` +
+                    `Enter song name to add as a custom entry (or Cancel to skip):`
+                );
+                if (customName && customName.trim()) {
+                    const customSong = { number: songNum, name: customName.trim(), name2: '', youtubeId: '' };
+                    window.currentService[index].song = customSong;
+                    window.currentService[index].collection = 'Custom';
+                    displayService(window.currentService);
+                }
             }
         }
 
@@ -923,7 +941,17 @@
                     displayService(window.currentService);
                     checkUnconfirmedHistory(song.number, 'offertory');
                 } else {
-                    alert(`Song #${songNum} not found!`);
+                    const collectionLabel = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
+                    const customName = prompt(
+                        `Song #${songNum} not found in ${collectionLabel}.\n\n` +
+                        `Enter song name to add as a custom entry (or Cancel to skip):`
+                    );
+                    if (customName && customName.trim()) {
+                        const customSong = { number: songNum, name: customName.trim(), name2: '', youtubeId: '' };
+                        window.currentService[index].song = customSong;
+                        window.currentService[index].collection = collectionLabel;
+                        displayService(window.currentService);
+                    }
                 }
                 return;
             }
