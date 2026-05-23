@@ -590,9 +590,86 @@
             return availableSongs[Math.floor(Math.random() * availableSongs.length)];
         }
 
+        function reconstructServiceFromHistory(service, existingIndex) {
+            const categoryTitles = {
+                'opening':     '1. Opening Hymn',
+                'bibleReading':'2. Song for Bible Reading',
+                'celebration': '3. Birthday/Anniversary Song',
+                'offertory':   '4. Offertory Song',
+                'qurbana1':    '5. Holy Qurbana - Song 1',
+                'qurbana2':    '6. Holy Qurbana - Song 2',
+                'qurbana3':    '7. Holy Qurbana - Song 3 (Optional)',
+                'doxology':    '8. Doxology'
+            };
+
+            window.currentService = service.songs.map(savedSong => {
+                let song, collection;
+
+                if (savedSong.category === 'celebration') {
+                    song = celebrationSongs.find(s => s.number == savedSong.number);
+                    collection = 'Birthday/Anniversary';
+                    if (!song) { song = hymns.find(s => s.number == savedSong.number); collection = 'Kristheeya Keerthanangal'; }
+                    if (!song) {
+                        for (const [collName, songs] of Object.entries(conventions)) {
+                            song = songs.find(s => s.number == savedSong.number);
+                            if (song) { collection = collName; break; }
+                        }
+                    }
+                } else if (savedSong.category === 'offertory') {
+                    for (const [collName, songs] of Object.entries(conventions)) {
+                        song = songs.find(s => s.number == savedSong.number);
+                        if (song) { collection = collName; break; }
+                    }
+                    if (!song) { song = hymns.find(s => s.number == savedSong.number); collection = 'Kristheeya Keerthanangal'; }
+                } else if (savedSong.category === 'doxology') {
+                    song = hymns.find(s => s.number == savedSong.number);
+                    collection = 'Doxology';
+                } else {
+                    song = hymns.find(s => s.number == savedSong.number);
+                    collection = 'Kristheeya Keerthanangal';
+                }
+
+                if (!song) {
+                    song = { number: savedSong.number, name: savedSong.name, name2: '', youtubeId: '' };
+                    collection = savedSong.collection || 'Unknown';
+                }
+
+                const isOptional = savedSong.category === 'qurbana3';
+                return {
+                    title: categoryTitles[savedSong.category] || savedSong.category,
+                    song: song,
+                    collection: collection,
+                    category: savedSong.category,
+                    ...(isOptional && { optional: true })
+                };
+            });
+
+            document.getElementById('serviceTheme').value = service.theme || '';
+            window.editingServiceIndex = existingIndex;
+            displayService(window.currentService);
+        }
+
         function generateService() {
+            // If a date is selected, check history before generating new songs
+            const selectedDateStr = document.getElementById('serviceDate').value;
+            if (selectedDateStr) {
+                const selectedTimestamp = new Date(selectedDateStr).getTime();
+                const existingIndex = serviceHistory.findIndex(s => s.date === selectedTimestamp);
+                if (existingIndex !== -1) {
+                    reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
+                    const dateLabel = new Date(selectedTimestamp).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                    const banner = document.createElement('div');
+                    banner.style.cssText = 'background:#ebf8ff;border:1px solid #90cdf4;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2b6cb0;';
+                    banner.textContent = `📋 Loaded existing service for ${dateLabel}`;
+                    const order = document.getElementById('serviceOrder');
+                    order.insertBefore(banner, order.firstChild);
+                    setTimeout(() => banner.remove(), 4000);
+                    return;
+                }
+            }
+
             const offertoryPref = document.getElementById('offertoryConvention').value;
-            
+
             let offertoryConvention;
             if (offertoryPref === 'alternate') {
                 const year = new Date().getFullYear();
@@ -1413,94 +1490,16 @@
                 alert('Service not found!');
                 return;
             }
-            
+
             const service = serviceHistory[index];
-            
-            // Confirm before loading
             const date = new Date(service.date).toLocaleDateString();
             if (!confirm(`Load service from ${date} for editing?\n\nThis will replace your current service plan.`)) {
                 return;
             }
-            
-            // Set date and theme
+
             document.getElementById('serviceDate').value = new Date(service.date).toISOString().split('T')[0];
-            document.getElementById('serviceTheme').value = service.theme || '';
-            
-            // Reconstruct service with full song objects
-            window.currentService = service.songs.map(savedSong => {
-                let song, collection;
-                
-                // Use category to determine which collection to search first
-                if (savedSong.category === 'celebration') {
-                    // For celebration, check birthday-anniversary first
-                    song = celebrationSongs.find(s => s.number == savedSong.number);
-                    collection = 'Birthday/Anniversary';
-                    
-                    // Fallback to other collections if not found
-                    if (!song) {
-                        song = hymns.find(s => s.number == savedSong.number);
-                        collection = 'Kristheeya Keerthanangal';
-                    }
-                    if (!song) {
-                        for (const [collName, songs] of Object.entries(conventions)) {
-                            song = songs.find(s => s.number == savedSong.number);
-                            if (song) {
-                                collection = collName;
-                                break;
-                            }
-                        }
-                    }
-                } else if (savedSong.category === 'offertory') {
-                    // For offertory, check conventions first
-                    for (const [collName, songs] of Object.entries(conventions)) {
-                        song = songs.find(s => s.number == savedSong.number);
-                        if (song) {
-                            collection = collName;
-                            break;
-                        }
-                    }
-                } else if (savedSong.category === 'doxology') {
-                    // For doxology, check hymns
-                    song = hymns.find(s => s.number == savedSong.number);
-                    collection = 'Doxology';
-                } else {
-                    // For other categories (opening, bibleReading, qurbana), check hymns
-                    song = hymns.find(s => s.number == savedSong.number);
-                    collection = 'Kristheeya Keerthanangal';
-                }
-                
-                if (!song) {
-                    // Fallback if song not found
-                    song = { number: savedSong.number, name: savedSong.name };
-                    collection = savedSong.collection || 'Unknown';
-                }
-                
-                const categoryTitles = {
-                    'opening': '1. Opening Hymn',
-                    'bibleReading': '2. Song for Bible Reading',
-                    'celebration': '3. Birthday/Anniversary Song',
-                    'offertory': '4. Offertory Song',
-                    'qurbana1': '5. Holy Qurbana - Song 1',
-                    'qurbana2': '6. Holy Qurbana - Song 2',
-                    'qurbana3': '7. Holy Qurbana - Song 3',
-                    'doxology': '8. Doxology'
-                };
-                
-                return {
-                    title: categoryTitles[savedSong.category],
-                    song: song,
-                    collection: collection,
-                    category: savedSong.category
-                };
-            });
-            
-            // Store the index for updating later
-            window.editingServiceIndex = index;
-            
-            // Close modal and display
+            reconstructServiceFromHistory(service, index);
             closeHistory();
-            displayService(window.currentService);
-            
             alert('✏️ Service loaded for editing!\n\nMake your changes and click "Save Service" to update.');
         }
 
