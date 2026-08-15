@@ -999,7 +999,8 @@
             }
 
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
-            const success = await saveAttendanceToFirestore();
+            const date = document.getElementById('attendanceDate').value;
+            const success = await saveAttendanceToFirestore(date);
             if (success) {
                 alert('✅ Attendance saved and synced to cloud!');
             } else {
