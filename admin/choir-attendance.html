@@ -918,8 +918,9 @@
             const dayData = attendanceData[date] || {};
             const femaleTotal = members.female.length;
             const maleTotal = members.male.length;
-            const present = [...members.female, ...members.male].filter(n => dayData[n] === 'P').length;
-            document.getElementById('totalPresentCount').textContent = `${present}/${femaleTotal + maleTotal}`;
+            const occasionalTotal = members.occasional.length;
+            const present = [...members.female, ...members.male, ...members.occasional].filter(n => dayData[n] === 'P').length;
+            document.getElementById('totalPresentCount').textContent = `${present}/${femaleTotal + maleTotal + occasionalTotal}`;
         }
 
         function renderSection(containerId, memberList) {
@@ -999,7 +1000,8 @@
             }
 
             localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
-            const success = await saveAttendanceToFirestore();
+            const date = document.getElementById('attendanceDate').value;
+            const success = await saveAttendanceToFirestore(date);
             if (success) {
                 alert('✅ Attendance saved and synced to cloud!');
             } else {
