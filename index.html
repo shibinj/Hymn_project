@@ -1663,8 +1663,9 @@
     </button>
 
     <div id="chatPanel" role="dialog" aria-label="Hymn Assistant">
-        <div class="chat-header">
+        <div class="chat-header" id="chatPanelHeader">
             <div>
+                <div class="chat-drag-handle"><span>⠿</span> Move Widget</div>
                 <div class="chat-header-title">Hymn Assistant (Gemini AI)</div>
                 <div class="chat-header-sub">Search songs by theme, lyrics snippet, or occasion</div>
             </div>
@@ -1869,10 +1870,46 @@
             }[m]));
         }
 
-        // ── AI Hymn Assistant ─────────────────────────────────────────
+        // ── AI Hymn Assistant & Draggable Floating Controls ───────────
         const HYMN_CHAT_URL = 'https://hymnchat-l75oqndw3a-uc.a.run.app';
         let chatHistory = [];
         let chatOpen = false;
+
+        // Position & Smart Placement
+        function positionChatPanel() {
+            const btn = document.getElementById('chatBtn');
+            const panel = document.getElementById('chatPanel');
+            if (!btn || !panel) return;
+
+            const btnRect = btn.getBoundingClientRect();
+            const panelWidth = Math.min(380, window.innerWidth - 32);
+            const panelHeight = Math.min(560, window.innerHeight - 100);
+
+            // Determine if panel should open to left or right, above or below
+            let top = btnRect.top - panelHeight - 12;
+            let left = btnRect.right - panelWidth;
+
+            // If too high up, place below button
+            if (top < 20) {
+                top = btnRect.bottom + 12;
+            }
+            // Clamp top/bottom within screen
+            if (top + panelHeight > window.innerHeight - 20) {
+                top = window.innerHeight - panelHeight - 20;
+            }
+            if (top < 20) top = 20;
+
+            // Clamp left/right within screen
+            if (left < 16) left = 16;
+            if (left + panelWidth > window.innerWidth - 16) {
+                left = window.innerWidth - panelWidth - 16;
+            }
+
+            panel.style.top = top + 'px';
+            panel.style.left = left + 'px';
+            panel.style.bottom = 'auto';
+            panel.style.right = 'auto';
+        }
 
         function toggleChat() {
             chatOpen = !chatOpen;
@@ -1880,9 +1917,199 @@
             panel.style.display = chatOpen ? 'flex' : 'none';
             if (chatOpen) {
                 dismissGreeting(false);
+                positionChatPanel();
                 document.getElementById('chatInput').focus();
             }
         }
+
+        // ── Draggable Floating Button Logic ───────────────────────────
+        (function initDraggableChat() {
+            const btn = document.getElementById('chatBtn');
+            const greeting = document.getElementById('chatGreeting');
+            if (!btn) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+            let hasMoved = false;
+
+            // Load saved position
+            const savedPos = localStorage.getItem('hymn_chat_btn_pos');
+            if (savedPos) {
+                try {
+                    const pos = JSON.parse(savedPos);
+                    const maxLeft = window.innerWidth - 70;
+                    const maxTop = window.innerHeight - 70;
+                    const validLeft = Math.max(16, Math.min(pos.left, maxLeft));
+                    const validTop = Math.max(16, Math.min(pos.top, maxTop));
+                    btn.style.left = validLeft + 'px';
+                    btn.style.top = validTop + 'px';
+                    btn.style.bottom = 'auto';
+                    btn.style.right = 'auto';
+
+                    if (greeting) {
+                        greeting.style.left = Math.max(16, validLeft - 180) + 'px';
+                        greeting.style.top = Math.max(16, validTop - 80) + 'px';
+                        greeting.style.bottom = 'auto';
+                        greeting.style.right = 'auto';
+                    }
+                } catch (e) {}
+            }
+
+            function onStart(e) {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                const rect = btn.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                hasMoved = false;
+                isDragging = true;
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                if (Math.hypot(dx, dy) > 5) {
+                    hasMoved = true;
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                if (hasMoved) {
+                    let newLeft = initialLeft + dx;
+                    let newTop = initialTop + dy;
+
+                    const maxLeft = window.innerWidth - btn.offsetWidth - 16;
+                    const maxTop = window.innerHeight - btn.offsetHeight - 16;
+
+                    newLeft = Math.max(16, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(16, Math.min(newTop, maxTop));
+
+                    btn.style.left = newLeft + 'px';
+                    btn.style.top = newTop + 'px';
+                    btn.style.bottom = 'auto';
+                    btn.style.right = 'auto';
+
+                    if (chatOpen) positionChatPanel();
+                }
+            }
+
+            function onEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                if (hasMoved) {
+                    const rect = btn.getBoundingClientRect();
+                    localStorage.setItem('hymn_chat_btn_pos', JSON.stringify({ left: rect.left, top: rect.top }));
+                }
+            }
+
+            // Mouse Events
+            btn.addEventListener('mousedown', (e) => {
+                onStart(e);
+                const handleMouseMove = (ev) => onMove(ev);
+                const handleMouseUp = (ev) => {
+                    onEnd(ev);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            });
+
+            // Prevent toggle on drag
+            btn.addEventListener('click', (e) => {
+                if (hasMoved) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    hasMoved = false;
+                }
+            });
+
+            // Touch Events
+            btn.addEventListener('touchstart', onStart, { passive: true });
+            btn.addEventListener('touchmove', onMove, { passive: false });
+            btn.addEventListener('touchend', onEnd);
+
+            // ── Draggable Chat Panel Header ───────────────────────────
+            const panelHeader = document.getElementById('chatPanelHeader');
+            const panel = document.getElementById('chatPanel');
+            if (panelHeader && panel) {
+                let pDragging = false;
+                let pStartX, pStartY, pInitialLeft, pInitialTop;
+
+                function onPanelStart(e) {
+                    if (e.target.closest('.chat-close')) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    pStartX = clientX;
+                    pStartY = clientY;
+                    const rect = panel.getBoundingClientRect();
+                    pInitialLeft = rect.left;
+                    pInitialTop = rect.top;
+                    pDragging = true;
+                }
+
+                function onPanelMove(e) {
+                    if (!pDragging) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    const dx = clientX - pStartX;
+                    const dy = clientY - pStartY;
+
+                    let newLeft = pInitialLeft + dx;
+                    let newTop = pInitialTop + dy;
+
+                    const maxLeft = window.innerWidth - panel.offsetWidth - 10;
+                    const maxTop = window.innerHeight - panel.offsetHeight - 10;
+
+                    newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(10, Math.min(newTop, maxTop));
+
+                    panel.style.left = newLeft + 'px';
+                    panel.style.top = newTop + 'px';
+                    panel.style.bottom = 'auto';
+                    panel.style.right = 'auto';
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function onPanelEnd() {
+                    pDragging = false;
+                }
+
+                panelHeader.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.chat-close')) return;
+                    onPanelStart(e);
+                    const handlePanelMove = (ev) => onPanelMove(ev);
+                    const handlePanelUp = () => {
+                        onPanelEnd();
+                        document.removeEventListener('mousemove', handlePanelMove);
+                        document.removeEventListener('mouseup', handlePanelUp);
+                    };
+                    document.addEventListener('mousemove', handlePanelMove);
+                    document.addEventListener('mouseup', handlePanelUp);
+                });
+
+                panelHeader.addEventListener('touchstart', onPanelStart, { passive: true });
+                panelHeader.addEventListener('touchmove', onPanelMove, { passive: false });
+                panelHeader.addEventListener('touchend', onPanelEnd);
+            }
+
+            // Reposition on window resize so it never goes off-screen
+            window.addEventListener('resize', () => {
+                const rect = btn.getBoundingClientRect();
+                const maxLeft = window.innerWidth - btn.offsetWidth - 16;
+                const maxTop = window.innerHeight - btn.offsetHeight - 16;
+                if (rect.left > maxLeft || rect.top > maxTop) {
+                    btn.style.left = Math.max(16, Math.min(rect.left, maxLeft)) + 'px';
+                    btn.style.top = Math.max(16, Math.min(rect.top, maxTop)) + 'px';
+                }
+                if (chatOpen) positionChatPanel();
+            });
+        })();
 
         let greetingTimer = null;
         function dismissGreeting(openChat) {
