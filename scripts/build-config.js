@@ -1,4 +1,5 @@
-const fs = require('fs');
+// Build config script - Holy Hymns
+= require('fs');
 const path = require('path');
 
 const apiKey = process.env.FIREBASE_API_KEY || 'AIzaSyDJ5-YBSIxm7HuZc2D82OkTxxBHNRw6Awk';
