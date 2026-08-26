@@ -1,151 +1,155 @@
-# Holy Hymns — Malayalam Christian Songs Collection
+# Holy Hymns — Malayalam Christian Songs & Worship Platform
 
-A web-based platform for browsing, searching, and playing Malayalam Christian hymns and convention songs, with admin tools for worship planning and choir management.
+A comprehensive, modern web platform for Malayalam Christian hymns, convention songs, liturgy planning, and choir ministry management.
 
-**PROD Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)
+🌐 **Production Site:** [https://shibinj.github.io/Hymn_project/](https://shibinj.github.io/Hymn_project/)  
+⚡ **Live Preview:** [https://hymn-preview.holyhymns.workers.dev/](https://hymn-preview.holyhymns.workers.dev/)
 
 ---
 
-## Song Collections
+## 🎼 Song Collections
 
-| Collection | Songs | Notes |
+| Collection | Songs | Description |
 |---|---|---|
-| Kristheeya Keerthanangal | 517 | Complete Malayalam hymn book |
-| Maramon Convention | 96 | 2013, 2021, 2023–2026 |
-| Passion Week | 23 | Lent and Easter songs |
-| Holy Communion | 22 | Qurbana songs |
-| Kottarakara Convention | 18 | 2025–2026 |
-| Birthday / Anniversary | 15 | Celebration songs |
-| **Total** | **681+** | **11 collections** |
+| **Kristheeya Keerthanangal** | 517 | Complete Malayalam Christian Hymn Book with 40 liturgical themes & doxology |
+| **Maramon Convention** | 96 | Choir collections across 6 years (2013, 2021, 2023, 2024, 2025, 2026) |
+| **Passion Week Songs** | 23 | Hosanna (Palm Sunday), Good Friday, and Resurrection hymns |
+| **Holy Communion Songs** | 22 | Eucharistic liturgy and sacramental meditation songs |
+| **Kottarakara Convention** | 18 | Official choir selections (2025 – 2026) |
+| **Special Occasion Songs** | 15 | Birthday, wedding anniversary, home blessing & thanksgiving prayers |
+| **Total** | **691+** | **12 Collections** |
 
 ---
 
-## Features
+## ✨ Features
 
-**Public**
-- Browse all song collections
-- View lyrics with Malayalam and English titles
-- YouTube video playback
-- Search by song number or name
-- Next / Previous navigation with keyboard shortcuts (← →)
-- Quick-jump to song by number
-- Favorites / bookmarks
-- Dark mode
-- Mobile responsive
-- **Hymn Assistant chatbot** — Find songs by theme, occasion, lyrics fragment, or name (English or Malayalam); powered by Gemini AI with full category awareness
+### 🌐 Public Experience
+- **Interactive Instant Search**: Lightning-fast search by hymn number (`#104`), English/Malayalam title, or lyrics snippet with live autocomplete dropdown.
+- **Liturgical Theme Browsing**: 40+ categorized themes (*Worship & Praise*, *Morning*, *Evening*, *Passion Week*, *Christmas*, *Holy Communion*, *Faith & Trust*, *Comfort & Hope*, *Second Coming*).
+- **Modern Song Viewer & Player**:
+  - Embedded YouTube video playback in frosted glass container.
+  - Quick collection switcher dropdown to jump across hymnals without leaving the page.
+  - Official vector WhatsApp sharing, copy lyrics, and printable song sheets.
+  - Previous / Next hymn navigation (`←` / `→` arrow keys supported).
+  - Favorites & bookmarking with local persistence.
+- **Floating & Draggable AI Assistant**: Gemini-powered conversational assistant with drag-and-drop placement, viewport boundary clamping, and session position memory.
+- **Unified Sacred Glassmorphism**: Ambient floating glow animation with instant Dark / Light mode switching.
 
-**Admin** *(view-only is public; sign-in required to make changes)*
-- **Worship Service Planner** — Auto-generates weekly service song selections avoiding songs used in the last 2 months; flags recently planned songs when manually overriding; view history and search by song (public); create/edit/delete services (sign-in required)
-- **DSMC Sunday Planner** — Assigns members to the 9 Sunday service roles (Prasangam, Part 1/2 Assistance, Bible Readings, Sthothrakazcha, Prayer, Kaiyassoori, Thubden Bhagangal) with Malayalam labels; smart auto-fill avoids last year's assignments and deprioritises continuously absent members; full history, WhatsApp share, and print support *(sign-in required to save)*
-- **Choir Attendance Tracker** — View attendance by date and quarterly/yearly reports with PDF export (public); mark/update attendance (sign-in required)
-- **Lyrics Editor** — Add and edit song data *(sign-in required)*
-- **Timestamp Converter** — Generate YouTube deep-link timestamps
+### 🔒 Admin Ministry Suite (Direct Access via `/admin/`)
+- **📝 Worship Service Planner** (`admin/worship-planner.html`):
+  - Intelligent service auto-generation with 2-month history conflict avoidance.
+  - Dynamic song cards with modern vector action toolbar (`🎲 Generate`, `💾 Save`, `WhatsApp`, `📜 History`, `🖨️ Print`, `🔄 Sync`).
+  - Formatted WhatsApp broadcast generator and service history browser.
+- **✅ Choir Attendance Tracker** (`admin/choir-attendance.html`):
+  - 1-click `✓ Present` / `✕ Absent` pill toggles for rapid check-in.
+  - 3-column responsive member grid in Manage Members with numbered badges.
+  - Live Quarterly & Yearly reports with dual-tone percentage bars and Top 5 podium.
+  - PDF report export and member anniversary notifications.
+- **⛪ DSMC Sunday Planner** (`admin/dsmc-planner.html`):
+  - Assign choir members to Sunday service duties (*Prasangam, Bible readings, Sthothrakazcha, Kaiyassoori, Thubden*).
+  - Smart auto-fill with rotation history and formatted WhatsApp circular generator.
+- **✏️ Hymn Lyrics Editor** (`admin/lyrics-editor.html`):
+  - Split-pane glass workspace with status pills (*Has Lyrics*, *Draft*, *No Lyrics*) and local draft persistence.
+- **🛠️ Utility Tools**:
+  - `timestamp-converter.html`: Converts YouTube timestamps to deep-link start/end seconds.
+  - `generate-password-hash.html`: Generates secure SHA-256 password hashes.
 
 ---
 
-## Project Structure
+## 📁 Project Architecture
 
-```
+```text
 Hymn_project/
-├── index.html                  # Main landing page
-├── viewer.html                 # Song viewer (lyrics + video)
-├── admin/
-│   ├── admin.html              # Admin dashboard
-│   ├── worship-planner.html    # Worship service planner
-│   ├── dsmc-planner.html       # DSMC Sunday service role planner
-│   ├── choir-attendance.html   # Choir attendance tracker
-│   ├── lyrics-editor.html      # Lyrics editor
-│   ├── timestamp-converter.html
-│   ├── firebase-config.js      # Firebase config (not committed)
-│   └── docs/                   # Admin-specific guides
-├── data/
-│   ├── kristheeya-keerthanangal.json
-│   ├── maramon-20XX.json       # One file per convention year
-│   ├── kottarakara-20XX.json
-│   ├── holy-communion.json
-│   ├── passion-week.json
-│   ├── birthday-anniversary.json
-│   ├── song-categories.json    # 40 thematic categories for Kristheeya Keerthanangal
-│   ├── choir-members.json      # Active member roster
-│   └── choir-members-archive.json
-├── docs/                       # Project documentation
-│   ├── choir-attendance/       # Choir attendance guides
-│   └── project-info/           # Architecture and structure notes
-├── tools/                      # Utility scripts
-├── assets/                     # Large static files
-└── archive/                    # Old / unused files
+├── 🌐 Public Pages
+│   ├── index.html                    # Modern landing page, instant search & theme browser
+│   ├── viewer.html                   # Song reader, YouTube player & collection switcher
+│   ├── admin.html                    # Direct gateway redirect to admin/admin.html
+│   ├── favicon.ico, robots.txt, sitemap.xml
+│   └── worker.js, wrangler.jsonc, package.json, firebase.json
+│
+├── 🔒 Admin Suite (admin/)
+│   ├── admin.html                    # Admin Dashboard (Active Cloud Sync)
+│   ├── worship-planner.html          # Sunday Worship Service Planner
+│   ├── choir-attendance.html         # Choir Attendance Tracker & Reports
+│   ├── dsmc-planner.html             # DSMC Sunday Duty Planner & Circulars
+│   ├── lyrics-editor.html            # Split-Pane Hymnal Lyrics Editor
+│   ├── timestamp-converter.html      # YouTube Timestamp Deep-Link Converter
+│   ├── generate-password-hash.html   # SHA-256 Hash Generator
+│   ├── generate-whitelist.html       # Allowed Email Whitelist Tool
+│   ├── theme-preview.html            # Theme Color Palette Sandbox
+│   └── firebase-config.js            # Live Firebase Web Configuration
+│
+├── 🎼 Data & Media (data/ & assets/)
+│   ├── data/kristheeya-keerthanangal.json
+│   ├── data/maramon-20XX.json        # 2013, 2021, 2023, 2024, 2025, 2026
+│   ├── data/kottarakara-20XX.json    # 2025, 2026
+│   ├── data/holy-communion.json
+│   ├── data/passion-week.json
+│   ├── data/birthday-anniversary.json
+│   ├── data/song-categories.json     # 40 Liturgical Theme Categories
+│   ├── data/choir-members.json       # Active choir roster
+│   ├── data/choir-members-archive.json
+│   └── assets/                       # Lottie animations and icons
+│
+├── 📚 Documentation (docs/)
+│   ├── README.md                     # Documentation Index
+│   ├── guides/                       # UI enhancements, data entry, compact view, sync setup
+│   ├── project-info/                 # Architecture, restructure history & SEO audit
+│   ├── release-notes/                # Feature changelogs & bugfix logs
+│   └── choir-attendance/             # Attendance specifications & user manuals
+│
+├── 🛠️ Tools & Scripts (scripts/ & tools/)
+│   ├── scripts/build-config.js       # Cloudflare build configuration generator
+│   └── tools/extract-playlist.*      # YouTube playlist extraction utilities
+│
+└── 📦 Archive (archive/)             # Legacy python scrapers and historical scripts
 ```
 
 ---
 
-## Firebase / Cloud Sync
+## ☁️ Cloud Synchronization & Security
 
-The admin tools use Firebase Firestore for cloud data persistence. Collection names:
+The admin suite connects to Firebase Firestore with Google Authentication:
 
-| Tool | Firestore Collection |
+| Feature | Firestore Collection / Document |
 |---|---|
-| Worship Planner (services) | `worshipHistory` |
-| DSMC Sunday Planner | `dsmcSchedule` |
-| Choir Attendance | `choirAttendance` |
-| Choir Members (active roster) | `members` → doc `active` |
-| Choir Members (archive) | `members` → doc `archive` |
+| **Worship History** | `worshipHistory` |
+| **DSMC Duty Schedules** | `dsmcSchedule` |
+| **Choir Attendance** | `choirAttendance` |
+| **Active Choir Roster** | `members` ➔ `active` |
+| **Archived Choir Roster** | `members` ➔ `archive` |
 
-To configure, copy `admin/firebase-config.template.js` to `admin/firebase-config.js` and fill in your project credentials and allowed admin emails.
-
----
-
-## Hymn Assistant (Chatbot)
-
-A Gemini-powered chatbot embedded in the song viewer helps users find songs by theme, occasion, name, or lyrics.
-
-- **Backend:** Firebase Cloud Function (`functions/index.js`) — deployed to Cloud Run
-- **Model:** Gemini 2.5 Flash
-- **Index:** `functions/hymn-index.json` — 691 songs across all collections, with `cat` field for Kristheeya Keerthanangal songs
-- **Categories:** 40 thematic categories (Morning Songs, Christmas, Passion Week, Resurrection, Belief, Prayer, Second Coming, etc.) — see `data/song-categories.json`
-
-To deploy the chatbot backend after changes:
-```bash
-cd functions && firebase deploy --only functions
-```
+- **Public Access**: Song browsing, service history, and attendance reports load without authentication.
+- **Admin Access**: Sign in with an authorized Google account to modify service plans, save attendance, or edit lyrics.
 
 ---
 
-## Quick Start
+## 🤖 AI Hymn Assistant (Gemini AI)
 
-**Browse songs (public)**
-1. Open `index.html`
-2. Pick a collection
-3. Click a song to view lyrics and video
-
-**View service history / attendance / reports (public)**
-1. Navigate to `admin/admin.html`
-2. Select a tool — history and reports load without sign-in
-
-**Make changes (sign-in required)**
-1. Navigate to `admin/admin.html`
-2. Sign in with an authorized Google account
-3. Select a tool to create/edit services or mark attendance
+- **Engine:** Google Gemini Flash
+- **Backend:** Firebase Cloud Function / Cloud Run (`https://hymnchat-l75oqndw3a-uc.a.run.app`)
+- **Capabilities:** Semantic song search by theme, lyrics excerpt, scripture, liturgical season, or song title (English / Malayalam).
 
 ---
 
-## Documentation
+## 📚 Documentation Directory
 
-| Guide | Location |
+| Document | Path |
 |---|---|
-| Choir Attendance — Quick Start | `docs/choir-attendance/QUICKSTART.md` |
-| Choir Attendance — Full Guide | `docs/choir-attendance/COMPLETE.md` |
-| Managing Past Members | `docs/choir-attendance/PAST_MEMBERS_GUIDE.md` |
-| Adding Songs (Data Entry) | `docs/MARAMON_DATA_ENTRY_GUIDE.md` |
-| Project Structure (detailed) | `docs/project-info/PROJECT_STRUCTURE.md` |
-| New Viewer Features | `docs/NEW_FEATURES.md` |
+| **Documentation Index** | [docs/README.md](docs/README.md) |
+| **Choir Attendance Quick Start** | [docs/choir-attendance/QUICKSTART.md](docs/choir-attendance/QUICKSTART.md) |
+| **Choir Attendance Full Guide** | [docs/choir-attendance/COMPLETE.md](docs/choir-attendance/COMPLETE.md) |
+| **Past Members Management** | [docs/choir-attendance/PAST_MEMBERS_GUIDE.md](docs/choir-attendance/PAST_MEMBERS_GUIDE.md) |
+| **Data Entry Guide** | [docs/guides/MARAMON_DATA_ENTRY_GUIDE.md](docs/guides/MARAMON_DATA_ENTRY_GUIDE.md) |
+| **Project Architecture** | [docs/project-info/PROJECT_STRUCTURE.md](docs/project-info/PROJECT_STRUCTURE.md) |
+| **SEO & Performance Audit** | [docs/project-info/SEO_IMPROVEMENTS.md](docs/project-info/SEO_IMPROVEMENTS.md) |
 
 ---
 
-## Contributing
+## 📞 Support & Contributing
 
-This is a community resource for the Malayalam Christian community.  
-To add songs, report issues, or request access: **shibinjohn@live.com**
+This website is a non-commercial community resource dedicated to the Malayalam Christian community worldwide.
 
----
+For song contributions, questions, or access inquiries: **shibinjohn@live.com**
 
-*Non-commercial community resource.*
+*© 2026 Holy Hymns | Dedicated to Christ & His Church*
