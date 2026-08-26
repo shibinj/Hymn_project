@@ -181,395 +181,417 @@
         }
     };
     </script>
+        <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --bg-base: #060913;
+            --card-bg: rgba(18, 24, 43, 0.8);
+            --card-hover-bg: rgba(28, 38, 68, 0.9);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-primary: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --accent-gold: #f59e0b;
+            --accent-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+            
+            --input-bg: rgba(15, 23, 42, 0.75);
+            --input-border: rgba(255, 255, 255, 0.14);
+            --input-focus-border: #10b981;
+            
+            --section-bg: rgba(255, 255, 255, 0.03);
+            --section-border: rgba(255, 255, 255, 0.08);
         }
-        
-        html {
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
+
+        body.light-mode {
+            --bg-base: #f4f6fb;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-hover-bg: #ffffff;
+            --card-border: rgba(203, 213, 225, 0.8);
+            --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --accent-primary: #059669;
+            --accent-glow: rgba(5, 150, 105, 0.15);
+            --accent-gold: #d97706;
+            --accent-gradient: linear-gradient(135deg, #059669 0%, #0284c7 50%, #6366f1 100%);
+            
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --input-focus-border: #059669;
+            
+            --section-bg: #f8fafc;
+            --section-border: #e2e8f0;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 10px; 
-            background: linear-gradient(135deg, #0f1d2e 0%, #1a2f47 100%);
-            min-height: 100vh; 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 20px 12px; 
+            background: var(--bg-base); 
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
         }
-        
+
+        .ambient-glow-wrap { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .ambient-sphere { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; }
+        .ambient-sphere-1 { width: 600px; height: 600px; top: -150px; left: 10%; background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%); }
+        .ambient-sphere-2 { width: 650px; height: 650px; top: 30%; right: -200px; background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%); }
+
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
-            background: white; 
-            border-radius: 15px; 
-            padding: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
+            border-radius: 24px; 
+            padding: 28px; 
+            box-shadow: var(--card-shadow); 
+            backdrop-filter: blur(16px);
+            position: relative;
+            z-index: 1;
         }
-        
-        h1 { 
-            color: #2d3748; 
-            margin-bottom: 10px; 
-            font-size: 24px; 
+
+        .app-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--card-border);
         }
+
+        .btn-top-nav {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-top-nav:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateX(-2px);
+        }
+
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        h1 { color: var(--text-primary); margin-bottom: 8px; font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; }
         
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 14px;
             flex-wrap: wrap;
         }
         
         .tab {
-            padding: 10px 20px;
-            background: none;
+            padding: 10px 18px;
+            background: transparent;
             border: none;
-            border-bottom: 3px solid transparent;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: #6c757d;
-            transition: all 0.3s;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            font-family: inherit;
         }
         
         .tab.active {
-            color: #b87333;
-            border-bottom-color: #b87333;
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 14px var(--accent-glow);
         }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
         .date-selector {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 10px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            padding: 16px;
+            border-radius: 16px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         
-        .date-selector label {
-            font-weight: 600;
-            margin-right: 10px;
-        }
+        .date-selector label { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); }
         
         .date-selector input, .date-selector select {
-            padding: 8px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            margin-right: 10px;
+            padding: 9px 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            font-family: inherit;
         }
         
         .section-header {
-            background: #b87333;
+            background: var(--accent-gradient);
             color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin: 20px 0 10px 0;
-            font-weight: 600;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin: 24px 0 12px 0;
+            font-weight: 800;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
         
         .attendance-grid {
             display: grid;
-            grid-template-columns: 200px repeat(2, 80px);
-            gap: 5px;
-            margin-bottom: 10px;
+            grid-template-columns: 240px repeat(2, 90px);
+            gap: 6px;
+            margin-bottom: 12px;
         }
         
         .grid-header {
-            font-weight: 600;
-            padding: 10px;
-            background: #f7fafc;
-            border-radius: 6px;
+            font-weight: 800;
+            padding: 10px 14px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
         
-        .member-row {
-            display: contents;
-        }
+        .member-row { display: contents; }
         
         .member-name {
-            padding: 10px;
-            background: #f7fafc;
-            border-radius: 6px;
+            padding: 10px 14px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 10px;
             display: flex;
             align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.92rem;
         }
         
         .attendance-btn {
             padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
             cursor: pointer;
             text-align: center;
-            font-weight: 600;
-            transition: all 0.2s;
+            font-weight: 700;
+            transition: all 0.2s ease;
         }
         
         .attendance-btn.present {
-            background: #48bb78;
+            background: #10b981;
             color: white;
-            border-color: #48bb78;
+            border-color: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
         
         .attendance-btn.absent {
-            background: #f56565;
+            background: #ef4444;
             color: white;
-            border-color: #f56565;
+            border-color: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
         }
         
         .save-btn {
-            background: #b87333;
+            background: var(--accent-gradient);
             color: white;
             padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 800;
             margin-top: 20px;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all 0.2s ease;
         }
-        
-        .save-btn:hover {
-            background: #9a5e26;
-        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); }
         
         .report-controls {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 10px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            padding: 18px;
+            border-radius: 16px;
             margin-bottom: 20px;
         }
-        
-        .report-controls select {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            margin-right: 10px;
-            font-size: 14px;
-        }
-        
+
+        .report-controls label { font-weight: 700; font-size: 0.88rem; color: var(--text-primary); margin-right: 8px; }
+        .report-controls select { padding: 8px 12px; background: var(--input-bg); color: var(--text-primary); border: 1.5px solid var(--input-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; margin-right: 12px; }
+
         .report-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 16px;
+            border: 1px solid var(--section-border);
+            border-radius: 14px;
+            overflow: hidden;
         }
-        
+
         .report-table th, .report-table td {
-            padding: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--section-border);
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
         }
-        
-        .report-table th {
-            background: #f7fafc;
-            font-weight: 600;
-        }
-        
-        .report-table tr:hover {
-            background: #f7fafc;
-        }
-        
-        .percentage {
-            font-weight: 600;
-        }
-        
-        .percentage.good {
-            color: #48bb78;
-        }
-        
-        .percentage.warning {
-            color: #ed8936;
-        }
-        
-        .percentage.poor {
-            color: #f56565;
-        }
-        
-        .member-list {
-            margin-top: 20px;
-        }
-        
-        .member-item {
-            background: #f7fafc;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .member-item button {
-            padding: 6px 12px;
-            background: #f56565;
+
+        .report-table th { background: var(--section-bg); font-weight: 800; color: var(--text-primary); }
+
+        .export-btn {
+            background: #10b981;
             color: white;
+            padding: 10px 20px;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .add-member {
-            background: #f7fafc;
-            padding: 15px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-left: 10px;
+            transition: all 0.2s;
         }
-        
-        .add-member input {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            margin-right: 10px;
+        .export-btn:hover { background: #059669; transform: translateY(-1px); }
+
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .ambient-glow-wrap, .tabs, .app-header-row, #authSection, #authInfo, .save-btn, .export-btn { display: none !important; }
+            .container { box-shadow: none !important; border: none !important; padding: 10px !important; background: white !important; }
+            .report-table th, .report-table td { color: black !important; border-color: #ddd !important; }
+        }
+    
+        .member-attendance-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--section-border);
+            transition: background 0.15s ease;
+            gap: 12px;
+        }
+        .member-attendance-row:hover {
+            background: var(--card-hover-bg);
+        }
+        .member-name-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
             flex: 1;
         }
-        
-        .add-member select {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            margin-right: 10px;
+        .attendance-pill-group {
+            display: flex;
+            gap: 6px;
         }
-        
-        .add-member button {
-            padding: 10px 20px;
-            background: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .auth-section {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .auth-section input {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            margin-right: 10px;
-        }
-        
-        .auth-section button {
-            padding: 10px 20px;
-            background: #b87333;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .sync-section {
-            background: #e6f7ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #1890ff;
-        }
-        
-        .sync-section input {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            margin-right: 10px;
-            width: 300px;
-        }
-        
-        .sync-section button {
-            padding: 10px 20px;
-            background: #1890ff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-right: 10px;
-        }
-        
-        .sync-status {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #6c757d;
-        }
-        
-        @media (max-width: 768px) {
-            body { padding: 5px; }
-            .container { padding: 15px; }
-            h1 { font-size: 20px; }
-            .attendance-grid { grid-template-columns: 150px repeat(2, 60px); gap: 3px; }
-            .tab { padding: 8px 12px; font-size: 12px; }
-            .report-table { font-size: 12px; }
-            .report-table th, .report-table td { padding: 8px; }
-        }
-        
-        @media print {
-            body { 
-                background: white; 
-                padding: 0; 
-            }
-            .container { 
-                box-shadow: none; 
-                padding: 20px; 
-            }
-            .tabs, .report-controls, .save-btn, 
-            a[href*="admin.html"], 
-            button[onclick*="manualSync"] {
-                display: none !important;
-            }
-            .tab-content {
-                display: block !important;
-            }
-            #attendance, #manage {
-                display: none !important;
-            }
-        }
-        
-        .export-btn {
-            background: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
+        .att-btn-pill {
+            padding: 6px 14px;
             border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            margin-left: 10px;
+            border: 1.5px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+            font-family: inherit;
         }
-        
-        .export-btn:hover {
-            background: #218838;
+        .att-btn-pill:hover:not(:disabled) {
+            transform: translateY(-1px);
         }
-        
-        .collapsible-header {
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.2s;
+        .att-btn-pill.present.active {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
         }
-        
-        .collapsible-header:hover {
-            background: #9a5e26 !important;
+        .att-btn-pill.absent.active {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
         }
+        .member-container-box {
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .count-badge-pill {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            display: inline-block;
+        }
+
     </style>
+
 </head>
 <body>
+    
+    <div class="ambient-glow-wrap">
+        <div class="ambient-sphere ambient-sphere-1"></div>
+        <div class="ambient-sphere ambient-sphere-2"></div>
+    </div>
     <div class="container">
-        <div style="margin-bottom: 15px;">
-            <a href="../admin.html" style="background: #b87333; border: none; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease; font-weight: 600;">← Admin Home</a>
+        <div class="app-header-row">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <a href="admin.html" class="btn-top-nav"><span>←</span> Admin Portal</a>
+                <a href="../index.html" class="btn-top-nav"><span>🏠</span> Holy Hymns</a>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Dark/Light Mode">🌙</button>
         </div>
         <h1>🎵 Choir Attendance Tracker</h1>
         
@@ -613,13 +635,13 @@
             </div>
 
             <div class="section-header">👩 Female Members</div>
-            <div id="femaleAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
+            <div id="femaleAttendance" class="member-container-box"></div>
             
             <div class="section-header" style="margin-top: 20px;">👨 Male Members</div>
-            <div id="maleAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
+            <div id="maleAttendance" class="member-container-box"></div>
             
             <div class="section-header" style="margin-top: 20px;">🌍 Occasional Attendees</div>
-            <div id="occasionalAttendance" style="background: white; border-radius: 8px; overflow: hidden;"></div>
+            <div id="occasionalAttendance" class="member-container-box"></div>
             
             <!-- Past Members Collapsible Section -->
             <div style="margin-top: 20px;">
@@ -930,23 +952,55 @@
             container.innerHTML = memberList.map(name => {
                 const status = attendanceData[date]?.[name] || '';
                 const disabled = !isAuthenticated ? 'disabled' : '';
-                const nameId = name.replace(/\s/g, '-').replace(/\./g, '');
+                
+                const isP = status === 'P';
+                const isA = status === 'A';
                 
                 return `
-                    <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0; gap: 10px;">
-                        <div style="flex: 1; font-size: 14px; color: #2d3748;">${name}</div>
-                        <select 
-                            id="select-${nameId}" 
-                            onchange="markAttendanceAuto('${name}')" 
-                            ${disabled}
-                            style="padding: 6px 10px; border: 2px solid ${status === 'P' ? '#48bb78' : status === 'A' ? '#f56565' : '#cbd5e0'}; border-radius: 6px; background: ${status === 'P' ? '#f0fff4' : status === 'A' ? '#fff5f5' : 'white'}; color: ${status === 'P' ? '#22543d' : status === 'A' ? '#742a2a' : '#4a5568'}; font-weight: 600; cursor: pointer; min-width: 80px;">
-                            <option value="">-</option>
-                            <option value="P" ${status === 'P' ? 'selected' : ''}>Present</option>
-                            <option value="A" ${status === 'A' ? 'selected' : ''}>Absent</option>
-                        </select>
+                    <div class="member-attendance-row">
+                        <div class="member-name-label">${name}</div>
+                        <div class="attendance-pill-group">
+                            <button type="button" 
+                                class="att-btn-pill present ${isP ? 'active' : ''}" 
+                                onclick="setMemberStatus('${name}', 'P')" 
+                                ${disabled} 
+                                title="Mark Present">
+                                ✓ Present
+                            </button>
+                            <button type="button" 
+                                class="att-btn-pill absent ${isA ? 'active' : ''}" 
+                                onclick="setMemberStatus('${name}', 'A')" 
+                                ${disabled} 
+                                title="Mark Absent">
+                                ✕ Absent
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
+        }
+        
+        function setMemberStatus(memberName, status) {
+            if (!isAuthenticated) {
+                alert('🔒 Authentication required!\n\nPlease login to mark attendance.');
+                return;
+            }
+            
+            const date = document.getElementById('attendanceDate').value;
+            if (!attendanceData[date]) attendanceData[date] = {};
+            
+            // Toggle if already selected
+            if (attendanceData[date][memberName] === status) {
+                delete attendanceData[date][memberName];
+            } else {
+                attendanceData[date][memberName] = status;
+            }
+            
+            localStorage.setItem('choirAttendance', JSON.stringify(attendanceData));
+            renderAttendance();
+            
+            // Auto save to Firestore
+            saveAttendanceToFirestore(date);
         }
         
         function markAttendanceAuto(memberName) {
@@ -1300,38 +1354,403 @@
 <head>
     <meta charset="UTF-8">
     <title>${title}</title>
+        <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+
     <style>
-        body { font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5; }
-        .report-container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #2d3748; border-bottom: 3px solid #b87333; padding-bottom: 15px; margin-bottom: 30px; }
-        .summary { background: #e6f7ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #1890ff; }
-        .summary h2 { color: #1890ff; margin-bottom: 15px; font-size: 18px; }
-        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
-        .summary-item { background: white; padding: 15px; border-radius: 6px; text-align: center; }
-        .summary-item .value { font-size: 28px; font-weight: bold; color: #b87333; }
-        .summary-item .label { font-size: 12px; color: #6c757d; margin-top: 5px; }
-        .insights { background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #ffc107; }
-        .insights h2 { color: #856404; margin-bottom: 15px; font-size: 18px; }
-        .insights ul { margin-left: 20px; line-height: 1.8; color: #856404; }
-        .member-card { background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #cbd5e0; }
-        .member-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .member-name { font-size: 18px; font-weight: 600; color: #2d3748; }
-        .member-percentage { font-size: 24px; font-weight: bold; }
-        .percentage-good { color: #48bb78; }
-        .percentage-warning { color: #ed8936; }
-        .percentage-poor { color: #f56565; }
-        .stats { font-size: 13px; color: #6c757d; margin-bottom: 12px; }
-        .bar-container { height: 30px; background: #e2e8f0; border-radius: 5px; overflow: hidden; display: flex; border: 2px solid #cbd5e0; }
-        .bar-present { background: linear-gradient(90deg, #48bb78, #38a169); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; border-right: 1px solid #2d7a4f; }
-        .bar-absent { background: linear-gradient(90deg, #f56565, #e53e3e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
-        .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; color: #6c757d; font-size: 12px; }
-        @media print { 
-            body { background: white; padding: 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; } 
-            .report-container { box-shadow: none; padding: 20px; } 
-            button, #instructions { display: none !important; }
-            .bar-present, .bar-absent, .summary-item, .summary, .insights, .member-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+        :root {
+            --bg-base: #060913;
+            --card-bg: rgba(18, 24, 43, 0.8);
+            --card-hover-bg: rgba(28, 38, 68, 0.9);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-primary: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --accent-gold: #f59e0b;
+            --accent-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+            
+            --input-bg: rgba(15, 23, 42, 0.75);
+            --input-border: rgba(255, 255, 255, 0.14);
+            --input-focus-border: #10b981;
+            
+            --section-bg: rgba(255, 255, 255, 0.03);
+            --section-border: rgba(255, 255, 255, 0.08);
         }
+
+        body.light-mode {
+            --bg-base: #f4f6fb;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-hover-bg: #ffffff;
+            --card-border: rgba(203, 213, 225, 0.8);
+            --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --accent-primary: #059669;
+            --accent-glow: rgba(5, 150, 105, 0.15);
+            --accent-gold: #d97706;
+            --accent-gradient: linear-gradient(135deg, #059669 0%, #0284c7 50%, #6366f1 100%);
+            
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --input-focus-border: #059669;
+            
+            --section-bg: #f8fafc;
+            --section-border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 20px 12px; 
+            background: var(--bg-base); 
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+        }
+
+        .ambient-glow-wrap { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .ambient-sphere { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; }
+        .ambient-sphere-1 { width: 600px; height: 600px; top: -150px; left: 10%; background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%); }
+        .ambient-sphere-2 { width: 650px; height: 650px; top: 30%; right: -200px; background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%); }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
+            border-radius: 24px; 
+            padding: 28px; 
+            box-shadow: var(--card-shadow); 
+            backdrop-filter: blur(16px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .btn-top-nav {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-top-nav:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateX(-2px);
+        }
+
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        h1 { color: var(--text-primary); margin-bottom: 8px; font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 14px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 18px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        
+        .tab.active {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .date-selector {
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .date-selector label { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); }
+        
+        .date-selector input, .date-selector select {
+            padding: 9px 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .section-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin: 24px 0 12px 0;
+            font-weight: 800;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+        
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: 240px repeat(2, 90px);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        
+        .grid-header {
+            font-weight: 800;
+            padding: 10px 14px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        
+        .member-row { display: contents; }
+        
+        .member-name {
+            padding: 10px 14px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.92rem;
+        }
+        
+        .attendance-btn {
+            padding: 10px;
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        
+        .attendance-btn.present {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+        
+        .attendance-btn.absent {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+        
+        .save-btn {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-top: 20px;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all 0.2s ease;
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); }
+        
+        .report-controls {
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .report-controls label { font-weight: 700; font-size: 0.88rem; color: var(--text-primary); margin-right: 8px; }
+        .report-controls select { padding: 8px 12px; background: var(--input-bg); color: var(--text-primary); border: 1.5px solid var(--input-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; margin-right: 12px; }
+
+        .report-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 16px;
+            border: 1px solid var(--section-border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .report-table th, .report-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--section-border);
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .report-table th { background: var(--section-bg); font-weight: 800; color: var(--text-primary); }
+
+        .export-btn {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-left: 10px;
+            transition: all 0.2s;
+        }
+        .export-btn:hover { background: #059669; transform: translateY(-1px); }
+
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .ambient-glow-wrap, .tabs, .app-header-row, #authSection, #authInfo, .save-btn, .export-btn { display: none !important; }
+            .container { box-shadow: none !important; border: none !important; padding: 10px !important; background: white !important; }
+            .report-table th, .report-table td { color: black !important; border-color: #ddd !important; }
+        }
+    
+        .member-attendance-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--section-border);
+            transition: background 0.15s ease;
+            gap: 12px;
+        }
+        .member-attendance-row:hover {
+            background: var(--card-hover-bg);
+        }
+        .member-name-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        .attendance-pill-group {
+            display: flex;
+            gap: 6px;
+        }
+        .att-btn-pill {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1.5px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+        .att-btn-pill:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+        .att-btn-pill.present.active {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+        }
+        .att-btn-pill.absent.active {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+        }
+        .member-container-box {
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .count-badge-pill {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            display: inline-block;
+        }
+
     </style>
+
 </head>
 <body>
     <div class="report-container">
@@ -1422,6 +1841,30 @@
             window.print();
         }, 1000);
     <\/script>
+
+<script>
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        setTheme(savedTheme);
+    }
+    function setTheme(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            if (btn) btn.textContent = '☀️';
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            if (btn) btn.textContent = '🌙';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+    function toggleTheme() {
+        const isLight = document.body.classList.contains('light-mode');
+        setTheme(isLight ? 'dark' : 'light');
+    }
+    initTheme();
+</script>
 </body>
 </html>`;
             
@@ -1516,5 +1959,29 @@
         }
         
     </script>
+
+<script>
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        setTheme(savedTheme);
+    }
+    function setTheme(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            if (btn) btn.textContent = '☀️';
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            if (btn) btn.textContent = '🌙';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+    function toggleTheme() {
+        const isLight = document.body.classList.contains('light-mode');
+        setTheme(isLight ? 'dark' : 'light');
+    }
+    initTheme();
+</script>
 </body>
 </html>

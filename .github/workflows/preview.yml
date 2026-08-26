@@ -1,0 +1,43 @@
+name: Deploy Preview to Firebase Hosting
+
+on:
+  push:
+    branches: [ dev-preview ]
+
+jobs:
+  deploy_preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate firebase-config.js from secrets
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_ALLOWED_ADMINS: ${{ secrets.FIREBASE_ALLOWED_ADMINS }}
+        run: |
+          ADMINS_JSON=$(printf '%s' "$FIREBASE_ALLOWED_ADMINS" | python3 -c 'import sys,json; raw=sys.stdin.read().strip(); parsed=json.loads(raw) if raw.startswith("[") else [e.strip() for e in raw.splitlines() if e.strip()]; print(json.dumps(parsed))')
+          cat > admin/firebase-config.js <<EOF
+          export const firebaseConfig = {
+              apiKey: "${FIREBASE_API_KEY}",
+              authDomain: "${FIREBASE_AUTH_DOMAIN}",
+              projectId: "${FIREBASE_PROJECT_ID}",
+              storageBucket: "${FIREBASE_STORAGE_BUCKET}",
+              messagingSenderId: "${FIREBASE_MESSAGING_SENDER_ID}",
+              appId: "${FIREBASE_APP_ID}"
+          };
+          export const ALLOWED_ADMINS = ${ADMINS_JSON};
+          EOF
+
+      - name: Deploy to Firebase Hosting Preview Channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOLY_HYMNS }}
+          projectId: holy-hymns
+          channelId: dev-preview
