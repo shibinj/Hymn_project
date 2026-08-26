@@ -1842,29 +1842,6 @@
         }, 1000);
     <\/script>
 
-<script>
-    function initTheme() {
-        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-        setTheme(savedTheme);
-    }
-    function setTheme(theme) {
-        const btn = document.getElementById('themeToggleBtn');
-        if (theme === 'light') {
-            document.body.classList.add('light-mode');
-            if (btn) btn.textContent = '☀️';
-            localStorage.setItem('theme', 'light');
-        } else {
-            document.body.classList.remove('light-mode');
-            if (btn) btn.textContent = '🌙';
-            localStorage.setItem('theme', 'dark');
-        }
-    }
-    function toggleTheme() {
-        const isLight = document.body.classList.contains('light-mode');
-        setTheme(isLight ? 'dark' : 'light');
-    }
-    initTheme();
-</script>
 </body>
 </html>`;
             
