@@ -576,6 +576,61 @@
             display: inline-block;
         }
 
+    
+        .member-list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+            margin: 14px 0 24px 0;
+        }
+
+        .member-card-item {
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+        }
+
+        .member-card-item:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .member-idx-badge {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--accent-primary);
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            min-width: 26px;
+            text-align: center;
+        }
+        
+        .manage-info-card {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .manage-archive-card {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1.5px solid rgba(245, 158, 11, 0.3);
+            padding: 22px;
+            border-radius: 16px;
+        }
+
     </style>
 
 </head>
@@ -691,18 +746,18 @@
         
         <!-- Manage Members Tab -->
         <div id="manage" class="tab-content">
-            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; border-left: 4px solid #2196f3;">
-                <h3 style="color: #1976d2; margin-bottom: 15px;">📝 Managing Choir Members</h3>
-                <p style="margin-bottom: 10px; line-height: 1.6;">
+            <div class="manage-info-card">
+                <h3 style="color: var(--accent-primary); margin-bottom: 12px; font-weight: 800; font-size: 1.15rem;">📝 Managing Choir Members</h3>
+                <p style="margin-bottom: 10px; line-height: 1.6; color: var(--text-primary); font-size: 0.95rem;">
                     The active member roster and archive are stored in <strong>Firebase Firestore</strong>
                     (collection: <code>members</code>, documents: <code>active</code> and <code>archive</code>).
                 </p>
-                <p style="margin-top: 10px; line-height: 1.6; font-size: 14px; color: #666;">
+                <p style="margin-top: 8px; line-height: 1.5; font-size: 0.88rem; color: var(--text-muted);">
                     💡 <strong>To move a member out:</strong> Use the "Move to Archive" section below — it updates Firestore automatically.
                 </p>
-                <p style="margin-top: 10px; line-height: 1.6; font-size: 14px; color: #666;">
+                <p style="margin-top: 6px; line-height: 1.5; font-size: 0.88rem; color: var(--text-muted);">
                     💡 <strong>To add a new member:</strong> Edit the <code>members → active</code> document directly in the
-                    <a href="https://console.firebase.google.com/project/holy-hymns/firestore" target="_blank" style="color:#1976d2;">Firebase Console</a>
+                    <a href="https://console.firebase.google.com/project/holy-hymns/firestore" target="_blank" style="color:var(--accent-primary); font-weight:700;">Firebase Console</a>
                     and refresh this page.
                 </p>
             </div>
@@ -1405,13 +1460,20 @@
             renderAttendance();
         }
         
-        function renderMemberList(containerId, memberList, category) {
+                function renderMemberList(containerId, memberList, category) {
             const container = document.getElementById(containerId);
             if (!container) return;
             
+            if (!memberList || memberList.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted); padding:12px; font-size:0.88rem;">No members in this category</div>';
+                return;
+            }
+            
+            container.className = 'member-list-grid';
             container.innerHTML = memberList.map((name, index) => `
-                <div class="member-item">
-                    <span>${index + 1}. ${name}</span>
+                <div class="member-card-item">
+                    <span class="member-idx-badge">${index + 1}</span>
+                    <span>${name}</span>
                 </div>
             `).join('');
         }
@@ -1834,6 +1896,61 @@
             padding: 6px 14px;
             border-radius: 9999px;
             display: inline-block;
+        }
+
+    
+        .member-list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+            margin: 14px 0 24px 0;
+        }
+
+        .member-card-item {
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+        }
+
+        .member-card-item:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .member-idx-badge {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--accent-primary);
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            min-width: 26px;
+            text-align: center;
+        }
+        
+        .manage-info-card {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .manage-archive-card {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1.5px solid rgba(245, 158, 11, 0.3);
+            padding: 22px;
+            border-radius: 16px;
         }
 
     </style>
