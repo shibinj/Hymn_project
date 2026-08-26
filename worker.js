@@ -2,7 +2,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Dynamically serve admin/firebase-config.js with valid Firebase configuration
+    // 1. Dynamically serve admin/firebase-config.js with valid Firebase configuration
     if (url.pathname === '/admin/firebase-config.js') {
       const apiKey = env.FIREBASE_API_KEY || 'AIzaSyDJ5-YBSIxm7HuZc2D82OkTxxBHNRw6Awk';
       const authDomain = env.FIREBASE_AUTH_DOMAIN || 'holy-hymns.firebaseapp.com';
@@ -40,7 +40,21 @@ export const ALLOWED_ADMINS = ${JSON.stringify(allowedAdmins)};
       });
     }
 
-    // Pass all other requests to static assets
-    return env.ASSETS.fetch(request);
+    // 2. Fetch static assets from Cloudflare Assets
+    const response = await env.ASSETS.fetch(request);
+
+    // 3. For preview, ensure HTML files never get stale-cached
+    if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+      const newHeaders = new Headers(response.headers);
+      newHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      newHeaders.set('Pragma', 'no-cache');
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
+      });
+    }
+
+    return response;
   }
 };
