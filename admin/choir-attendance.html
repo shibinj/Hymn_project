@@ -1074,6 +1074,41 @@
             }
         }
         
+                function getDatesForPeriod(year, months) {
+            const y = parseInt(year, 10);
+            return Object.keys(attendanceData).filter(dateStr => {
+                const parts = dateStr.split('-');
+                if (parts.length < 3) return false;
+                const dYear = parseInt(parts[0], 10);
+                const dMonth = parseInt(parts[1], 10) - 1;
+                
+                if (dYear !== y) return false;
+                if (months && !months.includes(dMonth)) return false;
+                
+                const session = attendanceData[dateStr];
+                return session && typeof session === 'object' && Object.keys(session).length > 0;
+            }).sort();
+        }
+
+        function computeReportData(validDates) {
+            const allMembers = [...members.female, ...members.male, ...members.occasional];
+            const totalDays = validDates.length;
+            
+            return allMembers.map(name => {
+                let present = 0;
+                let absent = 0;
+                
+                validDates.forEach(date => {
+                    const status = attendanceData[date]?.[name];
+                    if (status === 'P') present++;
+                    else if (status === 'A') absent++;
+                });
+                
+                const percentage = totalDays > 0 ? ((present / totalDays) * 100).toFixed(1) : "0.0";
+                return { name, present, absent, total: totalDays, percentage };
+            });
+        }
+        
         function generateQuarterlyReport() {
             const quarter = document.getElementById('quarterSelect').value;
             const year = document.getElementById('quarterYear').value;
@@ -1085,29 +1120,114 @@
                 'Q4': [9, 10, 11]
             };
             
-            const months = quarterMonths[quarter];
-            const allMembers = [...members.female, ...members.male, ...members.occasional];
+            const months = quarterMonths[quarter] || [0, 1, 2];
+            const validDates = getDatesForPeriod(year, months);
+            const report = computeReportData(validDates);
             
-            const report = allMembers.map(name => {
-                let present = 0, absent = 0, total = 0;
-                
-                Object.keys(attendanceData).forEach(date => {
-                    const d = new Date(date);
-                    if (d.getFullYear() == year && months.includes(d.getMonth())) {
-                        const day = d.getDay();
-                        if (day === 0 || day === 6) { // Sunday or Saturday
-                            total++;
-                            if (attendanceData[date][name] === 'P') present++;
-                            if (attendanceData[date][name] === 'A') absent++;
-                        }
-                    }
-                });
-                
-                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
-                return { name, present, absent, total, percentage };
-            });
+            displayReport('quarterlyReport', report, `${quarter} ${year} Attendance Report`, validDates.length);
+        }
+        
+        function generateYearlyReport() {
+            const year = document.getElementById('yearSelect').value;
+            const validDates = getDatesForPeriod(year, null);
+            const report = computeReportData(validDates);
             
-            displayReport('quarterlyReport', report, `${quarter} ${year} Report`);
+            displayReport('yearlyReport', report, `${year} Annual Attendance Report`, validDates.length);
+        }
+        
+        function displayReport(containerId, data, title, totalSessions) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const top5 = [...data]
+                .filter(r => parseFloat(r.percentage) > 0 || r.present > 0)
+                .sort((a, b) => b.present - a.present || parseFloat(b.percentage) - parseFloat(a.percentage))
+                .slice(0, 5);
+
+            const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+            const avgAttendance = data.length > 0
+                ? (data.reduce((sum, m) => sum + parseFloat(m.percentage), 0) / data.length).toFixed(1)
+                : 0;
+
+            const highlightsHtml = top5.length ? `
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 16px; padding: 18px; margin-bottom: 24px; backdrop-filter: blur(10px);">
+                    <div style="font-weight: 800; color: var(--accent-gold); margin-bottom: 12px; font-size: 1.05rem; display:flex; align-items:center; gap:8px;">
+                        <span>🏆</span> Top Attendees — Most Present
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    ${top5.map((r, i) => `
+                        <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 10px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.92rem; font-weight: 700; color: var(--text-primary);">${medals[i]} ${r.name}</span>
+                            <span style="font-weight: 800; color: #10b981; font-size: 0.9rem;">${r.present}d <span style="color:var(--text-muted); font-size:0.8rem; font-weight:600;">(${r.percentage}%)</span></span>
+                        </div>
+                    `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            const summaryBarHtml = `
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <div style="background: var(--section-bg); border: 1px solid var(--section-border); padding: 12px 18px; border-radius: 12px; flex: 1; min-width: 140px;">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recorded Sessions</div>
+                        <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent-primary); margin-top: 2px;">${totalSessions}</div>
+                    </div>
+                    <div style="background: var(--section-bg); border: 1px solid var(--section-border); padding: 12px 18px; border-radius: 12px; flex: 1; min-width: 140px;">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Members</div>
+                        <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">${data.length}</div>
+                    </div>
+                    <div style="background: var(--section-bg); border: 1px solid var(--section-border); padding: 12px 18px; border-radius: 12px; flex: 1; min-width: 140px;">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Avg Attendance Rate</div>
+                        <div style="font-size: 1.35rem; font-weight: 800; color: #10b981; margin-top: 2px;">${avgAttendance}%</div>
+                    </div>
+                </div>
+            `;
+
+            if (totalSessions === 0) {
+                container.innerHTML = `
+                    <h2 style="margin-bottom: 16px; color: var(--text-primary); font-weight: 800;">${title}</h2>
+                    ${summaryBarHtml}
+                    <div style="background: var(--section-bg); border: 1px solid var(--section-border); padding: 32px 20px; border-radius: 16px; text-align: center; color: var(--text-muted);">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">📋</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">No Attendance Records Found</div>
+                        <div style="font-size: 0.88rem;">No attendance sessions have been logged for this period yet.<br>Mark attendance in the <strong>Mark Attendance</strong> tab to generate reports.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <h2 style="margin-bottom: 16px; color: var(--text-primary); font-weight: 800;">${title}</h2>
+                ${summaryBarHtml}
+                ${highlightsHtml}
+                <div style="background: var(--section-bg); border: 1px solid var(--section-border); padding: 20px; border-radius: 18px;">
+                    ${data.map(row => {
+                        const presentWidth = row.total > 0 ? (row.present / row.total * 100) : 0;
+                        const absentWidth = row.total > 0 ? (row.absent / row.total * 100) : 0;
+                        const percentageNum = parseFloat(row.percentage);
+                        const color = percentageNum >= 75 ? '#10b981' : percentageNum >= 50 ? '#f59e0b' : '#ef4444';
+                        
+                        return `
+                            <div style="margin-bottom: 16px; padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; transition: transform 0.15s ease;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">${row.name}</span>
+                                    <span style="font-weight: 800; color: ${color}; font-size: 1.05rem;">${row.percentage}%</span>
+                                </div>
+                                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <span style="color:#10b981;">✓ Present: ${row.present}</span>
+                                    <span style="color:#ef4444;">✕ Absent: ${row.absent}</span>
+                                    <span>📅 Total Sessions: ${row.total}</span>
+                                </div>
+                                <div style="display: flex; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden;">
+                                    <div style="width: ${presentWidth}%; background: #10b981; transition: width 0.3s ease;"></div>
+                                    <div style="width: ${absentWidth}%; background: #ef4444; transition: width 0.3s ease;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
         }
         
         function generateYearlyReport() {
@@ -1851,62 +1971,24 @@
             newWindow.document.close();
         }
         
-        function getQuarterlyData() {
+                function getQuarterlyData() {
             const quarter = document.getElementById('quarterSelect').value;
             const year = document.getElementById('quarterYear').value;
-            
             const quarterMonths = {
                 'Q1': [0, 1, 2],
                 'Q2': [3, 4, 5],
                 'Q3': [6, 7, 8],
                 'Q4': [9, 10, 11]
             };
-            
-            const months = quarterMonths[quarter];
-            const allMembers = [...members.female, ...members.male, ...members.occasional];
-            
-            return allMembers.map(name => {
-                let present = 0, absent = 0, total = 0;
-                
-                Object.keys(attendanceData).forEach(date => {
-                    const d = new Date(date);
-                    if (d.getFullYear() == year && months.includes(d.getMonth())) {
-                        const day = d.getDay();
-                        if (day === 0 || day === 6) {
-                            total++;
-                            if (attendanceData[date][name] === 'P') present++;
-                            if (attendanceData[date][name] === 'A') absent++;
-                        }
-                    }
-                });
-                
-                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
-                return { name, present, absent, total, percentage };
-            });
+            const months = quarterMonths[quarter] || [0, 1, 2];
+            const validDates = getDatesForPeriod(year, months);
+            return computeReportData(validDates);
         }
         
         function getYearlyData() {
             const year = document.getElementById('yearSelect').value;
-            const allMembers = [...members.female, ...members.male, ...members.occasional];
-            
-            return allMembers.map(name => {
-                let present = 0, absent = 0, total = 0;
-                
-                Object.keys(attendanceData).forEach(date => {
-                    const d = new Date(date);
-                    if (d.getFullYear() == year) {
-                        const day = d.getDay();
-                        if (day === 0 || day === 6) {
-                            total++;
-                            if (attendanceData[date][name] === 'P') present++;
-                            if (attendanceData[date][name] === 'A') absent++;
-                        }
-                    }
-                });
-                
-                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
-                return { name, present, absent, total, percentage };
-            });
+            const validDates = getDatesForPeriod(year, null);
+            return computeReportData(validDates);
         }
         
         function generateAnalysis(data) {
