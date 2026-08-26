@@ -6,4 +6,4 @@ export const firebaseConfig = {
     messagingSenderId: "895486383107",
     appId: "1:895486383107:web:f2915742618cfd1e02aa36"
 };
-export const ALLOWED_ADMINS = ["shibin.john@gmail.com", "abykulathakkal@gmail.com", "nehabiju1507@gmail.com"];
+export const ALLOWED_ADMINS = ["shibin.john@gmail.com","abykulathakkal@gmail.com","nehabiju1507@gmail.com"];
