@@ -1792,12 +1792,13 @@
             } else {
                 searchInput.value = theme;
                 clearBtn.style.display = 'flex';
-                performSearch(theme);
-                searchInput.focus();
+                performSearch(theme, 50);
+                searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => { searchInput.focus(); }, 350);
             }
         }
 
-        function performSearch(query) {
+        function performSearch(query, limit = 20) {
             if (!query || query.length < 1) {
                 searchDropdown.style.display = 'none';
                 return;
@@ -1816,7 +1817,7 @@
                     if (song.colName && song.colName.toLowerCase().includes(qLower)) return true;
                     if (song.cat && Array.isArray(song.cat) && song.cat.some(c => c.toLowerCase().includes(qLower))) return true;
                     return false;
-                }).slice(0, 15);
+                }).slice(0, limit);
             }
 
             renderSearchResults(matches, query);
