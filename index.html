@@ -1419,34 +1419,34 @@
             </div>
 
             <div class="categories-scroll" id="themeChipsContainer">
-                <a href="javascript:void(0)" class="category-chip active" onclick="filterByTheme('all', this)">
+                <a href="javascript:void(0)" class="category-chip active" onclick="filterByTheme('all', this, event)">
                     <span>✨</span> All Hymns (693)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Worship & Praise', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Worship & Praise', this, event)">
                     <span>🙌</span> Worship &amp; Praise (112)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Morning Songs', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Morning Songs', this, event)">
                     <span>🌅</span> Morning (7)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Evening Songs', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Evening Songs', this, event)">
                     <span>🌙</span> Evening (8)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Passion Week', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Passion Week', this, event)">
                     <span>✝️</span> Passion Week (20)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Holy Communion', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Holy Communion', this, event)">
                     <span>🍷</span> Holy Communion (22)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Christmas Songs', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Christmas Songs', this, event)">
                     <span>⭐</span> Christmas (22)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Belief', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Belief', this, event)">
                     <span>🛡️</span> Faith &amp; Trust (51)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Comfort', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Comfort', this, event)">
                     <span>🕊️</span> Comfort &amp; Hope (26)
                 </a>
-                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Second Coming of Christ', this)">
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Second Coming of Christ', this, event)">
                     <span>🎺</span> Second Coming (13)
                 </a>
             </div>
@@ -1783,7 +1783,11 @@
             searchInput.focus();
         }
 
-        function filterByTheme(theme, element) {
+        function filterByTheme(theme, element, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
             if (element) element.classList.add('active');
 
@@ -1794,7 +1798,10 @@
                 clearBtn.style.display = 'flex';
                 performSearch(theme, 50);
                 searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => { searchInput.focus(); }, 350);
+                setTimeout(() => {
+                    searchDropdown.style.display = 'block';
+                    searchInput.focus();
+                }, 300);
             }
         }
 
@@ -1859,7 +1866,7 @@
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-wrapper')) {
+            if (!e.target.closest('.search-wrapper') && !e.target.closest('.category-chip') && !e.target.closest('#themeChipsContainer')) {
                 searchDropdown.style.display = 'none';
             }
         });
