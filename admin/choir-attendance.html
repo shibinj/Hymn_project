@@ -1427,27 +1427,25 @@
                     <thead>
                         <tr style="border-bottom: 2px solid var(--card-border);">
                             <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Member Name</th>
-                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Category</th>
-                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Leave Date</th>
-                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Notes</th>
-                            <th style="text-align: right; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Quick Action</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Period</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Notes / Reason</th>
+                            <th style="text-align: right; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${pastMembers.map(member => {
-                            const leaveDate = member.leaveDate ? new Date(member.leaveDate + (member.leaveDate.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', {month: 'short', year: 'numeric', day: 'numeric'}) : 'N/A';
-                            const origCat = member.category || member.gender || 'female';
-                            const catLabel = origCat === 'female' ? '👩 Female' : origCat === 'male' ? '👨 Male' : '🌍 Occasional';
+                            const joinDate = member.joinDate ? new Date(member.joinDate + (member.joinDate.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : '';
+                            const leaveDate = member.leaveDate ? new Date(member.leaveDate + (member.leaveDate.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
+                            const period = joinDate ? `${joinDate} – ${leaveDate}` : leaveDate;
                             
                             return `
                                 <tr style="border-bottom: 1px solid var(--card-border);">
                                     <td style="padding: 12px; color: var(--text-primary); font-weight: 700;">${escapeHtml(member.name)}</td>
-                                    <td style="padding: 12px; color: var(--text-muted); font-size: 0.88rem;">${catLabel}</td>
-                                    <td style="padding: 12px; color: var(--text-secondary); font-size: 0.88rem;">${leaveDate}</td>
+                                    <td style="padding: 12px; color: var(--text-secondary); font-size: 0.88rem;">${period}</td>
                                     <td style="padding: 12px; color: var(--text-muted); font-size: 0.88rem;">${escapeHtml(member.notes || '-')}</td>
                                     <td style="padding: 12px; text-align: right;">
-                                        <button onclick="quickRestoreMember('${escapeHtml(member.name)}', '${origCat}')" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; font-size: 0.78rem; padding: 5px 12px; border-radius: 6px; cursor: pointer;">
-                                            ↩️ Restore
+                                        <button onclick="quickRestoreMember('${escapeHtml(member.name)}')" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; font-size: 0.78rem; padding: 6px 14px; border-radius: 6px; cursor: pointer;">
+                                            ↩️ Restore to Active
                                         </button>
                                     </td>
                                 </tr>
@@ -1577,23 +1575,24 @@
             renderAttendance();
         }
 
-        async function quickRestoreMember(memberName, targetCat = 'female') {
+        async function quickRestoreMember(memberName) {
             if (!isAuthenticated) {
                 alert('🔒 Sign-in required to restore choir members.');
                 return;
             }
 
-            const cat = targetCat === 'male' ? 'male' : targetCat === 'occasional' ? 'occasional' : 'female';
-            const catLabel = cat === 'male' ? '👨 Male Members' : cat === 'occasional' ? '🌍 Occasional Attendees' : '👩 Female Members';
+            const member = pastMembers.find(m => m.name === memberName);
+            const defaultCat = (member && member.gender === 'male') ? 'male' : 'female';
+            const catLabel = defaultCat === 'male' ? '👨 Active Male Members' : '👩 Active Female Members';
 
-            if (!confirm(`Restore ${memberName} from archive to ${catLabel}?`)) return;
+            if (!confirm(`Restore ${memberName} from past members archive back to ${catLabel}?`)) return;
 
             // Remove from archive
             pastMembers = pastMembers.filter(m => m.name !== memberName);
 
             // Add to active
-            if (!members[cat].includes(memberName)) members[cat].push(memberName);
-            members[cat].sort();
+            if (!members[defaultCat].includes(memberName)) members[defaultCat].push(memberName);
+            members[defaultCat].sort();
 
             await Promise.all([
                 saveMembersToFirestore(),
@@ -1605,7 +1604,7 @@
             populateMemberStatusDropdown();
             renderAttendance();
 
-            alert(`✅ ${memberName} restored to ${catLabel}!`);
+            alert(`✅ ${memberName} successfully restored to ${catLabel}!`);
         }
 
         // Backward compatibility
