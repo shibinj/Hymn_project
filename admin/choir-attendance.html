@@ -775,40 +775,70 @@
                 <div id="occasionalList" class="member-list"></div>
             </div>
             
-            <!-- Archive Manager -->
-            <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e2e8f0;">
-                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107;">
-                    <h3 style="color: #856404; margin-bottom: 15px;">🔒 Move Member to Archive</h3>
-                    <p style="margin-bottom: 15px; color: #856404; font-size: 14px;">
-                        Authentication required. Member will be automatically moved to Past Members.
+            <!-- Member Category & Status Manager -->
+            <div style="margin-top: 36px; padding-top: 28px; border-top: 1.5px solid var(--card-border);">
+                <div style="background: var(--card-bg); border: 1.5px solid var(--card-border); padding: 24px; border-radius: 18px; backdrop-filter: blur(12px); box-shadow: var(--card-shadow);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom: 14px;">
+                        <h3 style="color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; display:flex; align-items:center; gap:8px;">
+                            <span>🔄</span> Move &amp; Change Member Category
+                        </h3>
+                        <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 6px;">
+                            🔒 Sign-In Required
+                        </span>
+                    </div>
+                    <p style="margin-bottom: 18px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
+                        Easily transfer members between <strong>Female Active</strong>, <strong>Male Active</strong>, <strong>Occasional Attendees</strong>, or <strong>Past Members Archive</strong>. Changes sync to cloud immediately.
                     </p>
-                    <div style="display: grid; gap: 10px;">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px;">
                         <div>
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #856404;">Member Name:</label>
-                            <select id="archiveMemberSelect" style="width: 100%; padding: 10px; border: 2px solid #ffc107; border-radius: 6px;">
-                                <option value="">-- Select Member --</option>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">1. Select Member:</label>
+                            <select id="memberStatusSelect" onchange="onMemberSelectChange()" style="width: 100%; padding: 11px 14px; background: var(--input-bg); color: var(--text-primary); border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 0.92rem; outline: none;">
+                                <option value="">-- Choose Member --</option>
                             </select>
                         </div>
                         <div>
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #856404;">Leave Date:</label>
-                            <input type="date" id="archiveLeaveDate" style="width: 100%; padding: 10px; border: 2px solid #ffc107; border-radius: 6px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">2. Target Category / Status:</label>
+                            <select id="targetCategorySelect" onchange="onTargetCategoryChange()" style="width: 100%; padding: 11px 14px; background: var(--input-bg); color: var(--text-primary); border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 0.92rem; outline: none;">
+                                <option value="">-- Select Destination --</option>
+                                <option value="occasional">🌍 Move to Occasional Attendees</option>
+                                <option value="female">👩 Move to Active Female Members</option>
+                                <option value="male">👨 Move to Active Male Members</option>
+                                <option value="archive">📦 Move to Past Members (Archive)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="transferExtraFields" style="display: none; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; background: var(--section-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--section-border);">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">Leave / Transition Date:</label>
+                            <input type="date" id="memberTransferDate" style="width: 100%; padding: 10px 14px; background: var(--input-bg); color: var(--text-primary); border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 0.9rem; outline: none;">
                         </div>
                         <div>
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #856404;">Notes (Optional):</label>
-                            <input type="text" id="archiveNotes" placeholder="e.g., Relocated, Work schedule" style="width: 100%; padding: 10px; border: 2px solid #ffc107; border-radius: 6px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">Notes (Optional):</label>
+                            <input type="text" id="memberTransferNotes" placeholder="e.g., Work schedule, Overseas studies, Relocated" style="width: 100%; padding: 10px 14px; background: var(--input-bg); color: var(--text-primary); border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 0.9rem; outline: none;">
                         </div>
-                        <button onclick="moveToArchive()" style="background: #ffc107; color: #856404; font-weight: 600; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
-                            Move to Archive
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-start; align-items:center; gap:12px; margin-top: 8px;">
+                        <button onclick="updateMemberCategory()" style="background: var(--accent-gradient); color: white; font-weight: 700; font-size: 0.92rem; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px var(--accent-glow); transition: all 0.2s ease;">
+                            💾 Update Member Category
                         </button>
+                        <span id="memberChangeStatus" style="font-size: 0.88rem; font-weight: 600;"></span>
                     </div>
                 </div>
             </div>
             
             <!-- Past Members List -->
-            <div style="margin-top: 30px;">
-                <h3 style="margin-bottom: 15px;">📦 Past Members</h3>
-                <div id="pastMembersTable" style="background: #f7fafc; border-radius: 10px; padding: 20px;">
-                    <!-- Will be populated by JavaScript -->
+            <div style="margin-top: 36px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                    <h3 style="font-weight: 800; font-size: 1.25rem; color: var(--text-primary); display:flex; align-items:center; gap:8px;">
+                        <span>📦</span> Past Members Archive
+                    </h3>
+                    <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Historical roster &amp; records</span>
+                </div>
+                <div id="pastMembersTable" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: var(--card-shadow); overflow-x: auto;">
+                    <!-- Populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -1256,7 +1286,7 @@
             renderMemberList('femaleList', members.female, 'female');
             renderMemberList('maleList', members.male, 'male');
             renderMemberList('occasionalList', members.occasional, 'occasional');
-            populateArchiveDropdown();
+            populateMemberStatusDropdown();
             renderPastMembersTable();
         }
         
