@@ -51,6 +51,9 @@ See [project-info/PROJECT_STRUCTURE.md](project-info/PROJECT_STRUCTURE.md) for d
 
 ## 📚 Documentation Index
 
+### Latest Release
+- **[Choir Tenure & Member Lifecycle Management](release-notes/MEMBER_MANAGEMENT_AND_TENURE_RELEASE.md)** - August 2026 updates
+
 ### Getting Started
 - **[Main README](../README.md)** - Project overview and quick start
 - **[UI Improvements](guides/INDEX_IMPROVEMENTS.md)** - Recent UI changes
