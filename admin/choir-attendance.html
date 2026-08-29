@@ -15,56 +15,74 @@
 
     import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    window._db = db;
-    window._auth = auth;
+    let app, auth, db;
+    try {
+        if (firebaseConfig && firebaseConfig.apiKey) {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            window._db = db;
+            window._auth = auth;
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user && ALLOWED_ADMINS.includes(user.email)) {
-            // ✅ Authorized
-            isAuthenticated = true;
-            currentUser = user.email;
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('authInfo').style.display = 'block';
-            document.getElementById('authInfo').innerHTML = `
-                <span style="color:#155724; font-weight:600;">Welcome ${user.displayName}</span>
-                <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:8px 15px;
-                margin-left:15px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
-            `;
-            document.getElementById('saveBtn').disabled = false;
-            document.getElementById('saveBtn').style.opacity = '1';
-            document.getElementById('saveBtn').style.cursor = 'pointer';
-            document.getElementById('syncBtn').disabled = false;
-            document.getElementById('syncBtn').style.opacity = '1';
-            document.getElementById('syncBtn').style.cursor = 'pointer';
-            // Reload from Firestore to get fresh data after sign-in
-            await loadAttendanceFromFirestore();
-        } else if (user) {
-            // Signed in but not allowed
-            signOut(auth);
-            document.getElementById('authMessage').textContent =
-                `❌ ${user.email} is not an authorized admin.`;
+            onAuthStateChanged(auth, async (user) => {
+                if (user && Array.isArray(ALLOWED_ADMINS) && ALLOWED_ADMINS.includes(user.email)) {
+                    // ✅ Authorized
+                    isAuthenticated = true;
+                    currentUser = user.email;
+                    const authSec = document.getElementById('authSection');
+                    const authInf = document.getElementById('authInfo');
+                    if (authSec) authSec.style.display = 'none';
+                    if (authInf) {
+                        authInf.style.display = 'block';
+                        authInf.innerHTML = `
+                            <span style="color:#10b981; font-weight:700;">👤 Welcome ${escapeHtml(user.displayName || user.email)}</span>
+                            <button onclick="window._auth.signOut()" style="background:#ef4444; color:white; padding:6px 14px;
+                            margin-left:15px; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700;">Sign Out</button>
+                        `;
+                    }
+                    const saveBtn = document.getElementById('saveBtn');
+                    const syncBtn = document.getElementById('syncBtn');
+                    if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; saveBtn.style.cursor = 'pointer'; }
+                    if (syncBtn) { syncBtn.disabled = false; syncBtn.style.opacity = '1'; syncBtn.style.cursor = 'pointer'; }
+                    
+                    await loadAttendanceFromFirestore();
+                } else if (user) {
+                    // Signed in but not allowed
+                    signOut(auth);
+                    const authMsg = document.getElementById('authMessage');
+                    if (authMsg) authMsg.textContent = `❌ ${user.email} is not an authorized admin.`;
+                } else {
+                    // Not signed in
+                    isAuthenticated = false;
+                    currentUser = null;
+                    const authSec = document.getElementById('authSection');
+                    const authInf = document.getElementById('authInfo');
+                    if (authSec) authSec.style.display = 'block';
+                    if (authInf) authInf.style.display = 'none';
+                    const saveBtn = document.getElementById('saveBtn');
+                    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; saveBtn.style.cursor = 'not-allowed'; }
+                    await loadAttendanceFromFirestore();
+                }
+            });
         } else {
-            // Not signed in — load read-only data from Firestore
-            isAuthenticated = false;
-            currentUser = null;
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('authInfo').style.display = 'none';
-            document.getElementById('saveBtn').disabled = true;
-            document.getElementById('saveBtn').style.opacity = '0.5';
-            document.getElementById('saveBtn').style.cursor = 'not-allowed';
-            await loadAttendanceFromFirestore();
+            console.warn('⚠️ Firebase API key not found in config. Operating in offline/fallback mode.');
         }
-    });
+    } catch(err) {
+        console.error('Firebase init error:', err);
+    }
 
     window.signInWithGoogle = async function() {
+        if (!auth) {
+            alert('⚠️ Firebase is not configured with an API key. Please check your cloud configuration.');
+            return;
+        }
         const provider = new GoogleAuthProvider();
         try {
             await signInWithPopup(auth, provider);
         } catch(err) {
-            document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message;
+            console.error('Sign-in error:', err);
+            const authMsg = document.getElementById('authMessage');
+            if (authMsg) authMsg.textContent = 'Sign-in failed: ' + err.message;
         }
     };
 
@@ -862,6 +880,17 @@
     </div>
     
     <script>
+        // HTML entity escaper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // Auth state — managed by Firebase module script above
         let isAuthenticated = false;
         let currentUser = null;

@@ -2,16 +2,16 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 1. Dynamically serve admin/firebase-config.js strictly from Cloudflare environment secrets
+    // 1. Dynamically serve admin/firebase-config.js from environment or public client config
     if (url.pathname === '/admin/firebase-config.js') {
-      const apiKey = env.FIREBASE_API_KEY || '';
-      const authDomain = env.FIREBASE_AUTH_DOMAIN || '';
-      const projectId = env.FIREBASE_PROJECT_ID || '';
-      const storageBucket = env.FIREBASE_STORAGE_BUCKET || '';
-      const messagingSenderId = env.FIREBASE_MESSAGING_SENDER_ID || '';
-      const appId = env.FIREBASE_APP_ID || '';
+      const apiKey = env.FIREBASE_API_KEY || 'AIzaSyDJ5-YBSIxm7HuZc2D82OkTxxBHNRw6Awk';
+      const authDomain = env.FIREBASE_AUTH_DOMAIN || 'holy-hymns.firebaseapp.com';
+      const projectId = env.FIREBASE_PROJECT_ID || 'holy-hymns';
+      const storageBucket = env.FIREBASE_STORAGE_BUCKET || 'holy-hymns.firebasestorage.app';
+      const messagingSenderId = env.FIREBASE_MESSAGING_SENDER_ID || '895486383107';
+      const appId = env.FIREBASE_APP_ID || '1:895486383107:web:f2915742618cfd1e02aa36';
 
-      let allowedAdmins = [];
+      let allowedAdmins = ['shibin.john@gmail.com', 'abykulathakkal@gmail.com', 'nehabiju1507@gmail.com'];
       if (env.FIREBASE_ALLOWED_ADMINS) {
         try {
           const parsed = typeof env.FIREBASE_ALLOWED_ADMINS === 'string'
