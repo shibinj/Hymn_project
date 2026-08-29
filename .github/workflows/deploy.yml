@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate firebase-config.js
+      - name: Generate firebase-config.js from secrets
         env:
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
@@ -33,7 +33,19 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_ALLOWED_ADMINS: ${{ secrets.FIREBASE_ALLOWED_ADMINS }}
-        run: node scripts/build-config.js
+        run: |
+          ADMINS_JSON=$(printf '%s' "$FIREBASE_ALLOWED_ADMINS" | python3 -c 'import sys,json; raw=sys.stdin.read().strip(); parsed=json.loads(raw) if raw.startswith("[") else [e.strip() for e in raw.splitlines() if e.strip()]; print(json.dumps(parsed))')
+          cat > admin/firebase-config.js <<EOF
+          export const firebaseConfig = {
+              apiKey: "${FIREBASE_API_KEY}",
+              authDomain: "${FIREBASE_AUTH_DOMAIN}",
+              projectId: "${FIREBASE_PROJECT_ID}",
+              storageBucket: "${FIREBASE_STORAGE_BUCKET}",
+              messagingSenderId: "${FIREBASE_MESSAGING_SENDER_ID}",
+              appId: "${FIREBASE_APP_ID}"
+          };
+          export const ALLOWED_ADMINS = ${ADMINS_JSON};
+          EOF
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
