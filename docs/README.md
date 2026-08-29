@@ -53,9 +53,9 @@ See [project-info/PROJECT_STRUCTURE.md](project-info/PROJECT_STRUCTURE.md) for d
 
 ### Getting Started
 - **[Main README](../README.md)** - Project overview and quick start
-- **[UI Improvements](INDEX_IMPROVEMENTS.md)** - Recent UI changes
-- **[Data Entry Guide](MARAMON_DATA_ENTRY_GUIDE.md)** - Adding songs
-- **[Sync Setup](SYNC_SETUP.md)** - Cloud sync configuration
+- **[UI Improvements](guides/INDEX_IMPROVEMENTS.md)** - Recent UI changes
+- **[Data Entry Guide](guides/MARAMON_DATA_ENTRY_GUIDE.md)** - Adding songs
+- **[Sync Setup](guides/SYNC_SETUP.md)** - Cloud sync configuration
 
 ### Choir Attendance System
 - **[Quick Start](choir-attendance/QUICKSTART.md)** - 5-minute overview
@@ -69,7 +69,7 @@ See [project-info/PROJECT_STRUCTURE.md](project-info/PROJECT_STRUCTURE.md) for d
 - **[Reorganization Summary](project-info/REORGANIZATION_SUMMARY.md)** - Summary of changes
 
 ### Song Collections
-- **[Maramon Compact View](MARAMON_COMPACT_VIEW.md)** - Maramon songs display
+- **[Maramon Compact View](guides/MARAMON_COMPACT_VIEW.md)** - Maramon songs display
 
 ---
 
@@ -324,13 +324,13 @@ See [project-info/PROJECT_STRUCTURE.md](project-info/PROJECT_STRUCTURE.md) for d
 
 ## 📝 Documentation
 
-- **[Project Structure](PROJECT_STRUCTURE.md)** - Complete file organization
-- **[Reorganization Summary](REORGANIZATION_SUMMARY.md)** - Recent restructure details
-- **[Index Improvements](INDEX_IMPROVEMENTS.md)** - UI enhancements log
-- **[Maramon Compact View](MARAMON_COMPACT_VIEW.md)** - Compact view implementation
-- **[Data Entry Guide](MARAMON_DATA_ENTRY_GUIDE.md)** - How to add songs
-- **[Sync Setup](SYNC_SETUP.md)** - Cloud sync configuration
-- **[Restructure Guide](RESTRUCTURE.md)** - Original reorganization notes
+- **[Project Structure](project-info/PROJECT_STRUCTURE.md)** - Complete file organization
+- **[Reorganization Summary](project-info/REORGANIZATION_SUMMARY.md)** - Recent restructure details
+- **[Index Improvements](guides/INDEX_IMPROVEMENTS.md)** - UI enhancements log
+- **[Maramon Compact View](guides/MARAMON_COMPACT_VIEW.md)** - Compact view implementation
+- **[Data Entry Guide](guides/MARAMON_DATA_ENTRY_GUIDE.md)** - How to add songs
+- **[Sync Setup](guides/SYNC_SETUP.md)** - Cloud sync configuration
+- **[Restructure Guide](project-info/RESTRUCTURE.md)** - Original reorganization notes
 - **Worship Planner**: See `../admin/docs/` (setup guides)
 - **Choir Attendance**: See `../admin/docs/CHOIR_ATTENDANCE_README.md`
 

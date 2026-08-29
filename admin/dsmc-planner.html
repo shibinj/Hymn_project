@@ -2,101 +2,313 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>DSMC Sunday Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Fonts -->
+    <link rel=preconnect href="https://fonts.googleapis.com">
+    <link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+
     <style>
+        :root {
+            --bg-base: #060913;
+            --card-bg: rgba(18, 24, 43, 0.8);
+            --card-hover-bg: rgba(28, 38, 68, 0.9);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-primary: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --accent-gold: #f59e0b;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            
+            --input-bg: rgba(15, 23, 42, 0.75);
+            --input-border: rgba(255, 255, 255, 0.14);
+            --input-focus-border: #38bdf8;
+            
+            --section-bg: rgba(255, 255, 255, 0.03);
+            --section-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body.light-mode {
+            --bg-base: #f4f6fb;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-hover-bg: #ffffff;
+            --card-border: rgba(203, 213, 225, 0.8);
+            --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --accent-primary: #0284c7;
+            --accent-glow: rgba(2, 132, 199, 0.15);
+            --accent-gold: #d97706;
+            --accent-gradient: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #8b5cf6 100%);
+            
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --input-focus-border: #0284c7;
+            
+            --section-bg: #f8fafc;
+            --section-border: #e2e8f0;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { -webkit-text-size-adjust: 100%; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; background: linear-gradient(135deg, #0f1d2e 0%, #1a2f47 100%); min-height: 100vh; }
-        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        h1 { color: #2d3748; margin-bottom: 4px; font-size: 24px; }
-        .subtitle { color: #6c757d; margin-bottom: 18px; font-size: 14px; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
-        .ml { font-family: 'Noto Sans Malayalam', 'Manjari', 'Rachana', sans-serif; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 20px 12px; 
+            background: var(--bg-base); 
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+        }
+
+        /* Ambient Glow */
+        .ambient-glow-wrap { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .ambient-sphere { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; }
+        .ambient-sphere-1 { width: 600px; height: 600px; top: -150px; left: 10%; background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, transparent 70%); }
+        .ambient-sphere-2 { width: 650px; height: 650px; top: 30%; right: -200px; background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%); }
+
+        .container { 
+            max-width: 960px; 
+            margin: 0 auto; 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
+            border-radius: 24px; 
+            padding: 28px; 
+            box-shadow: var(--card-shadow); 
+            backdrop-filter: blur(16px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .ml { font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+
+        .app-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .btn-top-nav {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-top-nav:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateX(-2px);
+        }
+
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        h1 { color: var(--text-primary); margin-bottom: 4px; font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; }
+        .subtitle { color: var(--text-secondary); margin-bottom: 20px; font-size: 0.95rem; }
 
         /* Auth */
-        #authSection { background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #ffc107; }
-        #authInfo { display: none; background: #d4edda; padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #28a745; }
+        #authSection { 
+            background: rgba(245, 158, 11, 0.12); 
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 16px; 
+            border-radius: 14px; 
+            margin-bottom: 20px; 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #authInfo { 
+            display: none; 
+            background: rgba(16, 185, 129, 0.12); 
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 12px 18px; 
+            border-radius: 14px; 
+            margin-bottom: 20px; 
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
         /* Date row */
-        .date-row { background: #f7fafc; padding: 14px; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .date-row label { font-weight: 600; color: #2d3748; font-size: 13px; white-space: nowrap; }
-        .date-row input[type=date] { padding: 9px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-        #syncStatus { font-size: 12px; color: #6c757d; }
+        .date-row { 
+            background: var(--section-bg); 
+            border: 1px solid var(--section-border);
+            padding: 16px; 
+            border-radius: 14px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            flex-wrap: wrap; 
+        }
+        .date-row label { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
+        .date-row input[type=date] { 
+            padding: 9px 14px; 
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1.5px solid var(--input-border); 
+            border-radius: 10px; 
+            font-size: 0.95rem; 
+            outline: none;
+            font-family: inherit;
+        }
+        .date-row input[type=date]:focus { border-color: var(--accent-primary); }
+        #syncStatus { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 
         /* Controls */
-        .controls { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-        button { padding: 10px 16px; background: #b87333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background 0.15s, transform 0.1s; }
-        button:hover:not(:disabled) { background: #9a5e26; }
-        button:active:not(:disabled) { transform: scale(0.98); }
-        button:disabled { opacity: 0.45; cursor: not-allowed; }
-        .btn-save { background: #ed8936; } .btn-save:hover:not(:disabled) { background: #dd6b20; }
-        .btn-history { background: #805ad5; } .btn-history:hover:not(:disabled) { background: #6b46c1; }
-        .btn-whatsapp { background: #25d366; display: inline-flex; align-items: center; gap: 6px; } .btn-whatsapp:hover:not(:disabled) { background: #1da851; }
-        .btn-print { background: #48bb78; } .btn-print:hover:not(:disabled) { background: #38a169; }
-        .btn-danger { background: #e53e3e; } .btn-danger:hover:not(:disabled) { background: #c53030; }
-        .btn-edit { background: #ed8936; } .btn-edit:hover:not(:disabled) { background: #dd6b20; }
+        .controls { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+        button { 
+            padding: 10px 18px; 
+            background: var(--accent-primary); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 0.88rem; 
+            font-weight: 700; 
+            white-space: nowrap; 
+            transition: all 0.2s ease; 
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px var(--accent-glow); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-save { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-history { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .btn-whatsapp { background: #25d366; color: #042f2e; }
+        .btn-whatsapp:hover:not(:disabled) { background: #22c55e; color: white; }
+        .btn-print { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border: 1px solid var(--card-border); }
+        .btn-danger { background: #ef4444; }
 
         /* Groups */
-        .group-section { background: #f7fafc; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #b87333; }
-        .group-header { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
-        .group-number { background: #b87333; color: white; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-        .group-title { font-size: 16px; font-weight: 700; color: #2d3748; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+        .group-section { 
+            background: var(--section-bg); 
+            border: 1px solid var(--section-border);
+            padding: 18px; 
+            border-radius: 16px; 
+            margin-bottom: 16px; 
+            position: relative;
+        }
+        .group-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .group-number { 
+            background: var(--accent-gradient); 
+            color: white; 
+            border-radius: 8px; 
+            width: 28px; 
+            height: 28px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 13px; 
+            font-weight: 800; 
+            flex-shrink: 0; 
+        }
+        .group-title { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); }
 
         /* Slot rows */
-        .slot-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }
-        .slot-label { font-size: 12px; color: #718096; min-width: 140px; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
-        .slot-wrap { flex: 1; min-width: 190px; }
-        .slot-select { width: 100%; padding: 9px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
-        .slot-select:focus { outline: none; border-color: #b87333; }
-        .slot-select:disabled { background: #f0f0f0; cursor: not-allowed; }
-        .slot-hint { font-size: 11px; color: #b87333; margin-top: 3px; font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif; }
+        .slot-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+        .slot-label { font-size: 0.88rem; color: var(--text-secondary); min-width: 150px; font-weight: 600; }
+        .slot-wrap { flex: 1; min-width: 200px; }
+        .slot-select { 
+            width: 100%; 
+            padding: 10px 12px; 
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1.5px solid var(--input-border); 
+            border-radius: 10px; 
+            font-size: 0.9rem; 
+            cursor: pointer; 
+            outline: none;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .slot-select:focus { border-color: var(--accent-primary); }
+        .slot-select:disabled { opacity: 0.6; cursor: not-allowed; }
+        .slot-hint { font-size: 0.78rem; color: var(--accent-gold); margin-top: 3px; font-weight: 600; }
 
         /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; padding: 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .modal-content { background: white; margin: 20px auto; padding: 20px; border-radius: 15px; max-width: 800px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .modal-header h2 { font-size: 20px; }
-        .close-btn { font-size: 30px; cursor: pointer; color: #6c757d; line-height: 1; padding: 4px; }
-        .close-btn:hover { color: #2d3748; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; padding: 16px; overflow-y: auto; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); margin: 30px auto; padding: 24px; border-radius: 20px; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: var(--card-shadow); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); }
+        .modal-header h2 { font-size: 1.35rem; font-weight: 800; }
+        .close-btn { font-size: 26px; cursor: pointer; color: var(--text-muted); line-height: 1; }
+        .close-btn:hover { color: var(--text-primary); }
 
         /* History */
-        .history-item { background: #f7fafc; padding: 14px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #b87333; }
-        .history-date { font-weight: 700; color: #2d3748; font-size: 14px; margin-bottom: 8px; }
-        .history-slot-row { font-size: 13px; color: #4a5568; margin-bottom: 3px; }
-        .history-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+        .history-item { background: var(--section-bg); border: 1px solid var(--section-border); padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+        .history-date { font-weight: 800; color: var(--accent-primary); font-size: 0.95rem; margin-bottom: 8px; }
+        .history-slot-row { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 3px; }
+        .history-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 
         @media print {
-            body { background: white; padding: 0; }
-            .controls, .modal, #authSection, #authInfo, .back-link { display: none !important; }
-            .container { box-shadow: none; padding: 20px; max-width: 100%; }
-            .slot-select { border: none; appearance: none; background: transparent; padding: 0; font-size: 14px; pointer-events: none; }
-        }
-
-        @media (max-width: 768px) {
-            body { padding: 8px; }
-            .container { padding: 15px; }
-            h1 { font-size: 20px; }
-            .group-title { font-size: 15px; }
-            .slot-label { min-width: 110px; font-size: 11px; }
-            .slot-select { min-width: 150px; font-size: 13px; padding: 8px; }
-            button:not(.btn-whatsapp) { padding: 10px 13px; font-size: 12px; }
-        }
-
-        @media (max-width: 430px) {
-            .controls { gap: 6px; }
-            .group-section { padding: 12px; }
+            body { background: white !important; color: black !important; padding: 0; }
+            .ambient-glow-wrap, .controls, .modal, #authSection, #authInfo, .app-header-row { display: none !important; }
+            .container { box-shadow: none !important; border: none !important; padding: 20px !important; max-width: 100% !important; background: white !important; }
+            .slot-select { border: none !important; appearance: none !important; background: transparent !important; padding: 0 !important; color: black !important; font-size: 14px !important; pointer-events: none !important; }
+            h1, .subtitle, .group-title, .slot-label { color: black !important; }
+            .group-section { background: white !important; border: 1px solid #ddd !important; }
         }
     </style>
 </head>
 <body>
+    <div class="ambient-glow-wrap">
+        <div class="ambient-sphere ambient-sphere-1"></div>
+        <div class="ambient-sphere ambient-sphere-2"></div>
+    </div>
+
+
 <div class="container">
 
-    <div class="back-link" style="margin-bottom: 15px;">
-        <a href="../admin.html" style="background: #b87333; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600;">← Admin Home</a>
+        <div class="app-header-row">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="admin.html" class="btn-top-nav"><span>←</span> Admin Portal</a>
+            <a href="../index.html" class="btn-top-nav"><span>🏠</span> Holy Hymns</a>
+        </div>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Dark/Light Mode">🌙</button>
     </div>
 
     <h1>⛪ DSMC Sunday Planner</h1>
-    <p class="subtitle ml">ഞായറാഴ്ച ശുശ്രൂഷ ആസൂത്രണം</p>
+    <p class="subtitle">Sunday Worship Duty Allocation Planner</p>
 
     <!-- Auth -->
     <div id="authSection">
@@ -112,21 +324,33 @@
 
     <!-- Date -->
     <div class="date-row">
-        <label>📅 തീയതി:</label>
+        <label>📅 Service Date:</label>
         <input type="date" id="scheduleDate" />
         <span id="syncStatus"></span>
     </div>
 
     <!-- Action buttons -->
     <div class="controls">
-        <button id="btnSave" class="btn-save" onclick="saveSchedule()" disabled>💾 സേവ് ചെയ്യുക</button>
-        <button id="btnAutoFill" onclick="autoFill()" disabled>🎲 Auto-fill</button>
-        <button class="btn-whatsapp" onclick="shareToWhatsApp()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-            ഷെയർ
+        <button id="btnSave" class="btn-save" onclick="saveSchedule()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Save Service
         </button>
-        <button class="btn-history" onclick="showHistory()">📅 ചരിത്രം</button>
-        <button class="btn-print" onclick="window.print()">🖨️ പ്രിന്റ്</button>
+        <button id="btnAutoFill" onclick="autoFill()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"></circle><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"></circle><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor"></circle></svg>
+            Auto-Fill
+        </button>
+        <button class="btn-whatsapp" onclick="shareToWhatsApp()">
+            <svg class="btn-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:4px;"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.587 1.844.896 2.791.896h.001c3.181 0 5.767-2.586 5.768-5.766 0-1.54-.599-2.988-1.688-4.077-1.09-1.089-2.537-1.688-4.08-1.688zm6.545 8.788c-.287.809-1.42 1.488-2.33 1.685-.623.134-1.439.243-4.175-.889-3.501-1.448-5.753-5.019-5.928-5.25-.174-.231-1.426-1.897-1.426-3.618 0-1.721.9-2.569 1.222-2.918.322-.349.702-.436.936-.436.234 0 .468.002.673.012.219.01.512-.083.801.611.297.716 1.014 2.474 1.103 2.653.089.179.148.389.03.623-.118.234-.177.38-.352.585-.175.205-.369.458-.528.615-.176.174-.36.363-.155.714.205.351.912 1.503 1.956 2.433 1.344 1.197 2.477 1.569 2.828 1.744.351.175.556.146.761-.088.205-.234.877-1.022 1.111-1.373.234-.351.468-.293.79-.175.322.118 2.046.966 2.397 1.141.351.175.585.263.673.409.088.146.088.848-.199 1.657z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.98-1.396A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.637 0-3.155-.494-4.417-1.344l-.317-.214-3.284.92.936-3.197-.234-.336A7.95 7.95 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+            <span>WhatsApp</span>
+        </button>
+        <button class="btn-history" onclick="showHistory()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            History
+        </button>
+        <button class="btn-print" onclick="window.print()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print
+        </button>
     </div>
 
     <!-- Schedule form rendered by JS -->
@@ -138,7 +362,7 @@
 <div id="historyModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 class="ml">📜 ഷെഡ്യൂൾ ചരിത്രം</h2>
+            <h2>📜 Schedule History</h2>
             <span class="close-btn" onclick="closeHistory()">&times;</span>
         </div>
         <div id="historyList"></div>
@@ -307,7 +531,7 @@ function renderForm(slots, lastYearSlots) {
             const selected = slots[slotId] || '';
             const lastYearPerson = lastYearSlots?.[slotId] || '';
 
-            let options = `<option value="">-- തിരഞ്ഞെടുക്കുക --</option>`;
+            let options = `<option value="">-- Select Member --</option>`;
             list.forEach(name => {
                 options += `<option value="${name}"${name === selected ? ' selected' : ''}>${name}</option>`;
             });
@@ -316,7 +540,7 @@ function renderForm(slots, lastYearSlots) {
             }
 
             const hint = lastYearPerson
-                ? `<div class="slot-hint">⚠️ കഴിഞ്ഞ വർഷം: ${lastYearPerson}</div>`
+                ? `<div class="slot-hint">⚠️ Last Year: ${lastYearPerson}</div>`
                 : '';
 
             return `
@@ -459,7 +683,7 @@ function closeHistory() {
 
 function renderHistory() {
     if (scheduleHistory.length === 0) {
-        document.getElementById('historyList').innerHTML = '<p style="color:#6c757d; padding:10px;">ഡേറ്റ ഒന്നും ഇല്ല.</p>';
+        document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted); padding:20px; text-align:center;">No saved schedules found.</p>';
         return;
     }
 
@@ -563,6 +787,30 @@ async function init() {
 }
 
 init();
+</script>
+
+<script>
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        setTheme(savedTheme);
+    }
+    function setTheme(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            if (btn) btn.textContent = '☀️';
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            if (btn) btn.textContent = '🌙';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+    function toggleTheme() {
+        const isLight = document.body.classList.contains('light-mode');
+        setTheme(isLight ? 'dark' : 'light');
+    }
+    initTheme();
 </script>
 </body>
 </html>

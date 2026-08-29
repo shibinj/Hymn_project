@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="google-site-verification" content="E5y7IUSrWB-JDbrB8h3NCEqLZN0KTAsJzBlqWWKqDJE" />
-    <title>Holy Hymns | Malayalam Christian Songs Collection</title>
+    <title>Holy Hymns | Malayalam Christian Songs & Hymnal Collection</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos. 678+ songs including Kristheeya Keerthanangal, Maramon Convention, Passion Week, and Holy Communion songs.">
-    <meta name="keywords" content="Malayalam Christian hymns, ക്രിസ്തീയ കീർത്തനങ്ങൾ, Maramon convention songs, Kottarakara convention, worship songs, Malayalam worship, Christian keerthanangal">
+    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos. 690+ songs including Kristheeya Keerthanangal, Maramon Convention, Passion Week, and Holy Communion songs.">
+    <meta name="keywords" content="Malayalam Christian hymns, ക്രിസ്തീയ കീർത്തനങ്ങൾ, Maramon convention songs, Kottarakara convention, worship songs, Malayalam worship, Christian keerthanangal, Holy Communion songs">
     <link rel="canonical" href="https://shibinj.github.io/Hymn_project/">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Holy Hymns | Malayalam Christian Songs Collection">
-    <meta property="og:description" content="678+ Malayalam Christian hymns with lyrics and videos. Kristheeya Keerthanangal, Maramon Convention, Passion Week, and more.">
+    <meta property="og:description" content="690+ Malayalam Christian hymns with lyrics, YouTube videos, and thematic search. Kristheeya Keerthanangal, Maramon Convention, Passion Week, and more.">
     <meta property="og:url" content="https://shibinj.github.io/Hymn_project/">
     <meta property="og:image" content="https://shibinj.github.io/Hymn_project/favicon.ico">
     <meta property="og:site_name" content="Holy Hymns">
@@ -22,7 +22,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Holy Hymns | Malayalam Christian Songs">
-    <meta name="twitter:description" content="663+ Malayalam Christian hymns with lyrics and videos">
+    <meta name="twitter:description" content="690+ Malayalam Christian hymns with lyrics and videos">
     <meta name="twitter:image" content="https://shibinj.github.io/Hymn_project/favicon.ico">
     
     <!-- Structured Data (JSON-LD) -->
@@ -60,572 +60,1138 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
+        :root {
+            --bg-base: #060913;
+            --card-bg: rgba(18, 24, 43, 0.7);
+            --card-hover-bg: rgba(28, 38, 68, 0.85);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover-border: rgba(56, 189, 248, 0.5);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            
+            --nav-bg: rgba(6, 9, 19, 0.85);
+            --nav-border: rgba(255, 255, 255, 0.08);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-primary: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --accent-gold: #f59e0b;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            
+            --badge-bg: rgba(56, 189, 248, 0.12);
+            --badge-text: #7dd3fc;
+            --badge-border: rgba(56, 189, 248, 0.25);
+            
+            --input-bg: rgba(15, 23, 42, 0.75);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --input-focus-border: #38bdf8;
+            
+            --dropdown-bg: #0d1527;
+            --dropdown-border: rgba(255, 255, 255, 0.12);
+            
+            --theme-keerthanangal-bg: linear-gradient(135deg, rgba(127, 29, 29, 0.25) 0%, rgba(30, 27, 75, 0.3) 100%);
+            --theme-keerthanangal-border: rgba(239, 68, 68, 0.25);
+            --theme-keerthanangal-accent: #f87171;
+            
+            --theme-communion-bg: linear-gradient(135deg, rgba(88, 28, 135, 0.25) 0%, rgba(30, 27, 75, 0.3) 100%);
+            --theme-communion-border: rgba(168, 85, 247, 0.25);
+            --theme-communion-accent: #c084fc;
+            
+            --theme-passion-bg: linear-gradient(135deg, rgba(159, 18, 57, 0.25) 0%, rgba(49, 46, 129, 0.3) 100%);
+            --theme-passion-border: rgba(244, 63, 94, 0.25);
+            --theme-passion-accent: #fb7185;
+            
+            --theme-special-bg: linear-gradient(135deg, rgba(180, 83, 9, 0.25) 0%, rgba(19, 78, 74, 0.25) 100%);
+            --theme-special-border: rgba(245, 158, 11, 0.25);
+            --theme-special-accent: #fbbf24;
+            
+            --theme-maramon-bg: linear-gradient(135deg, rgba(13, 148, 136, 0.25) 0%, rgba(12, 74, 110, 0.3) 100%);
+            --theme-maramon-border: rgba(20, 184, 166, 0.25);
+            --theme-maramon-accent: #2dd4bf;
+            
+            --theme-kottarakara-bg: linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(15, 23, 42, 0.3) 100%);
+            --theme-kottarakara-border: rgba(96, 165, 250, 0.25);
+            --theme-kottarakara-accent: #60a5fa;
+        }
+
+        body.light-mode {
+            --bg-base: #f4f6fb;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-hover-bg: #ffffff;
+            --card-border: rgba(203, 213, 225, 0.8);
+            --card-hover-border: rgba(2, 132, 199, 0.5);
+            --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --nav-border: rgba(226, 232, 240, 0.9);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --accent-primary: #0284c7;
+            --accent-glow: rgba(2, 132, 199, 0.15);
+            --accent-gold: #d97706;
+            --accent-gradient: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #8b5cf6 100%);
+            
+            --badge-bg: rgba(2, 132, 199, 0.08);
+            --badge-text: #0369a1;
+            --badge-border: rgba(2, 132, 199, 0.2);
+            
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --input-focus-border: #0284c7;
+            
+            --dropdown-bg: #ffffff;
+            --dropdown-border: #e2e8f0;
+
+            --theme-keerthanangal-bg: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+            --theme-keerthanangal-border: #fecaca;
+            --theme-keerthanangal-accent: #dc2626;
+            
+            --theme-communion-bg: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%);
+            --theme-communion-border: #e9d5ff;
+            --theme-communion-accent: #7c3aed;
+            
+            --theme-passion-bg: linear-gradient(135deg, #fff1f2 0%, #ffffff 100%);
+            --theme-passion-border: #fecdd3;
+            --theme-passion-accent: #e11d48;
+            
+            --theme-special-bg: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+            --theme-special-border: #fde68a;
+            --theme-special-accent: #d97706;
+            
+            --theme-maramon-bg: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+            --theme-maramon-border: #ccfbf1;
+            --theme-maramon-accent: #0d9488;
+            
+            --theme-kottarakara-bg: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            --theme-kottarakara-border: #bfdbfe;
+            --theme-kottarakara-accent: #2563eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-        
+
         html {
+            scroll-behavior: smooth;
             -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
-        }
-        
-        :root {
-            --bg-gradient-start: #2c4a7c;
-            --bg-gradient-end: #3b5998;
-            --card-bg: #fafbff;
-            --text-primary: #2d3748;
-            --text-secondary: #6c757d;
-            --text-muted: #6c757d;
-            --border-color: #e8ecf8;
-            --accent-color: #b8860b;
-            --chat-start: #2c4a7c;
-            --chat-end: #3b5998;
         }
 
-        body.dark-mode {
-            --bg-gradient-start: #1a2a4a;
-            --bg-gradient-end: #243660;
-            --card-bg: #1a2035;
-            --text-primary: #e2e8f0;
-            --text-secondary: #a0aec0;
-            --text-muted: #a0aec0;
-            --border-color: #2a3560;
-            --accent-color: #d4a843;
-            --chat-start: #1a2a4a;
-            --chat-end: #243660;
-        }
-
-        *:focus-visible {
-            outline: 2px solid var(--accent-color);
-            outline-offset: 2px;
-        }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
-            transition: all 0.3s ease;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+            overflow-x: hidden;
         }
-        
+
+        /* ── Ambient Background Glows ──────────────────────────────────── */
+        .ambient-glow-wrap {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-sphere {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.45;
+            animation: auroraFloat 22s ease-in-out infinite alternate;
+        }
+
+        .ambient-sphere-1 {
+            width: 700px;
+            height: 700px;
+            top: -200px;
+            left: 10%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, transparent 70%);
+        }
+
+        .ambient-sphere-2 {
+            width: 800px;
+            height: 800px;
+            top: 25%;
+            right: -250px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%);
+            animation-duration: 28s;
+            animation-delay: -5s;
+        }
+
+        @keyframes auroraFloat {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(50px) scale(1.08); }
+            100% { transform: translateY(-30px) scale(0.96); }
+        }
+
+        .ml-font {
+            font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif;
+        }
+
+        /* ── Navigation Bar ────────────────────────────────────────────── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--nav-border);
+            padding: 12px 24px;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: -0.02em;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-subtitle {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: -3px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .admin-nav-btn:hover {
+            background: var(--accent-gold);
+            color: #1e1b4b;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--card-hover-border);
+            transform: scale(1.05);
+        }
+
+        /* ── Main Container ────────────────────────────────────────────── */
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 20px 80px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Hero Section ──────────────────────────────────────────────── */
+        .hero {
+            text-align: center;
+            padding: 36px 16px 20px 16px;
+            max-width: 880px;
             margin: 0 auto;
         }
-        
-        .header-controls {
-            display: flex;
-            justify-content: flex-end;
+
+        .hero-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            border-radius: 9999px;
+            color: var(--badge-text);
+            font-size: 0.82rem;
+            font-weight: 700;
             margin-bottom: 20px;
-        }
-        
-        .dark-mode-toggle {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 20px;
-            line-height: 1;
-            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
-        .dark-mode-toggle:hover {
-            background: rgba(255,255,255,0.3);
+        .hero-title {
+            font-size: 3.4rem;
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            line-height: 1.12;
+            margin-bottom: 14px;
         }
-        
-        header {
-            text-align: center;
-            color: white;
-            padding: 40px 20px;
+
+        .hero-title .gradient-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.95;
-        }
-        
-        .intro-text {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-top: 10px;
-        }
-        
-        .stats-banner {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            background: rgba(255,255,255,0.15);
-            padding: 25px;
-            border-radius: 12px;
-            margin: 30px auto;
-            max-width: 600px;
-            backdrop-filter: blur(10px);
-            border: 1.5px solid #d4a843;
-            box-shadow: 0 0 0 1px rgba(212,168,67,0.2), 0 4px 20px rgba(0,0,0,0.15);
-        }
-        
-        .stat-item {
-            text-align: center;
-            color: white;
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
-        
-        .new-badge {
-            display: inline-block;
-            background: #ff4757;
-            color: white;
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 4px;
-            margin-left: 8px;
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
             font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .new-badge { animation: none; }
-            #chatBtn.pulsing::before { animation: none; }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .year-bg {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 4rem;
-            font-weight: 900;
-            opacity: 0.08;
-            line-height: 1;
-            pointer-events: none;
-        }
-        
-        .collection-group {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .collection-group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .collection-group-info {
-            flex: 1;
-        }
-        
-        .collection-group-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
             margin-bottom: 8px;
         }
-        
-        .collection-group-subtitle {
-            color: var(--text-secondary);
+
+        .hero-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 660px;
+            margin: 0 auto 32px auto;
+            line-height: 1.6;
+        }
+
+        /* ── Direct Interactive Search Bar ─────────────────────────────── */
+        .search-wrapper {
+            position: relative;
+            max-width: 680px;
+            margin: 0 auto 36px auto;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 18px;
+            padding: 4px 8px 4px 18px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+            transition: all 0.25s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 4px var(--accent-glow), 0 16px 40px rgba(0, 0, 0, 0.35);
+            background: var(--dropdown-bg);
+        }
+
+        .search-icon {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            padding: 12px 0;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
             font-size: 0.95rem;
         }
-        
-        .expand-btn {
-            background: rgba(102, 126, 234, 0.1);
-            border: 2px solid var(--accent-color);
-            color: var(--accent-color);
-            padding: 10px 20px;
-            border-radius: 8px;
+
+        .search-kbd {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .search-clear-btn {
+            display: none;
+            background: var(--card-border);
+            border: none;
+            color: var(--text-primary);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 14px;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+
+        /* ── Autocomplete Results Dropdown ─────────────────────────────── */
+        .search-results-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--dropdown-bg);
+            border: 1px solid var(--dropdown-border);
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            max-height: 440px;
+            overflow-y: auto;
+            z-index: 90;
+            display: none;
+            backdrop-filter: blur(20px);
+            padding: 8px;
+        }
+
+        .search-results-header {
+            padding: 8px 14px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 4px;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.selected {
+            background: var(--card-hover-bg);
+            transform: translateX(4px);
+        }
+
+        .result-song-num {
+            background: var(--badge-bg);
+            color: var(--accent-primary);
+            border: 1px solid var(--badge-border);
+            font-weight: 800;
+            font-size: 0.9rem;
+            min-width: 44px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .result-song-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-song-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-song-ml {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-song-col {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ── Stats Strip ───────────────────────────────────────────────── */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            max-width: 780px;
+            margin: 0 auto 40px auto;
+        }
+
+        .stat-badge-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+        }
+
+        .stat-badge-box:hover {
+            transform: translateY(-2px);
+            border-color: var(--card-hover-border);
+        }
+
+        .stat-digit {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 1px;
+        }
+
+        /* ── Section Titles ────────────────────────────────────────────── */
+        .section-header-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin: 44px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .section-subtext {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ── Categories Pill Scroll ────────────────────────────────────── */
+        .categories-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 4px 4px 14px 4px;
+            margin-bottom: 24px;
+            scrollbar-width: thin;
+        }
+
+        .category-chip {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 9px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
             font-weight: 600;
-            transition: all 0.3s ease;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+        }
+
+        .category-chip:hover,
+        .category-chip.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        /* ── Cards Grid ────────────────────────────────────────────────── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 22px;
+            margin-bottom: 36px;
+        }
+
+        /* ── Hero Collection Card: Kristheeya Keerthanangal ──────────── */
+        .card-keerthanangal {
+            grid-column: 1 / -1;
+            background: var(--theme-keerthanangal-bg);
+            border: 1.5px solid var(--theme-keerthanangal-border);
+            border-radius: 22px;
+            padding: 32px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(18px);
+            text-decoration: none;
+            color: inherit;
+            display: grid;
+            grid-template-columns: 84px 1fr auto;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .card-keerthanangal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #ef4444 0%, #f59e0b 100%);
+        }
+
+        .card-keerthanangal:hover {
+            border-color: var(--theme-keerthanangal-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 45px rgba(239, 68, 68, 0.2);
+        }
+
+        .icon-circle-lg {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(245, 158, 11, 0.2));
+            border: 1.5px solid rgba(239, 68, 68, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+
+        .card-keerthanangal h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin: 6px 0 4px 0;
+            color: var(--text-primary);
+        }
+
+        .card-keerthanangal p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .btn-action-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%);
+            color: white;
+            font-weight: 800;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+            transition: all 0.2s ease;
             white-space: nowrap;
         }
 
-        .expand-btn:hover {
-            background: var(--accent-color);
-            color: white;
+        .card-keerthanangal:hover .btn-action-primary {
+            transform: scale(1.05);
         }
-        
-        .collection-list {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease;
-            margin-top: 0;
-        }
-        
-        .collection-list.expanded {
-            max-height: 600px;
-            margin-top: 25px;
-        }
-        
-        .collection-item {
+
+        /* ── Themed Collection Cards ───────────────────────────────────── */
+        .themed-card {
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(14px);
+            text-decoration: none;
+            color: inherit;
             display: flex;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 8px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-        
-        .collection-item:hover {
-            background: rgba(44, 74, 124, 0.08);
-            border-left-color: var(--accent-color);
-            transform: translateX(5px);
-        }
-        
-        .collection-item-icon {
-            font-size: 2rem;
-            margin-right: 15px;
-        }
-        
-        .collection-item-info {
-            flex: 1;
-        }
-        
-        .collection-item-title {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 3px;
-        }
-        
-        .collection-item-count {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-        
-        .collection-item-arrow {
-            font-size: 1.2rem;
-            color: var(--accent-color);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .collection-item:hover .collection-item-arrow {
-            opacity: 1;
-        }
-        
-        .sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin: 40px 0;
-        }
-        
-        .section-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
+            flex-direction: column;
+            justify-content: space-between;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
-        
-        .section-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+
+        .card-communion {
+            background: var(--theme-communion-bg);
+            border: 1.5px solid var(--theme-communion-border);
         }
-        
-        .section-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        .card-communion:hover {
+            border-color: var(--theme-communion-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(168, 85, 247, 0.2);
         }
-        
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
+
+        .card-passion {
+            background: var(--theme-passion-bg);
+            border: 1.5px solid var(--theme-passion-border);
+        }
+        .card-passion:hover {
+            border-color: var(--theme-passion-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(244, 63, 94, 0.2);
+        }
+
+        .card-special {
+            background: var(--theme-special-bg);
+            border: 1.5px solid var(--theme-special-border);
+        }
+        .card-special:hover {
+            border-color: var(--theme-special-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(245, 158, 11, 0.2);
+        }
+
+        .card-kottarakara {
+            background: var(--theme-kottarakara-bg);
+            border: 1.5px solid var(--theme-kottarakara-border);
+        }
+        .card-kottarakara:hover {
+            border-color: var(--theme-kottarakara-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(96, 165, 250, 0.2);
+        }
+
+        .themed-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .icon-circle-md {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+        }
+
+        .themed-card-title {
+            font-size: 1.3rem;
+            font-weight: 800;
             color: var(--text-primary);
-            margin-bottom: 10px;
+            margin-bottom: 6px;
+            line-height: 1.3;
         }
-        
-        .section-desc {
+
+        .themed-card-desc {
             color: var(--text-secondary);
-            line-height: 1.6;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            flex: 1;
+            margin-bottom: 16px;
         }
-        
-        .section-count {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid var(--border-color);
-            color: var(--accent-color);
-            font-weight: 600;
+
+        .themed-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--card-border);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-primary);
         }
-        
-        .category-header {
-            color: white;
-            font-size: 1.8rem;
-            margin: 40px 0 20px 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #d4a843;
+
+        /* ── Expandable Maramon Convention Accordion ───────────────────── */
+        .card-maramon {
+            grid-column: 1 / -1;
+            background: var(--theme-maramon-bg);
+            border: 1.5px solid var(--theme-maramon-border);
+            border-radius: 22px;
+            padding: 28px;
+            backdrop-filter: blur(18px);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
         }
-        
-        footer {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            padding: 40px 20px;
-            margin-top: 60px;
+
+        .card-maramon:hover {
+            border-color: var(--theme-maramon-accent);
+        }
+
+        .maramon-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .maramon-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-circle-maramon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: rgba(13, 148, 136, 0.25);
+            border: 1.5px solid rgba(20, 184, 166, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .maramon-btn-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .maramon-btn-toggle:hover {
+            background: var(--theme-maramon-accent);
+            color: #042f2e;
+        }
+
+        .maramon-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .maramon-content.expanded {
+            max-height: 800px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .years-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .year-pill-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .year-pill-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--theme-maramon-accent);
+            transform: translateY(-2px);
+        }
+
+        /* ── Admin Suite Teaser Banner ─────────────────────────────────── */
+        .admin-banner {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.75) 0%, rgba(49, 46, 129, 0.75) 100%);
+            border: 1.5px solid rgba(129, 140, 248, 0.35);
+            border-radius: 22px;
+            padding: 32px;
+            margin: 48px 0;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 24px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-banner-info h3 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .admin-banner-info p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.92rem;
+            max-width: 680px;
+        }
+
+        .admin-banner-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .admin-pill {
+            background: rgba(255, 255, 255, 0.12);
+            color: #e0e7ff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .admin-banner-btn {
+            background: #f59e0b;
+            color: #1e1b4b;
+            font-weight: 800;
+            font-size: 0.95rem;
+            padding: 14px 28px;
             border-radius: 12px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+        }
+
+        .admin-banner-btn:hover {
+            background: #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5);
+        }
+
+        /* ── Footer ────────────────────────────────────────────────────── */
+        footer {
+            margin-top: 60px;
+            padding: 40px 20px;
+            border-top: 1px solid var(--card-border);
             text-align: center;
+            color: var(--text-muted);
+            font-size: 0.88rem;
         }
-        
-        .footer-content {
-            max-width: 800px;
-            margin: 0 auto;
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 16px 0;
+            flex-wrap: wrap;
         }
-        
-        .disclaimer {
-            display: none;
-            background: rgba(255,255,255,0.15);
-            padding: 20px;
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover { color: var(--accent-primary); }
+
+        .disclaimer-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .disclaimer-btn:hover {
+            background: var(--card-hover-bg);
+            color: var(--text-primary);
+        }
+
+        .disclaimer-box {
+            display: none;
+            max-width: 640px;
+            margin: 12px auto 20px auto;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 0.82rem;
+            line-height: 1.6;
             text-align: left;
         }
 
-        .disclaimer.expanded {
-            display: block;
-        }
-        
-        .disclaimer h3 {
-            margin-bottom: 10px;
-        }
-        
-        .disclaimer-toggle {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .disclaimer-toggle:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .footer-links {
-            margin: 20px 0;
-        }
-        
-        .footer-links a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            opacity: 0.9;
-        }
-        
-        .footer-links a:hover {
-            opacity: 1;
-            text-decoration: underline;
-        }
-        
-        @media (max-width: 768px) {
-            body { padding: 12px; }
-            header { padding: 30px 15px; }
-            h1 { font-size: 2rem; }
-            .subtitle { font-size: 1rem; }
-            .intro-text { font-size: 0.9rem; }
-            .stats-banner { 
-                gap: 25px; 
-                padding: 20px;
-                margin: 20px auto;
-            }
-            .stat-number { font-size: 2rem; }
-            .stat-label { font-size: 0.85rem; }
-            .category-header { font-size: 1.4rem; margin: 30px 0 15px 0; }
-            .sections { 
-                grid-template-columns: 1fr; 
-                gap: 20px;
-                margin: 25px 0;
-            }
-            .section-card { padding: 25px; }
-            .section-icon { font-size: 2.5rem; }
-            .section-title { font-size: 1.3rem; }
-            .section-desc { font-size: 0.95rem; }
-            .year-bg { font-size: 3rem; }
-            .collection-group { padding: 20px; }
-            .collection-group-header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .expand-btn { width: 100%; }
-            .collection-item { padding: 12px; }
-            .collection-item-icon { font-size: 1.5rem; margin-right: 12px; }
-            footer { padding: 30px 15px; margin-top: 40px; }
-            .disclaimer { padding: 15px; font-size: 0.9rem; }
-            .footer-links a { margin: 0 10px; font-size: 0.9rem; }
-        }
-        
-        @media (max-width: 430px) {
-            body { padding: 10px; }
-            header { padding: 25px 10px; }
-            h1 { font-size: 1.75rem; }
-            .subtitle { font-size: 0.9rem; }
-            .intro-text { font-size: 0.85rem; }
-            .stats-banner { 
-                gap: 15px; 
-                padding: 15px;
-                flex-wrap: wrap;
-            }
-            .stat-number { font-size: 1.8rem; }
-            .stat-label { font-size: 0.8rem; }
-            .category-header { font-size: 1.25rem; }
-            .section-card { padding: 20px; }
-            .section-icon { font-size: 2.2rem; }
-            .section-title { font-size: 1.2rem; }
-            .year-bg { font-size: 2.5rem; }
-            .collection-group { padding: 15px; }
-            .collection-group-title { font-size: 1.2rem; }
-            .collection-group-subtitle { font-size: 0.85rem; }
-            .collection-item { padding: 10px; }
-            .collection-item-icon { font-size: 1.3rem; margin-right: 10px; }
-            .collection-item-title { font-size: 0.95rem; }
-            .collection-item-count { font-size: 0.8rem; }
-            .dark-mode-toggle { padding: 8px 15px; font-size: 13px; }
-        }
+        .disclaimer-box.expanded { display: block; }
 
-        /* ── Chat Widget ─────────────────────────────── */
+        /* ── AI Chat Widget ────────────────────────────────────────────── */
         #chatBtn {
             position: fixed;
             bottom: 24px;
             right: 24px;
-            width: 56px;
-            height: 56px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #18181b, #27272a);
+            background: var(--accent-gradient);
             border: none;
             color: white;
-            font-size: 22px;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-            z-index: 1000;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 8px 24px var(--accent-glow);
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        #chatBtn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.65); }
-        #chatBtn lottie-player { width: 44px; height: 44px; pointer-events: none; }
-        #chatBtn.pulsing::before {
-            content: '';
-            position: absolute;
-            inset: -6px;
-            border-radius: 50%;
-            border: 3px solid rgba(82,82,91,0.55);
-            animation: chatPulseRing 1.4s ease-out infinite;
+
+        #chatBtn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 32px var(--accent-glow);
         }
-        @keyframes chatPulseRing {
-            0%   { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
+
+        #chatBtn lottie-player {
+            width: 44px;
+            height: 44px;
+            pointer-events: none;
         }
+
         #chatGreeting {
             position: fixed;
             bottom: 92px;
             right: 24px;
-            background: var(--card-bg);
+            background: var(--dropdown-bg);
             color: var(--text-primary);
-            padding: 12px 15px;
+            padding: 12px 16px;
             border-radius: 16px 16px 4px 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
-            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            font-size: 13.5px;
             font-weight: 500;
-            max-width: 220px;
+            max-width: 240px;
             line-height: 1.5;
-            z-index: 998;
+            z-index: 98;
             display: none;
             cursor: pointer;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--dropdown-border);
             animation: greetSlideIn 0.35s ease;
         }
-        #chatGreeting::after {
-            content: '';
-            position: absolute;
-            bottom: -9px;
-            right: 20px;
-            border-left: 9px solid transparent;
-            border-right: 0 solid transparent;
-            border-top: 9px solid var(--card-bg);
-            filter: drop-shadow(0 2px 1px rgba(0,0,0,0.08));
-        }
+
         @keyframes greetSlideIn {
             from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @media (max-width: 430px) {
-            #chatGreeting { right: 16px; bottom: 88px; max-width: 200px; font-size: 13px; }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         #chatPanel {
             position: fixed;
             bottom: 92px;
             right: 24px;
-            width: 360px;
-            max-height: 520px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: 380px;
+            max-height: 540px;
+            background: var(--dropdown-bg);
+            border: 1px solid var(--dropdown-border);
+            border-radius: 20px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
             display: none;
             flex-direction: column;
-            z-index: 999;
+            z-index: 99;
             overflow: hidden;
             animation: chatSlideIn 0.2s ease;
         }
+
         @keyframes chatSlideIn {
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to   { opacity: 1; transform: scale(1)    translateY(0);    }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
+
         .chat-header {
-            background: linear-gradient(135deg, var(--chat-start), var(--chat-end));
+            background: var(--accent-gradient);
             color: white;
-            padding: 14px 16px;
+            padding: 14px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
         }
-        .chat-header-title { font-weight: 600; font-size: 15px; }
-        .chat-header-sub   { font-size: 11px; opacity: 0.85; margin-top: 1px; }
+
+        .chat-header-title { font-weight: 700; font-size: 15px; }
+        .chat-header-sub { font-size: 11.5px; opacity: 0.9; margin-top: 1px; }
+
         .chat-close {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
             width: 28px;
@@ -638,341 +1204,712 @@
             justify-content: center;
             transition: background 0.2s;
         }
-        .chat-close:hover { background: rgba(255,255,255,0.3); }
+
+        .chat-close:hover { background: rgba(255, 255, 255, 0.35); }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            min-height: 200px;
-            max-height: 340px;
+            min-height: 220px;
+            max-height: 350px;
         }
-        .chat-messages::-webkit-scrollbar { width: 4px; }
-        .chat-messages::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+
         .chat-bubble {
             max-width: 85%;
-            padding: 10px 13px;
-            border-radius: 12px;
-            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13.5px;
             line-height: 1.5;
             word-break: break-word;
         }
+
         .chat-bubble.user {
             align-self: flex-end;
-            background: linear-gradient(135deg, var(--chat-start), var(--chat-end));
+            background: var(--accent-gradient);
             color: white;
             border-bottom-right-radius: 4px;
         }
+
         .chat-bubble.bot {
             align-self: flex-start;
-            background: var(--border-color);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             color: var(--text-primary);
             border-bottom-left-radius: 4px;
         }
-        .chat-bubble.typing { color: var(--text-muted); font-style: italic; }
-        .chat-song-results { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-        .chat-song-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 10px;
-            background: var(--card-bg);
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            max-width: 300px;
-            text-decoration: none;
-        }
-        .chat-song-card:hover { border-color: var(--accent-color); transform: translateX(3px); }
-        .chat-song-num  { font-weight: 700; color: var(--accent-color); font-size: 13px; min-width: 30px; }
-        .chat-song-name { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
-        .chat-song-col  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
         .chat-input-row {
             display: flex;
             gap: 8px;
-            padding: 10px;
-            border-top: 1px solid var(--border-color);
-            background: var(--card-bg);
-            flex-shrink: 0;
+            padding: 12px;
+            border-top: 1px solid var(--card-border);
+            background: var(--dropdown-bg);
         }
+
         #chatInput {
             flex: 1;
-            padding: 9px 12px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 10px 14px;
+            border: 1px solid var(--input-border);
+            border-radius: 9999px;
+            font-size: 13.5px;
             outline: none;
-            background: var(--card-bg);
+            background: var(--input-bg);
             color: var(--text-primary);
-            transition: border-color 0.2s;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
         }
-        #chatInput:focus { border-color: var(--accent-color); }
+
+        #chatInput:focus { border-color: var(--accent-primary); }
+
         #chatSend {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--chat-start), var(--chat-end));
+            background: var(--accent-gradient);
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            transition: opacity 0.2s;
         }
-        #chatSend:disabled { opacity: 0.5; cursor: not-allowed; }
-        @media (max-width: 430px) {
+
+        /* ── Responsive Rules ──────────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .card-keerthanangal { grid-template-columns: 1fr; gap: 16px; }
+            .admin-banner { grid-template-columns: 1fr; }
+            .admin-banner-btn { width: 100%; text-align: center; }
+        }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 16px; }
+            .hero-title { font-size: 2.3rem; }
+            .hero-subtitle { font-size: 1.1rem; }
+            .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-digit { font-size: 1.4rem; }
+            .cards-grid { grid-template-columns: 1fr; gap: 16px; }
+            .maramon-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+            .maramon-btn-toggle { width: 100%; justify-content: center; }
+            .search-kbd { display: none; }
             #chatPanel {
                 right: 0;
                 left: 0;
-                bottom: 80px;
+                bottom: 0;
                 width: 100%;
-                border-radius: 16px 16px 0 0;
-                max-height: 60vh;
+                border-radius: 20px 20px 0 0;
+                max-height: 75vh;
             }
-            #chatBtn { bottom: 20px; right: 16px; }
         }
     </style>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header-controls">
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
-        </div>
-        
-        <header>
-            <h1>🎵 Holy Hymns</h1>
-            <p class="subtitle">Malayalam Christian Songs & Worship Collection</p>
-            <p class="intro-text">Browse 678+ Malayalam Christian hymns with lyrics and videos</p>
-        </header>
-        
-        <div class="stats-banner">
-            <div class="stat-item">
-                <div class="stat-number">678+</div>
-                <div class="stat-label">Songs</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">11</div>
-                <div class="stat-label">Collections</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">6</div>
-                <div class="stat-label">Years</div>
-            </div>
-        </div>
-        
-        <h2 class="category-header">📖 Hymn Books</h2>
-        <div class="sections">
-            <a href="viewer.html?collection=kristheeya-keerthanangal" class="section-card">
-                <div class="section-icon">📕</div>
-                <h3 class="section-title">ക്രിസ്തീയ കീർത്തനങ്ങൾ</h3>
-                <p class="section-desc">Kristheeya Keerthanangal - Complete Malayalam Christian Hymn Book with 504 hymns and doxology</p>
-                <div class="section-count">504+ Hymns</div>
-            </a>
-            
-            <a href="viewer.html?collection=birthday-anniversary" class="section-card">
-                <div class="section-icon">🌟</div>
-                <h3 class="section-title">Special Songs for Special Occasions</h3>
-                <p class="section-desc">Birthday, anniversary and special prayers</p>
-                <div class="section-count">15 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=holy-communion" class="section-card">
-                <div class="section-icon">✝️</div>
-                <h3 class="section-title">Holy Communion Songs</h3>
-                <p class="section-desc">Malayalam Holy Communion Songs</p>
-                <div class="section-count">22 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=passion-week" class="section-card">
-                <div class="section-icon">🕊️</div>
-                <h3 class="section-title">Passion Week Songs</h3>
-                <p class="section-desc">Songs for Holy Week and Easter</p>
-                <div class="section-count">23 Songs</div>
-            </a>
-        </div>
-        
-        <h2 class="category-header">🎪 Maramon Convention Songs</h2>
-        <div class="sections">
-            <div class="collection-group">
-                <div class="collection-group-header" onclick="toggleMaramonList()" tabindex="0" role="button" aria-expanded="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMaramonList()}">
-                    <div class="collection-group-info">
-                        <div class="collection-group-title">🎪 Maramon Convention (2013-2026)</div>
-                        <div class="collection-group-subtitle">112 songs across 6 years</div>
-                    </div>
-                    <button class="expand-btn" id="maramon-toggle">▼ Show All Years</button>
-                </div>
-                
-                <div class="collection-list" id="maramon-list">
-                    <a href="viewer.html?collection=maramon-2026" class="collection-item">
-                        <div class="collection-item-icon">🎹</div>
-                        <div class="collection-item-info">
-                            <div class="collection-item-title">2026<span class="new-badge">NEW</span></div>
-                            <div class="collection-item-count">16 songs</div>
-                        </div>
-                        <div class="collection-item-arrow">→</div>
-                    </a>
-                    
-                    <a href="viewer.html?collection=maramon-2025" class="collection-item">
-                        <div class="collection-item-icon">🎼</div>
-                        <div class="collection-item-info">
-                            <div class="collection-item-title">2025<span class="new-badge">NEW</span></div>
-                            <div class="collection-item-count">16 songs</div>
-                        </div>
-                        <div class="collection-item-arrow">→</div>
-                    </a>
-                    
-                    <a href="viewer.html?collection=maramon-2024" class="collection-item">
-                        <div class="collection-item-icon">🎧</div>
-                        <div class="collection-item-info">
-                            <div class="collection-item-title">2024</div>
-                            <div class="collection-item-count">16 songs</div>
-                        </div>
-                        <div class="collection-item-arrow">→</div>
-                    </a>
-                    
-                    <a href="viewer.html?collection=maramon-2023" class="collection-item">
-                        <div class="collection-item-icon">🎶</div>
-                        <div class="collection-item-info">
-                            <div class="collection-item-title">2023</div>
-                            <div class="collection-item-count">12 songs</div>
-                        </div>
-                        <div class="collection-item-arrow">→</div>
-                    </a>
-                    
-                    <a href="viewer.html?collection=maramon-2021" class="collection-item">
-                        <div class="collection-item-icon">🎵</div>
-                        <div class="collection-item-info">
-                            <div class="collection-item-title">2021</div>
-                            <div class="collection-item-count">20 songs</div>
-                        </div>
-                        <div class="collection-item-arrow">→</div>
-                    </a>
-                    
-                    <a href="viewer.html?collection=maramon-2013" class="collection-item">
-                        <div class="collection-item-icon">🎤</div>
-                        <div class="collection-item-info">
-                            <div class="collection-item-title">2013</div>
-                            <div class="collection-item-count">16 songs</div>
-                        </div>
-                        <div class="collection-item-arrow">→</div>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <h2 class="category-header">⛪ Kottarakara Convention Songs</h2>
-        <div class="sections">
-            <a href="viewer.html?collection=kottarakara-2025" class="section-card">
-                <div class="section-icon">🎶</div>
-                <h3 class="section-title">Kottarakara Convention 2025</h3>
-                <p class="section-desc">Songs from Kottarakara Convention 2025</p>
-                <div class="section-count">10 Songs</div>
-            </a>
-            
-            <a href="viewer.html?collection=kottarakara-2026" class="section-card">
-                <div class="section-icon">🎶</div>
-                <h3 class="section-title">Kottarakara Convention 2026</h3>
-                <p class="section-desc">Songs from Kottarakara Convention 2026</p>
-                <div class="section-count">8 Songs</div>
-            </a>
-        </div>
-        
-        <footer>
-            <div class="footer-content">
-                <button class="disclaimer-toggle" onclick="toggleDisclaimer()">📋 Show Disclaimer</button>
-                <div class="disclaimer" id="disclaimer">
-                    <h3>📋 Disclaimer</h3>
-                    <p style="text-align: center;">This website is a non-commercial community resource created for the Malayalam Christian community.</p>
-                    <p style="text-align: center;">All hymns and songs are traditional worship contents and are publicly available in the internet.</p>
-                    <p style="text-align: center;">YouTube videos are embedded from their original sources.</p>
-                    <p style="text-align: center;">If you are a copyright holder and have concerns, please contact us.</p>
-                </div>
-                
-                <div class="footer-links">
-                    <a href="mailto:shibinjohn@live.com">Contact Us</a>
-                </div>
-                
-                <p style="margin-top: 20px; opacity: 0.8;">
-                    Made with ❤️ for the Malayalam Christian community<br>
-                    © 2026 Holy Hymns | All Rights Reserved
-                </p>
-            </div>
-        </footer>
+
+    <!-- ── Ambient Floating Aurora Glows ──────────────────────────────── -->
+    <div class="ambient-glow-wrap">
+        <div class="ambient-sphere ambient-sphere-1"></div>
+        <div class="ambient-sphere ambient-sphere-2"></div>
     </div>
-    
-    <!-- Chat Widget -->
-    <div id="chatGreeting" onclick="dismissGreeting(true)">🎵 Hello! Looking for a hymn?<br><span style="font-size:12px;opacity:0.75;">I can find songs by theme, occasion, or lyrics.</span></div>
-    <button id="chatBtn" onclick="toggleChat()" title="Ask about hymns" aria-label="Open hymn assistant">
+
+    <!-- ── Navigation Bar ────────────────────────────────────────────── -->
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="index.html" class="brand" aria-label="Holy Hymns Home">
+                <div class="brand-icon">🎵</div>
+                <div class="brand-text">
+                    <span class="brand-title">Holy Hymns</span>
+                    <span class="brand-subtitle ml-font">ക്രിസ്തീയ കീർത്തനങ്ങൾ</span>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+                    🌙
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── Main Content Area v2.1 ─────────────────────────────────────────── -->
+    <main class="container">
+
+        <!-- ── Hero Section ──────────────────────────────────────────── -->
+        <section class="hero">
+            <div class="hero-badge-pill">
+                <span>✨</span> 690+ Malayalam Christian Hymns &amp; Liturgical Music
+            </div>
+            
+            <h1 class="hero-title">
+                Lift Your Voice in <br>
+                <span class="gradient-text">Holy Worship</span>
+            </h1>
+            
+            <p class="hero-subtitle">
+                Malayalam Christian Hymns &amp; Convention Songs
+            </p>
+            
+            <p class="hero-desc">
+                Browse 693+ Malayalam Christian hymns with complete lyrics, YouTube video recordings, and liturgical theme categories.
+            </p>
+
+            <!-- ── Direct Interactive Instant Search Bar ──────────────── -->
+            <div class="search-wrapper">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        id="globalSearchInput" 
+                        class="search-input" 
+                        placeholder="Search song # (e.g. 104), English / Malayalam title, or lyrics..." 
+                        autocomplete="off"
+                        aria-label="Search all hymns"
+                    >
+                    <span class="search-kbd">⌘K</span>
+                    <button id="searchClearBtn" class="search-clear-btn" onclick="clearGlobalSearch()" aria-label="Clear search">✕</button>
+                </div>
+
+                <!-- Live Autocomplete Dropdown -->
+                <div id="searchResultsDropdown" class="search-results-dropdown" role="listbox">
+                    <div class="search-results-header">
+                        <span>Matching Hymns</span>
+                        <span id="resultsCount">0 found</span>
+                    </div>
+                    <div id="resultsList"></div>
+                </div>
+            </div>
+
+            <!-- ── Stats Strip ───────────────────────────────────────── -->
+            <div class="stats-strip">
+                <div class="stat-badge-box">
+                    <div class="stat-digit">693+</div>
+                    <div class="stat-text">Hymns</div>
+                </div>
+                <div class="stat-badge-box">
+                    <div class="stat-digit">12</div>
+                    <div class="stat-text">Collections</div>
+                </div>
+                <div class="stat-badge-box">
+                    <div class="stat-digit">40</div>
+                    <div class="stat-text">Themes</div>
+                </div>
+                <div class="stat-badge-box">
+                    <div class="stat-digit">2013-26</div>
+                    <div class="stat-text">Conventions</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Browse by Liturgical Theme & Occasion ─────────────────── -->
+        <section id="themes">
+            <div class="section-header-row">
+                <div>
+                    <h2 class="section-heading">
+                        <span>🏷️</span> Browse by Theme &amp; Occasion
+                    </h2>
+                    <p class="section-subtext">Worship themes, prayer occasions &amp; liturgical seasons</p>
+                </div>
+            </div>
+
+            <div class="categories-scroll" id="themeChipsContainer">
+                <a href="javascript:void(0)" class="category-chip active" onclick="filterByTheme('all', this, event)">
+                    <span>✨</span> All Hymns (693)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Worship & Praise', this, event)">
+                    <span>🙌</span> Worship &amp; Praise (112)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Morning Songs', this, event)">
+                    <span>🌅</span> Morning (7)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Evening Songs', this, event)">
+                    <span>🌙</span> Evening (8)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Passion Week', this, event)">
+                    <span>✝️</span> Passion Week (20)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Holy Communion', this, event)">
+                    <span>🍷</span> Holy Communion (22)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Christmas Songs', this, event)">
+                    <span>⭐</span> Christmas (22)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Belief', this, event)">
+                    <span>🛡️</span> Faith &amp; Trust (51)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Comfort', this, event)">
+                    <span>🕊️</span> Comfort &amp; Hope (26)
+                </a>
+                <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Second Coming of Christ', this, event)">
+                    <span>🎺</span> Second Coming (13)
+                </a>
+            </div>
+        </section>
+
+        <!-- ── Sacred Hymnals & Collections ──────────────────────────── -->
+        <section id="collections">
+            <div class="section-header-row">
+                <div>
+                    <h2 class="section-heading">
+                        <span>📖</span> Sacred Hymnals &amp; Collections
+                    </h2>
+                    <p class="section-subtext">Comprehensive Malayalam hymn books with lyrics and YouTube audio</p>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                
+                <!-- Hero Hymnal Card: Kristheeya Keerthanangal -->
+                <a href="viewer.html?collection=kristheeya-keerthanangal" class="card-keerthanangal">
+                    <div class="icon-circle-lg">📕</div>
+                    <div>
+                        <span class="hero-badge-pill">Standard Hymnal • 517 Hymns</span>
+                        <h3>Kristheeya Keerthanangal</h3>
+                        <p>Complete Malayalam Christian Hymn Book with 517 hymns, doxologies, and 40 thematic liturgical categories.</p>
+                    </div>
+                    <div>
+                        <span class="btn-action-primary">
+                            <span>Open Hymnal</span>
+                            <span>→</span>
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Special Occasions -->
+                <a href="viewer.html?collection=birthday-anniversary" class="themed-card card-special">
+                    <div class="themed-card-header">
+                        <div class="icon-circle-md">🌟</div>
+                        <span class="hero-badge-pill" style="background:rgba(245,158,11,0.2); color:#fbbf24; border-color:rgba(245,158,11,0.3);">15 Songs</span>
+                    </div>
+                    <div>
+                        <h3 class="themed-card-title">Special Occasion Songs</h3>
+                        <p class="themed-card-desc">Birthday, wedding anniversary, home blessing, and special thanksgiving prayers.</p>
+                    </div>
+                    <div class="themed-card-footer">
+                        <span>Special Occasions</span>
+                        <span>→</span>
+                    </div>
+                </a>
+
+                <!-- Holy Communion -->
+                <a href="viewer.html?collection=holy-communion" class="themed-card card-communion">
+                    <div class="themed-card-header">
+                        <div class="icon-circle-md">🍷</div>
+                        <span class="hero-badge-pill" style="background:rgba(168,85,247,0.2); color:#c084fc; border-color:rgba(168,85,247,0.3);">22 Songs</span>
+                    </div>
+                    <div>
+                        <h3 class="themed-card-title">Holy Communion Songs</h3>
+                        <p class="themed-card-desc">Solemn songs for Holy Communion, Eucharistic liturgy, and sacramental meditation.</p>
+                    </div>
+                    <div class="themed-card-footer">
+                        <span>Holy Communion</span>
+                        <span>→</span>
+                    </div>
+                </a>
+
+                <!-- Passion Week -->
+                <a href="viewer.html?collection=passion-week" class="themed-card card-passion">
+                    <div class="themed-card-header">
+                        <div class="icon-circle-md">✝️</div>
+                        <span class="hero-badge-pill" style="background:rgba(244,63,94,0.2); color:#fb7185; border-color:rgba(244,63,94,0.3);">23 Songs</span>
+                    </div>
+                    <div>
+                        <h3 class="themed-card-title">Passion Week Songs</h3>
+                        <p class="themed-card-desc">Hymns for Passion Week, Hosanna (Palm Sunday), Good Friday, and Resurrection.</p>
+                    </div>
+                    <div class="themed-card-footer">
+                        <span>Passion Week</span>
+                        <span>→</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- ── Convention Songs Section ──────────────────────────────── -->
+        <section id="conventions">
+            <div class="section-header-row">
+                <div>
+                    <h2 class="section-heading">
+                        <span>🎪</span> Convention Song Collections
+                    </h2>
+                    <p class="section-subtext">Maramon and Kottarakara convention choir collections across the years</p>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                
+                <!-- Maramon Convention Expandable Drawer -->
+                <div class="card-maramon">
+                    <div class="maramon-header" onclick="toggleMaramonAccordion()" tabindex="0" role="button" aria-expanded="false">
+                        <div class="maramon-title-group">
+                            <div class="icon-circle-maramon">🎪</div>
+                            <div>
+                                <h3 style="font-size: 1.4rem; font-weight: 800;">Maramon Convention Songs (2013 – 2026)</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 2px;">Maramon Convention choir hymns across 6 years • 96 total songs</p>
+                            </div>
+                        </div>
+                        <button class="maramon-btn-toggle" id="maramonAccordionBtn">
+                            <span>▼ Explore Years</span>
+                        </button>
+                    </div>
+
+                    <div class="maramon-content" id="maramonAccordionContent">
+                        <div class="years-grid">
+                            <a href="viewer.html?collection=maramon-2026" class="year-pill-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-size:1.4rem; font-weight:800;">2026</span>
+                                    <span class="hero-badge-pill" style="background:rgba(239,68,68,0.2); color:#fca5a5;">NEW</span>
+                                </div>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">16 songs • Latest</div>
+                            </a>
+                            <a href="viewer.html?collection=maramon-2025" class="year-pill-card">
+                                <span style="font-size:1.4rem; font-weight:800;">2025</span>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">16 songs</div>
+                            </a>
+                            <a href="viewer.html?collection=maramon-2024" class="year-pill-card">
+                                <span style="font-size:1.4rem; font-weight:800;">2024</span>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">16 songs</div>
+                            </a>
+                            <a href="viewer.html?collection=maramon-2023" class="year-pill-card">
+                                <span style="font-size:1.4rem; font-weight:800;">2023</span>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">12 songs</div>
+                            </a>
+                            <a href="viewer.html?collection=maramon-2021" class="year-pill-card">
+                                <span style="font-size:1.4rem; font-weight:800;">2021</span>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">20 songs</div>
+                            </a>
+                            <a href="viewer.html?collection=maramon-2013" class="year-pill-card">
+                                <span style="font-size:1.4rem; font-weight:800;">2013</span>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">16 songs</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kottarakara Convention 2026 -->
+                <a href="viewer.html?collection=kottarakara-2026" class="themed-card card-kottarakara">
+                    <div class="themed-card-header">
+                        <div class="icon-circle-md">⛪</div>
+                        <span class="hero-badge-pill" style="background:rgba(16,185,129,0.2); color:#6ee7b7;">2026 NEW</span>
+                    </div>
+                    <div>
+                        <h3 class="themed-card-title">Kottarakara Convention 2026</h3>
+                        <p class="themed-card-desc">Official choir hymn selections from the Kottarakara Convention 2026.</p>
+                    </div>
+                    <div class="themed-card-footer">
+                        <span>10 Songs</span>
+                        <span>→</span>
+                    </div>
+                </a>
+
+                <!-- Kottarakara Convention 2025 -->
+                <a href="viewer.html?collection=kottarakara-2025" class="themed-card card-kottarakara">
+                    <div class="themed-card-header">
+                        <div class="icon-circle-md">🎶</div>
+                        <span class="hero-badge-pill">2025</span>
+                    </div>
+                    <div>
+                        <h3 class="themed-card-title">Kottarakara Convention 2025</h3>
+                        <p class="themed-card-desc">Hymns and convention songs from Kottarakara Convention 2025.</p>
+                    </div>
+                    <div class="themed-card-footer">
+                        <span>10 Songs</span>
+                        <span>→</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        
+
+        <!-- ── Footer ────────────────────────────────────────────────── -->
+        <footer>
+            <button class="disclaimer-btn" onclick="toggleDisclaimer()">
+                📋 Legal &amp; Content Disclaimer
+            </button>
+            <div class="disclaimer-box" id="disclaimerBox">
+                <p style="margin-bottom:8px;"><strong>Community Service Notice:</strong> This website is a non-commercial community resource created for the Malayalam Christian community worldwide.</p>
+                <p style="margin-bottom:8px;">All hymns are traditional worship contents in the public domain or traditional hymnals. Embedded YouTube recordings remain the property of their respective creators.</p>
+                <p>If you are a copyright holder with inquiries, please reach out directly.</p>
+            </div>
+
+            <div class="footer-links">
+                <a href="mailto:shibinjohn@live.com" class="footer-link">Contact &amp; Feedback</a>
+                <span>•</span>
+                <a href="#collections" class="footer-link">Hymn Collections</a>
+            </div>
+
+            <p style="margin-top: 14px; opacity: 0.75;">
+                Made with ❤️ for the Malayalam Christian Community<br>
+                © 2026 Holy Hymns | Dedicated to Christ &amp; His Church
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- ── AI Hymn Assistant Floating Widget ─────────────────────────── -->
+    <div id="chatGreeting" onclick="dismissGreeting(true)">
+        🎵 <strong>Looking for a hymn?</strong><br>
+        <span style="font-size:12px; opacity:0.8;">I can find songs by theme, scripture, or lyrics!</span>
+    </div>
+
+    <button id="chatBtn" onclick="toggleChat()" title="Ask Hymn Assistant" aria-label="Open Hymn Assistant">
         <lottie-player src="assets/happy-bird.json" autoplay loop background="transparent" speed="1"></lottie-player>
     </button>
 
-    <div id="chatPanel">
-        <div class="chat-header">
+    <div id="chatPanel" role="dialog" aria-label="Hymn Assistant">
+        <div class="chat-header" id="chatPanelHeader">
             <div>
-                <div class="chat-header-title">Hymn Assistant</div>
-                <div class="chat-header-sub">Find songs by theme, occasion, or lyrics</div>
+                <div class="chat-drag-handle"><span>⠿</span> Move Widget</div>
+                <div class="chat-header-title">Hymn Assistant (Gemini AI)</div>
+                <div class="chat-header-sub">Search songs by theme, lyrics snippet, or occasion</div>
             </div>
-            <button class="chat-close" onclick="toggleChat()">✕</button>
+            <button class="chat-close" onclick="toggleChat()" aria-label="Close chat">✕</button>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <div class="chat-bubble bot">Hi! I can help you find hymns. Try asking:<br><br>
-                "Songs about the cross"<br>
-                "Suggest songs for Passion Week"<br>
-                "I remember a line that goes..."
+            <div class="chat-bubble bot">
+                Namaskaram! 🙏 I can help you discover hymns. Try asking:<br><br>
+                • <em>"Songs about the Cross and redemption"</em><br>
+                • <em>"Suggest hymns for Sunday Holy Communion"</em><br>
+                • <em>"Hymn starting with 'Athiravile'?"</em>
             </div>
         </div>
         <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="Ask about hymns..." maxlength="300" aria-label="Ask about hymns">
-            <button id="chatSend" onclick="sendChatMessage()">➤</button>
+            <input type="text" id="chatInput" placeholder="Ask about hymns..." maxlength="300" aria-label="Type your message">
+            <button id="chatSend" onclick="sendChatMessage()" aria-label="Send message">➤</button>
         </div>
     </div>
 
+    <!-- ── Scripts ───────────────────────────────────────────────────── -->
     <script>
-        // Dark mode toggle
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            document.querySelector('.dark-mode-toggle').textContent = isDark ? '☀️' : '🌙';
+        // ── Theme Switcher ────────────────────────────────────────────
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            setTheme(savedTheme);
         }
 
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            document.querySelector('.dark-mode-toggle').textContent = '☀️';
+        function setTheme(theme) {
+            const btn = document.getElementById('themeToggleBtn');
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+                btn.textContent = '☀️';
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.classList.remove('light-mode');
+                btn.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            }
         }
-        
-        // Disclaimer toggle
+
+        function toggleTheme() {
+            const isLight = document.body.classList.contains('light-mode');
+            setTheme(isLight ? 'dark' : 'light');
+        }
+
+        initTheme();
+
+        // ── Disclaimer Box ────────────────────────────────────────────
         function toggleDisclaimer() {
-            const disclaimer = document.getElementById('disclaimer');
-            const button = document.querySelector('.disclaimer-toggle');
-            disclaimer.classList.toggle('expanded');
-            button.textContent = disclaimer.classList.contains('expanded') ? '📋 Hide Disclaimer' : '📋 Show Disclaimer';
-        }
-        
-        // Maramon list toggle
-        function toggleMaramonList() {
-            const list = document.getElementById('maramon-list');
-            const button = document.getElementById('maramon-toggle');
-            const header = document.querySelector('.collection-group-header');
-            list.classList.toggle('expanded');
-            const isExpanded = list.classList.contains('expanded');
-            button.textContent = isExpanded ? '▲ Hide Years' : '▼ Show All Years';
-            if (header) header.setAttribute('aria-expanded', isExpanded);
+            const box = document.getElementById('disclaimerBox');
+            box.classList.toggle('expanded');
         }
 
-        // ── Chat Widget ───────────────────────────────────────────────
+        // ── Maramon Convention Accordion ──────────────────────────────
+        function toggleMaramonAccordion() {
+            const content = document.getElementById('maramonAccordionContent');
+            const btn = document.getElementById('maramonAccordionBtn');
+            const isExpanded = content.classList.toggle('expanded');
+            btn.innerHTML = isExpanded ? '<span>▲ Collapse</span>' : '<span>▼ Explore Years</span>';
+        }
+
+        // ── Global Instant Search Engine ──────────────────────────────
+        let hymnIndex = [];
+        let searchIndexLoaded = false;
+
+        async function loadSearchIndex() {
+            try {
+                const res = await fetch('data/hymn-index.json');
+                if (res.ok) {
+                    hymnIndex = await res.json();
+                    searchIndexLoaded = true;
+                }
+            } catch (err) {
+                console.warn('Index load error:', err);
+            }
+        }
+
+        loadSearchIndex();
+
+        const searchInput = document.getElementById('globalSearchInput');
+        const searchDropdown = document.getElementById('searchResultsDropdown');
+        const resultsList = document.getElementById('resultsList');
+        const resultsCount = document.getElementById('resultsCount');
+        const clearBtn = document.getElementById('searchClearBtn');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearBtn.style.display = query ? 'flex' : 'none';
+            performSearch(query);
+        });
+
+        function clearGlobalSearch() {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            searchDropdown.style.display = 'none';
+            searchInput.focus();
+        }
+
+        function filterByTheme(theme, element, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            if (theme === 'all') {
+                clearGlobalSearch();
+            } else {
+                searchInput.value = theme;
+                clearBtn.style.display = 'flex';
+                performSearch(theme, 50);
+                searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    searchDropdown.style.display = 'block';
+                    searchInput.focus();
+                }, 300);
+            }
+        }
+
+        function performSearch(query, limit = 20) {
+            if (!query || query.length < 1) {
+                searchDropdown.style.display = 'none';
+                return;
+            }
+
+            const qLower = query.toLowerCase();
+            const isNum = !isNaN(query);
+
+            let matches = [];
+
+            if (searchIndexLoaded && hymnIndex.length > 0) {
+                matches = hymnIndex.filter(song => {
+                    if (isNum && song.n === parseInt(query, 10)) return true;
+                    if (song.name && song.name.toLowerCase().includes(qLower)) return true;
+                    if (song.name2 && song.name2.includes(query)) return true;
+                    if (song.colName && song.colName.toLowerCase().includes(qLower)) return true;
+                    if (song.cat && Array.isArray(song.cat) && song.cat.some(c => c.toLowerCase().includes(qLower))) return true;
+                    return false;
+                }).slice(0, limit);
+            }
+
+            renderSearchResults(matches, query);
+        }
+
+        function renderSearchResults(matches, query) {
+            resultsList.innerHTML = '';
+            resultsCount.textContent = `${matches.length} found`;
+
+            if (matches.length === 0) {
+                resultsList.innerHTML = `
+                    <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+                        No hymns found matching "<strong>${escapeHtml(query)}</strong>".<br>
+                        <span style="font-size:0.8rem; margin-top:4px; display:inline-block;">
+                            Try asking the <strong>AI Hymn Assistant</strong> below!
+                        </span>
+                    </div>
+                `;
+            } else {
+                matches.forEach(song => {
+                    const item = document.createElement('a');
+                    item.className = 'search-result-item';
+                    item.href = `viewer.html?collection=${encodeURIComponent(song.col)}&song=${encodeURIComponent(song.n)}`;
+
+                    item.innerHTML = `
+                        <div class="result-song-num">#${song.n}</div>
+                        <div class="result-song-info">
+                            <div class="result-song-title">${escapeHtml(song.name || 'Hymn ' + song.n)}</div>
+                            <div class="result-song-ml ml-font">${escapeHtml(song.name2 || '')}</div>
+                        </div>
+                        <div class="result-song-col">${escapeHtml(song.colName || '')}</div>
+                    `;
+                    resultsList.appendChild(item);
+                });
+            }
+
+            searchDropdown.style.display = 'block';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrapper') && !e.target.closest('.category-chip') && !e.target.closest('#themeChipsContainer')) {
+                searchDropdown.style.display = 'none';
+            }
+        });
+
+        // Keyboard Shortcut: Cmd+K / Ctrl+K
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+            if (e.key === 'Escape' && searchDropdown.style.display === 'block') {
+                searchDropdown.style.display = 'none';
+            }
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[m]));
+        }
+
+        // ── AI Hymn Assistant & Draggable Floating Controls ───────────
         const HYMN_CHAT_URL = 'https://hymnchat-l75oqndw3a-uc.a.run.app';
         let chatHistory = [];
         let chatOpen = false;
+
+        // Position & Smart Placement
+        function positionChatPanel() {
+            const btn = document.getElementById('chatBtn');
+            const panel = document.getElementById('chatPanel');
+            if (!btn || !panel) return;
+
+            const btnRect = btn.getBoundingClientRect();
+            const panelWidth = Math.min(380, window.innerWidth - 32);
+            const panelHeight = Math.min(560, window.innerHeight - 100);
+
+            // Determine if panel should open to left or right, above or below
+            let top = btnRect.top - panelHeight - 12;
+            let left = btnRect.right - panelWidth;
+
+            // If too high up, place below button
+            if (top < 20) {
+                top = btnRect.bottom + 12;
+            }
+            // Clamp top/bottom within screen
+            if (top + panelHeight > window.innerHeight - 20) {
+                top = window.innerHeight - panelHeight - 20;
+            }
+            if (top < 20) top = 20;
+
+            // Clamp left/right within screen
+            if (left < 16) left = 16;
+            if (left + panelWidth > window.innerWidth - 16) {
+                left = window.innerWidth - panelWidth - 16;
+            }
+
+            panel.style.top = top + 'px';
+            panel.style.left = left + 'px';
+            panel.style.bottom = 'auto';
+            panel.style.right = 'auto';
+        }
 
         function toggleChat() {
             chatOpen = !chatOpen;
@@ -980,36 +1917,217 @@
             panel.style.display = chatOpen ? 'flex' : 'none';
             if (chatOpen) {
                 dismissGreeting(false);
+                positionChatPanel();
                 document.getElementById('chatInput').focus();
             }
         }
 
+        // ── Draggable Floating Button Logic ───────────────────────────
+        (function initDraggableChat() {
+            const btn = document.getElementById('chatBtn');
+            const greeting = document.getElementById('chatGreeting');
+            if (!btn) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+            let hasMoved = false;
+
+            // Load saved position
+            const savedPos = localStorage.getItem('hymn_chat_btn_pos');
+            if (savedPos) {
+                try {
+                    const pos = JSON.parse(savedPos);
+                    const maxLeft = window.innerWidth - 70;
+                    const maxTop = window.innerHeight - 70;
+                    const validLeft = Math.max(16, Math.min(pos.left, maxLeft));
+                    const validTop = Math.max(16, Math.min(pos.top, maxTop));
+                    btn.style.left = validLeft + 'px';
+                    btn.style.top = validTop + 'px';
+                    btn.style.bottom = 'auto';
+                    btn.style.right = 'auto';
+
+                    if (greeting) {
+                        greeting.style.left = Math.max(16, validLeft - 180) + 'px';
+                        greeting.style.top = Math.max(16, validTop - 80) + 'px';
+                        greeting.style.bottom = 'auto';
+                        greeting.style.right = 'auto';
+                    }
+                } catch (e) {}
+            }
+
+            function onStart(e) {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                const rect = btn.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                hasMoved = false;
+                isDragging = true;
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                if (Math.hypot(dx, dy) > 5) {
+                    hasMoved = true;
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                if (hasMoved) {
+                    let newLeft = initialLeft + dx;
+                    let newTop = initialTop + dy;
+
+                    const maxLeft = window.innerWidth - btn.offsetWidth - 16;
+                    const maxTop = window.innerHeight - btn.offsetHeight - 16;
+
+                    newLeft = Math.max(16, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(16, Math.min(newTop, maxTop));
+
+                    btn.style.left = newLeft + 'px';
+                    btn.style.top = newTop + 'px';
+                    btn.style.bottom = 'auto';
+                    btn.style.right = 'auto';
+
+                    if (chatOpen) positionChatPanel();
+                }
+            }
+
+            function onEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                if (hasMoved) {
+                    const rect = btn.getBoundingClientRect();
+                    localStorage.setItem('hymn_chat_btn_pos', JSON.stringify({ left: rect.left, top: rect.top }));
+                }
+            }
+
+            // Mouse Events
+            btn.addEventListener('mousedown', (e) => {
+                onStart(e);
+                const handleMouseMove = (ev) => onMove(ev);
+                const handleMouseUp = (ev) => {
+                    onEnd(ev);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            });
+
+            // Prevent toggle on drag
+            btn.addEventListener('click', (e) => {
+                if (hasMoved) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    hasMoved = false;
+                }
+            });
+
+            // Touch Events
+            btn.addEventListener('touchstart', onStart, { passive: true });
+            btn.addEventListener('touchmove', onMove, { passive: false });
+            btn.addEventListener('touchend', onEnd);
+
+            // ── Draggable Chat Panel Header ───────────────────────────
+            const panelHeader = document.getElementById('chatPanelHeader');
+            const panel = document.getElementById('chatPanel');
+            if (panelHeader && panel) {
+                let pDragging = false;
+                let pStartX, pStartY, pInitialLeft, pInitialTop;
+
+                function onPanelStart(e) {
+                    if (e.target.closest('.chat-close')) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    pStartX = clientX;
+                    pStartY = clientY;
+                    const rect = panel.getBoundingClientRect();
+                    pInitialLeft = rect.left;
+                    pInitialTop = rect.top;
+                    pDragging = true;
+                }
+
+                function onPanelMove(e) {
+                    if (!pDragging) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    const dx = clientX - pStartX;
+                    const dy = clientY - pStartY;
+
+                    let newLeft = pInitialLeft + dx;
+                    let newTop = pInitialTop + dy;
+
+                    const maxLeft = window.innerWidth - panel.offsetWidth - 10;
+                    const maxTop = window.innerHeight - panel.offsetHeight - 10;
+
+                    newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(10, Math.min(newTop, maxTop));
+
+                    panel.style.left = newLeft + 'px';
+                    panel.style.top = newTop + 'px';
+                    panel.style.bottom = 'auto';
+                    panel.style.right = 'auto';
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function onPanelEnd() {
+                    pDragging = false;
+                }
+
+                panelHeader.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.chat-close')) return;
+                    onPanelStart(e);
+                    const handlePanelMove = (ev) => onPanelMove(ev);
+                    const handlePanelUp = () => {
+                        onPanelEnd();
+                        document.removeEventListener('mousemove', handlePanelMove);
+                        document.removeEventListener('mouseup', handlePanelUp);
+                    };
+                    document.addEventListener('mousemove', handlePanelMove);
+                    document.addEventListener('mouseup', handlePanelUp);
+                });
+
+                panelHeader.addEventListener('touchstart', onPanelStart, { passive: true });
+                panelHeader.addEventListener('touchmove', onPanelMove, { passive: false });
+                panelHeader.addEventListener('touchend', onPanelEnd);
+            }
+
+            // Reposition on window resize so it never goes off-screen
+            window.addEventListener('resize', () => {
+                const rect = btn.getBoundingClientRect();
+                const maxLeft = window.innerWidth - btn.offsetWidth - 16;
+                const maxTop = window.innerHeight - btn.offsetHeight - 16;
+                if (rect.left > maxLeft || rect.top > maxTop) {
+                    btn.style.left = Math.max(16, Math.min(rect.left, maxLeft)) + 'px';
+                    btn.style.top = Math.max(16, Math.min(rect.top, maxTop)) + 'px';
+                }
+                if (chatOpen) positionChatPanel();
+            });
+        })();
+
         let greetingTimer = null;
         function dismissGreeting(openChat) {
             const g = document.getElementById('chatGreeting');
-            const btn = document.getElementById('chatBtn');
             if (greetingTimer) clearTimeout(greetingTimer);
             g.style.display = 'none';
-            btn.classList.remove('pulsing');
             if (openChat && !chatOpen) toggleChat();
         }
 
-        // Show greeting once per session after 2.5s
         if (!sessionStorage.getItem('greetingShown')) {
             sessionStorage.setItem('greetingShown', '1');
             setTimeout(() => {
                 if (chatOpen) return;
                 const g = document.getElementById('chatGreeting');
-                const btn = document.getElementById('chatBtn');
                 g.style.display = 'block';
-                btn.classList.add('pulsing');
-                greetingTimer = setTimeout(() => dismissGreeting(false), 7000);
+                greetingTimer = setTimeout(() => dismissGreeting(false), 8000);
             }, 2500);
         }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && chatOpen) toggleChat();
-        });
 
         document.getElementById('chatInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1025,7 +2143,7 @@
 
             input.value = '';
             appendBubble('user', query);
-            const typingId = appendBubble('bot', '...', true);
+            const typingId = appendBubble('bot', 'Searching hymns...', true);
             document.getElementById('chatSend').disabled = true;
 
             try {
@@ -1038,7 +2156,7 @@
                 removeBubble(typingId);
 
                 if (data.error) {
-                    appendBubble('bot', 'Sorry, something went wrong. Please try again.');
+                    appendBubble('bot', 'Sorry, I could not process that request. Please try again.');
                 } else {
                     if (data.reply) appendBubble('bot', data.reply);
                     if (data.songs && data.songs.length > 0) appendSongCards(data.songs);
@@ -1062,7 +2180,7 @@
             const div = document.createElement('div');
             div.id = id;
             div.className = 'chat-bubble ' + role + (isTyping ? ' typing' : '');
-            div.textContent = text;
+            div.innerHTML = escapeHtml(text);
             msgs.appendChild(div);
             msgs.scrollTop = msgs.scrollHeight;
             return id;
@@ -1076,31 +2194,25 @@
         function appendSongCards(songs) {
             const msgs = document.getElementById('chatMessages');
             const wrapper = document.createElement('div');
-            wrapper.className = 'chat-song-results';
+            wrapper.style.display = 'flex';
+            wrapper.style.flexDirection = 'column';
+            wrapper.style.gap = '6px';
+            wrapper.style.marginTop = '6px';
 
             songs.forEach(song => {
                 const a = document.createElement('a');
-                a.className = 'chat-song-card';
+                a.className = 'search-result-item';
+                a.style.background = 'var(--card-bg)';
+                a.style.border = '1px solid var(--card-border)';
                 a.href = `viewer.html?collection=${encodeURIComponent(song.col)}&song=${encodeURIComponent(song.n)}`;
 
-                const numDiv = document.createElement('div');
-                numDiv.className = 'chat-song-num';
-                numDiv.textContent = `#${song.n}`;
-
-                const inner = document.createElement('div');
-
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'chat-song-name';
-                nameDiv.textContent = song.name;
-
-                const colDiv = document.createElement('div');
-                colDiv.className = 'chat-song-col';
-                colDiv.textContent = song.colName;
-
-                inner.appendChild(nameDiv);
-                inner.appendChild(colDiv);
-                a.appendChild(numDiv);
-                a.appendChild(inner);
+                a.innerHTML = `
+                    <div class="result-song-num">#${song.n}</div>
+                    <div class="result-song-info">
+                        <div class="result-song-title">${escapeHtml(song.name || '')}</div>
+                        <div class="result-song-col">${escapeHtml(song.colName || '')}</div>
+                    </div>
+                `;
                 wrapper.appendChild(a);
             });
 
