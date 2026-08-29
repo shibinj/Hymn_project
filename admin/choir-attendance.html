@@ -975,16 +975,17 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            // Load from local JSON as initial fallback (view-only / before sign-in)
             // Load local JSON as initial fallback while Firebase auth resolves
             await loadMembersFallback();
             await loadPastMembersFallback();
             cleanupOldAttendance();
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             renderAttendance();
+            renderPastMembers();
+            renderMemberLists();
+            renderPastMembersTable();
+            populateMemberStatusDropdown();
             loadAttendanceForDate();
-            // onAuthStateChanged (above) will call loadAttendanceFromFirestore() for all users
-            // once Firebase resolves, replacing local data with live Firestore data
         });
         
         function switchTab(tabName, event) {
@@ -1019,7 +1020,11 @@
                 if (ySel) ySel.value = currentYear;
                 generateYearlyReport();
             }
-            if (tabName === 'manage') renderMemberLists();
+            if (tabName === 'manage') {
+                renderMemberLists();
+                renderPastMembersTable();
+                populateMemberStatusDropdown();
+            }
         }
         
         function renderAttendance() {
