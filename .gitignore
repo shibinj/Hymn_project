@@ -48,3 +48,4 @@ npm-debug.log*
 #AI tools
 .claude/
 CLAUDE.md
+admin/firebase-config.js
