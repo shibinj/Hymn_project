@@ -1344,48 +1344,112 @@
             renderPastMembersTable();
         }
         
-        function populateArchiveDropdown() {
-            const select = document.getElementById('archiveMemberSelect');
+        function populateMemberStatusDropdown() {
+            const select = document.getElementById('memberStatusSelect');
             if (!select) return;
             
-            const allMembers = [
-                ...members.female.map(name => ({name, category: 'female'})),
-                ...members.male.map(name => ({name, category: 'male'})),
-                ...members.occasional.map(name => ({name, category: 'occasional'}))
-            ];
-            
-            select.innerHTML = '<option value="">-- Select Member --</option>' + 
-                allMembers.map(m => `<option value="${m.name}" data-category="${m.category}">${m.name}</option>`).join('');
+            let html = '<option value="">-- Choose Member --</option>';
+
+            if (members.female && members.female.length > 0) {
+                html += `<optgroup label="👩 Active Female Members (${members.female.length})">`;
+                html += members.female.map(name => `<option value="${escapeHtml(name)}" data-cat="female">👩 ${escapeHtml(name)}</option>`).join('');
+                html += '</optgroup>';
+            }
+
+            if (members.male && members.male.length > 0) {
+                html += `<optgroup label="👨 Active Male Members (${members.male.length})">`;
+                html += members.male.map(name => `<option value="${escapeHtml(name)}" data-cat="male">👨 ${escapeHtml(name)}</option>`).join('');
+                html += '</optgroup>';
+            }
+
+            if (members.occasional && members.occasional.length > 0) {
+                html += `<optgroup label="🌍 Occasional Attendees (${members.occasional.length})">`;
+                html += members.occasional.map(name => `<option value="${escapeHtml(name)}" data-cat="occasional">🌍 ${escapeHtml(name)}</option>`).join('');
+                html += '</optgroup>';
+            }
+
+            if (pastMembers && pastMembers.length > 0) {
+                html += `<optgroup label="📦 Past Members Archive (${pastMembers.length})">`;
+                html += pastMembers.map(m => `<option value="${escapeHtml(m.name)}" data-cat="archive">📦 ${escapeHtml(m.name)}</option>`).join('');
+                html += '</optgroup>';
+            }
+
+            select.innerHTML = html;
+        }
+
+        // Backward compatibility alias
+        function populateArchiveDropdown() {
+            populateMemberStatusDropdown();
+        }
+
+        function onMemberSelectChange() {
+            const select = document.getElementById('memberStatusSelect');
+            const targetSelect = document.getElementById('targetCategorySelect');
+            if (!select || !targetSelect) return;
+
+            const selected = select.options[select.selectedIndex];
+            const currentCat = selected ? selected.getAttribute('data-cat') : null;
+
+            // Set default date to today
+            const dateInput = document.getElementById('memberTransferDate');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            onTargetCategoryChange();
+        }
+
+        function onTargetCategoryChange() {
+            const targetSelect = document.getElementById('targetCategorySelect');
+            const extraFields = document.getElementById('transferExtraFields');
+            if (!targetSelect || !extraFields) return;
+
+            const target = targetSelect.value;
+            // Show extra date/notes if moving to archive
+            if (target === 'archive') {
+                extraFields.style.display = 'grid';
+            } else {
+                extraFields.style.display = 'none';
+            }
         }
         
         function renderPastMembersTable() {
             const container = document.getElementById('pastMembersTable');
             if (!container) return;
             
-            if (pastMembers.length === 0) {
-                container.innerHTML = '<p style="color: #6c757d; text-align: center;">No past members yet</p>';
+            if (!pastMembers || pastMembers.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.95rem;">No past members in archive</p>';
                 return;
             }
             
             container.innerHTML = `
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr style="border-bottom: 2px solid #cbd5e0;">
-                            <th style="text-align: left; padding: 12px; font-weight: 600; color: #2d3748;">Name</th>
-                            <th style="text-align: left; padding: 12px; font-weight: 600; color: #2d3748;">Period</th>
-                            <th style="text-align: left; padding: 12px; font-weight: 600; color: #2d3748;">Notes</th>
+                        <tr style="border-bottom: 2px solid var(--card-border);">
+                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Member Name</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Category</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Leave Date</th>
+                            <th style="text-align: left; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Notes</th>
+                            <th style="text-align: right; padding: 12px; font-weight: 700; color: var(--text-primary); font-size:0.9rem;">Quick Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${pastMembers.map(member => {
-                            const joinDate = member.joinDate ? new Date(member.joinDate).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
-                            const leaveDate = member.leaveDate ? new Date(member.leaveDate).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
+                            const leaveDate = member.leaveDate ? new Date(member.leaveDate + (member.leaveDate.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', {month: 'short', year: 'numeric', day: 'numeric'}) : 'N/A';
+                            const origCat = member.category || member.gender || 'female';
+                            const catLabel = origCat === 'female' ? '👩 Female' : origCat === 'male' ? '👨 Male' : '🌍 Occasional';
                             
                             return `
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                    <td style="padding: 12px; color: #2d3748;">${member.name}</td>
-                                    <td style="padding: 12px; color: #6c757d;">${joinDate} - ${leaveDate}</td>
-                                    <td style="padding: 12px; color: #6c757d;">${member.notes || '-'}</td>
+                                <tr style="border-bottom: 1px solid var(--card-border);">
+                                    <td style="padding: 12px; color: var(--text-primary); font-weight: 700;">${escapeHtml(member.name)}</td>
+                                    <td style="padding: 12px; color: var(--text-muted); font-size: 0.88rem;">${catLabel}</td>
+                                    <td style="padding: 12px; color: var(--text-secondary); font-size: 0.88rem;">${leaveDate}</td>
+                                    <td style="padding: 12px; color: var(--text-muted); font-size: 0.88rem;">${escapeHtml(member.notes || '-')}</td>
+                                    <td style="padding: 12px; text-align: right;">
+                                        <button onclick="quickRestoreMember('${escapeHtml(member.name)}', '${origCat}')" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; font-size: 0.78rem; padding: 5px 12px; border-radius: 6px; cursor: pointer;">
+                                            ↩️ Restore
+                                        </button>
+                                    </td>
                                 </tr>
                             `;
                         }).join('')}
@@ -1394,71 +1458,159 @@
             `;
         }
         
-        async function moveToArchive() {
+        async function updateMemberCategory() {
             if (!isAuthenticated) {
-                alert('🔒 Authentication required!\n\nPlease login first to move members to archive.');
+                alert('🔒 Sign-in required!\n\nPlease sign in with an authorized admin account to manage choir members.');
                 return;
             }
             
-            const select = document.getElementById('archiveMemberSelect');
-            const memberName = select.value;
-            const leaveDate = document.getElementById('archiveLeaveDate').value;
-            const notes = document.getElementById('archiveNotes').value.trim();
+            const select = document.getElementById('memberStatusSelect');
+            const targetSelect = document.getElementById('targetCategorySelect');
+            const statusEl = document.getElementById('memberChangeStatus');
+            
+            const memberName = select ? select.value : '';
+            const targetCategory = targetSelect ? targetSelect.value : '';
+            const leaveDate = document.getElementById('memberTransferDate').value || new Date().toISOString().split('T')[0];
+            const notes = document.getElementById('memberTransferNotes').value.trim();
             
             if (!memberName) {
-                alert('❌ Please select a member');
+                alert('❌ Please choose a member from the dropdown.');
                 return;
             }
             
-            if (!leaveDate) {
-                alert('❌ Please enter a leave date');
+            if (!targetCategory) {
+                alert('❌ Please select a destination category.');
                 return;
             }
             
             const selectedOption = select.options[select.selectedIndex];
-            const category = selectedOption.getAttribute('data-category');
+            const currentCat = selectedOption.getAttribute('data-cat');
             
-            // Confirm action
-            if (!confirm(`Move ${memberName} to Past Members?\n\nThis will:\n• Remove them from active member list\n• Keep their attendance for 1 year\n• Add them to archive\n\nContinue?`)) {
+            if (currentCat === targetCategory) {
+                alert(`⚠️ ${memberName} is already in that category!`);
                 return;
             }
             
-            // Create archive entry
-            const archiveEntry = {
-                name: memberName,
-                gender: category === 'female' ? 'female' : 'male',
-                category: category,
-                joinDate: null, // Can be manually added to JSON if needed
-                leaveDate: leaveDate,
-                notes: notes || ''
+            const catLabels = {
+                female: '👩 Active Female Members',
+                male: '👨 Active Male Members',
+                occasional: '🌍 Occasional Attendees',
+                archive: '📦 Past Members (Archive)'
             };
             
-            // Remove from active members
-            members[category] = members[category].filter(n => n !== memberName);
+            if (!confirm(`Are you sure you want to move ${memberName}?\n\n• From: ${catLabels[currentCat]}\n• To: ${catLabels[targetCategory]}\n\nContinue?`)) {
+                return;
+            }
 
-            // Add to past members archive
-            pastMembers.push(archiveEntry);
+            if (statusEl) {
+                statusEl.style.color = 'var(--accent-primary)';
+                statusEl.textContent = '⏳ Updating cloud roster...';
+            }
 
-            // Save both to Firestore
-            const [membersSaved, archiveSaved] = await Promise.all([
+            // 1. Remove from current location
+            if (currentCat === 'female') {
+                members.female = members.female.filter(n => n !== memberName);
+            } else if (currentCat === 'male') {
+                members.male = members.male.filter(n => n !== memberName);
+            } else if (currentCat === 'occasional') {
+                members.occasional = members.occasional.filter(n => n !== memberName);
+            } else if (currentCat === 'archive') {
+                pastMembers = pastMembers.filter(m => m.name !== memberName);
+            }
+
+            // 2. Add to target location
+            if (targetCategory === 'female') {
+                if (!members.female.includes(memberName)) members.female.push(memberName);
+                members.female.sort();
+            } else if (targetCategory === 'male') {
+                if (!members.male.includes(memberName)) members.male.push(memberName);
+                members.male.sort();
+            } else if (targetCategory === 'occasional') {
+                if (!members.occasional.includes(memberName)) members.occasional.push(memberName);
+                members.occasional.sort();
+            } else if (targetCategory === 'archive') {
+                const archiveEntry = {
+                    name: memberName,
+                    gender: currentCat === 'female' ? 'female' : 'male',
+                    category: currentCat,
+                    leaveDate: leaveDate,
+                    notes: notes || 'Moved to past members'
+                };
+                pastMembers.push(archiveEntry);
+            }
+
+            // 3. Persist to Firestore
+            try {
+                const [membersSaved, archiveSaved] = await Promise.all([
+                    saveMembersToFirestore(),
+                    saveArchiveToFirestore()
+                ]);
+
+                if (membersSaved && archiveSaved) {
+                    if (statusEl) {
+                        statusEl.style.color = '#10b981';
+                        statusEl.textContent = `✅ Moved ${memberName} to ${catLabels[targetCategory]}!`;
+                        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 4000);
+                    }
+                    alert(`✅ ${memberName} successfully moved to ${catLabels[targetCategory]}!`);
+                } else {
+                    if (statusEl) {
+                        statusEl.style.color = '#ef4444';
+                        statusEl.textContent = '❌ Cloud save failed';
+                    }
+                    alert('⚠️ Roster updated locally, but cloud sync failed. Please check network/sign-in.');
+                }
+            } catch (err) {
+                console.error('Error updating member category:', err);
+                alert('❌ Error updating roster: ' + err.message);
+            }
+
+            // 4. Refresh UI
+            select.value = '';
+            targetSelect.value = '';
+            document.getElementById('memberTransferNotes').value = '';
+            document.getElementById('transferExtraFields').style.display = 'none';
+
+            renderMemberLists();
+            renderPastMembersTable();
+            populateMemberStatusDropdown();
+            renderAttendance();
+        }
+
+        async function quickRestoreMember(memberName, targetCat = 'female') {
+            if (!isAuthenticated) {
+                alert('🔒 Sign-in required to restore choir members.');
+                return;
+            }
+
+            const cat = targetCat === 'male' ? 'male' : targetCat === 'occasional' ? 'occasional' : 'female';
+            const catLabel = cat === 'male' ? '👨 Male Members' : cat === 'occasional' ? '🌍 Occasional Attendees' : '👩 Female Members';
+
+            if (!confirm(`Restore ${memberName} from archive to ${catLabel}?`)) return;
+
+            // Remove from archive
+            pastMembers = pastMembers.filter(m => m.name !== memberName);
+
+            // Add to active
+            if (!members[cat].includes(memberName)) members[cat].push(memberName);
+            members[cat].sort();
+
+            await Promise.all([
                 saveMembersToFirestore(),
                 saveArchiveToFirestore()
             ]);
 
-            if (membersSaved && archiveSaved) {
-                alert(`✅ ${memberName} moved to Past Members.\n\nAttendance history will be kept for 1 year from ${leaveDate}.`);
-            } else {
-                alert(`⚠️ Archive updated locally but cloud save failed.\n\nTry "☁️ Sync to Cloud" to retry.`);
-            }
-
-            // Clear form
-            select.value = '';
-            document.getElementById('archiveLeaveDate').value = '';
-            document.getElementById('archiveNotes').value = '';
-
-            // Refresh display
             renderMemberLists();
+            renderPastMembersTable();
+            populateMemberStatusDropdown();
             renderAttendance();
+
+            alert(`✅ ${memberName} restored to ${catLabel}!`);
+        }
+
+        // Backward compatibility
+        async function moveToArchive() {
+            return updateMemberCategory();
         }
         
                 function renderMemberList(containerId, memberList, category) {
