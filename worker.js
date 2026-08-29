@@ -3,7 +3,7 @@ export default {
     const url = new URL(request.url);
 
     // 1. Dynamically serve admin/firebase-config.js strictly from runtime environment variables
-    if (url.pathname === '/admin/firebase-config.js') {
+    if (url.pathname === '/admin/firebase-config.js' || url.pathname.endsWith('/firebase-config.js')) {
       const apiKey = env.FIREBASE_API_KEY || '';
       const authDomain = env.FIREBASE_AUTH_DOMAIN || '';
       const projectId = env.FIREBASE_PROJECT_ID || '';

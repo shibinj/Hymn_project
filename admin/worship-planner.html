@@ -447,51 +447,74 @@
 
     import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    window._db = db;
-    window._auth = auth;
-
-    function setWriteButtonsEnabled(enabled) {
-        ['btnGenerate', 'btnSave', 'btnSync'].forEach(id => {
-            const btn = document.getElementById(id);
-            if (!btn) return;
-            btn.disabled = !enabled;
-            btn.style.opacity = enabled ? '1' : '0.45';
-            btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
-        });
+    let app = null, auth = null, db = null;
+    if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey.trim() !== '') {
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            window._db = db;
+            window._auth = auth;
+        } catch (e) {
+            console.warn('Firebase initialization error in worship planner:', e);
+        }
     }
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user && ALLOWED_ADMINS.includes(user.email)) {
-            isAuthenticated = true;
-            currentUser = user.email;
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('authInfo').style.display = 'block';
-            document.getElementById('authInfo').innerHTML = `
-                <span style="color:#155724; font-weight:600;">Welcome ${user.displayName}</span>
-                <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:6px 12px;
-                margin-left:12px; border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
-            `;
-            setWriteButtonsEnabled(true);
-            await loadFromFirestore();
-        } else if (user) {
-            signOut(auth);
-            document.getElementById('authMessage').textContent =
-                `❌ ${user.email} is not an authorized admin.`;
-        } else {
-            isAuthenticated = false;
-            currentUser = null;
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('authInfo').style.display = 'none';
-            setWriteButtonsEnabled(false);
-            // Load history publicly so anyone can view it
-            await loadFromFirestore();
+    function setWriteButtonsEnabled(enabled) {
+        // Generate, WhatsApp, Print should ALWAYS be accessible
+        ['btnGenerate', 'btnPrint', 'btnWhatsApp'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
+        const btnSave = document.getElementById('btnSave');
+        if (btnSave) {
+            btnSave.disabled = false;
+            btnSave.style.opacity = '1';
+            btnSave.style.cursor = 'pointer';
         }
-    });
+    }
+
+    if (auth) {
+        onAuthStateChanged(auth, async (user) => {
+            const allowed = Array.isArray(ALLOWED_ADMINS) ? ALLOWED_ADMINS : [];
+            if (user && allowed.includes(user.email)) {
+                isAuthenticated = true;
+                currentUser = user.email;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('authInfo').style.display = 'block';
+                document.getElementById('authInfo').innerHTML = `
+                    <span style="color:#10b981; font-weight:700;">✅ ${user.displayName || user.email}</span>
+                    <button onclick="window._auth.signOut()" style="background:#ef4444; color:white; padding:5px 12px;
+                    margin-left:12px; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700;">Sign Out</button>
+                `;
+                setWriteButtonsEnabled(true);
+                await loadFromFirestore();
+            } else if (user) {
+                signOut(auth);
+                document.getElementById('authMessage').textContent =
+                    `❌ ${user.email} is not an authorized admin.`;
+            } else {
+                isAuthenticated = false;
+                currentUser = null;
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('authInfo').style.display = 'none';
+                setWriteButtonsEnabled(true);
+                await loadFromFirestore();
+            }
+        });
+    } else {
+        console.warn('Operating in offline/local storage mode for Worship Planner.');
+    }
 
     window.signInWithGoogle = async function() {
+        if (!auth) {
+            alert('⚠️ Firebase is not configured with an API key on this environment. Please check your cloud configuration.');
+            return;
+        }
         const provider = new GoogleAuthProvider();
         try {
             await signInWithPopup(auth, provider);
@@ -502,16 +525,33 @@
 
     // Load full service history from Firestore
     window.loadFromFirestore = async function() {
+        if (!db) {
+            displayRecentlyUsed();
+            return;
+        }
         try {
             updateSyncStatus('⬇️ Loading from cloud...');
             const snapshot = await getDocs(collection(db, 'worshipHistory'));
             const loaded = [];
             snapshot.forEach(docSnap => loaded.push(docSnap.data()));
-            // Sort by date descending — no cap, Firestore supports full history
-            serviceHistory = loaded
-                .sort((a, b) => b.date - a.date);
+            // Sort by date descending
+            serviceHistory = loaded.sort((a, b) => {
+                const tA = typeof a.date === 'number' ? a.date : new Date(a.date).getTime();
+                const tB = typeof b.date === 'number' ? b.date : new Date(b.date).getTime();
+                return tB - tA;
+            });
             localStorage.setItem('serviceHistory', JSON.stringify(serviceHistory));
             displayRecentlyUsed();
+
+            // Auto-load existing service for the current selected date if available!
+            const dateInput = document.getElementById('serviceDate');
+            if (dateInput && dateInput.value) {
+                const existingIndex = findServiceByDate(dateInput.value);
+                if (existingIndex !== -1 && !window.currentService) {
+                    reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
+                }
+            }
+
             updateSyncStatus(`✅ Loaded ${serviceHistory.length} services from cloud`);
             setTimeout(() => updateSyncStatus(''), 3000);
         } catch(err) {
@@ -521,12 +561,17 @@
         }
     };
 
-    // Save a single service to Firestore (document ID = date timestamp as string)
+    // Save a single service to Firestore
     window.saveToFirestore = async function(service) {
-        if (!isAuthenticated) return false;
+        if (!isAuthenticated || !db) return false;
         try {
-            const docId = String(service.date);
-            await setDoc(doc(db, 'worshipHistory', docId), service);
+            const dateStr = document.getElementById('serviceDate').value || new Date(service.date).toISOString().split('T')[0];
+            const docId = dateStr;
+            await setDoc(doc(db, 'worshipHistory', docId), {
+                ...service,
+                dateStr: dateStr,
+                updatedAt: new Date().toISOString()
+            });
             return true;
         } catch(err) {
             console.error('Firestore save error:', err);
@@ -534,11 +579,12 @@
         }
     };
 
-    // Delete a single service from Firestore by date timestamp
-    window.deleteFromFirestore = async function(dateTimestamp) {
-        if (!isAuthenticated) return false;
+    // Delete a single service from Firestore
+    window.deleteFromFirestore = async function(dateIdentifier) {
+        if (!isAuthenticated || !db) return false;
         try {
-            await deleteDoc(doc(db, 'worshipHistory', String(dateTimestamp)));
+            const docId = String(dateIdentifier);
+            await deleteDoc(doc(db, 'worshipHistory', docId));
             return true;
         } catch(err) {
             console.error('Firestore delete error:', err);
@@ -840,21 +886,45 @@
             displayService(window.currentService);
         }
 
+        function findServiceByDate(dateStr) {
+            if (!dateStr || !serviceHistory || serviceHistory.length === 0) return -1;
+            const targetYMD = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+            
+            return serviceHistory.findIndex(s => {
+                if (!s) return false;
+                if (s.dateStr === targetYMD) return true;
+                if (s.date === targetYMD) return true;
+                try {
+                    const sDateObj = typeof s.date === 'number' ? new Date(s.date) : new Date(String(s.date));
+                    if (isNaN(sDateObj.getTime())) return false;
+                    const sYMD = sDateObj.toISOString().split('T')[0];
+                    if (sYMD === targetYMD) return true;
+                    const localYMD = sDateObj.getFullYear() + '-' + 
+                        String(sDateObj.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(sDateObj.getDate()).padStart(2, '0');
+                    return localYMD === targetYMD;
+                } catch(e) {
+                    return false;
+                }
+            });
+        }
+
         function generateService() {
-            // If a date is selected, check history before generating new songs
+            // Check if user is generating for a date that already has a saved plan
             const selectedDateStr = document.getElementById('serviceDate').value;
             if (selectedDateStr) {
-                const selectedTimestamp = new Date(selectedDateStr).getTime();
-                const existingIndex = serviceHistory.findIndex(s => s.date === selectedTimestamp);
-                if (existingIndex !== -1) {
+                const existingIndex = findServiceByDate(selectedDateStr);
+                if (existingIndex !== -1 && !window.forceRegenerate) {
                     reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
-                    const dateLabel = new Date(selectedTimestamp).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                    const dateLabel = new Date(selectedDateStr + (selectedDateStr.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
                     const banner = document.createElement('div');
-                    banner.style.cssText = 'background:#ebf8ff;border:1px solid #90cdf4;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2b6cb0;';
-                    banner.textContent = `📋 Loaded existing service for ${dateLabel}`;
+                    banner.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 8px;';
+                    banner.innerHTML = `<span>📋</span> Loaded existing saved worship service for <strong>${dateLabel}</strong>`;
                     const order = document.getElementById('serviceOrder');
-                    order.insertBefore(banner, order.firstChild);
-                    setTimeout(() => banner.remove(), 4000);
+                    if (order) {
+                        order.insertBefore(banner, order.firstChild);
+                        setTimeout(() => { if (banner) banner.remove(); }, 5000);
+                    }
                     return;
                 }
             }
@@ -1480,20 +1550,40 @@
             
             // Auto-populate theme and load history when date changes
             document.getElementById('serviceDate').addEventListener('change', (e) => {
-                populateTheme(e.target.value);
                 const dateStr = e.target.value;
-                if (dateStr && serviceHistory.length > 0) {
-                    const selectedTimestamp = new Date(dateStr).getTime();
-                    const existingIndex = serviceHistory.findIndex(s => s.date === selectedTimestamp);
+                populateTheme(dateStr);
+                
+                if (dateStr) {
+                    const existingIndex = findServiceByDate(dateStr);
                     if (existingIndex !== -1) {
                         reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
-                        const dateLabel = new Date(selectedTimestamp).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                        const dateLabel = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                        const existingBanner = document.getElementById('historyLoadBanner');
+                        if (existingBanner) existingBanner.remove();
+                        
                         const banner = document.createElement('div');
-                        banner.style.cssText = 'background:#ebf8ff;border:1px solid #90cdf4;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2b6cb0;';
-                        banner.textContent = `📋 Loaded existing service for ${dateLabel}`;
+                        banner.id = 'historyLoadBanner';
+                        banner.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 8px;';
+                        banner.innerHTML = `<span>📋</span> Loaded existing saved worship service for <strong>${dateLabel}</strong>`;
                         const order = document.getElementById('serviceOrder');
-                        order.insertBefore(banner, order.firstChild);
-                        setTimeout(() => banner.remove(), 4000);
+                        if (order) {
+                            order.insertBefore(banner, order.firstChild);
+                            setTimeout(() => { if (banner) banner.remove(); }, 5000);
+                        }
+                    } else {
+                        // Clear previous service when switching to a date with no existing plan
+                        window.currentService = null;
+                        delete window.editingServiceIndex;
+                        const order = document.getElementById('serviceOrder');
+                        if (order) {
+                            order.innerHTML = `
+                                <div style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
+                                    <div style="font-size: 2.2rem; margin-bottom: 10px;">📅</div>
+                                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">No saved service for this date</div>
+                                    <div style="font-size: 0.88rem;">Click <strong>"🎲 Generate Service Plan"</strong> above to create songs for this service.</div>
+                                </div>
+                            `;
+                        }
                     }
                 }
             });

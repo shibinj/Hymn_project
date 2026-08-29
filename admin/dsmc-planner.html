@@ -378,13 +378,20 @@ import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-window._db = db;
-window._auth = auth;
+let app = null, auth = null, db = null;
+if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey.trim() !== '') {
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        window._db = db;
+        window._auth = auth;
+    } catch(e) {
+        console.warn('Firebase init error in DSMC planner:', e);
+    }
+}
 
-onAuthStateChanged(auth, async (user) => {
+if (auth) onAuthStateChanged(auth, async (user) => {
     if (user && ALLOWED_ADMINS.includes(user.email)) {
         isAuthenticated = true;
         currentUser = user.email;
@@ -413,6 +420,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 window.signInWithGoogle = async function() {
+    if (!auth) { alert("⚠️ Firebase is not configured with an API key on this environment."); return; }
     const provider = new GoogleAuthProvider();
     try { await signInWithPopup(auth, provider); }
     catch(err) { document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message; }
