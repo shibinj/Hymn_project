@@ -153,7 +153,6 @@
 
             cleanupOldAttendance();
             renderAttendance();
-            if (typeof renderPastMembers === 'function') renderPastMembers();
             if (typeof renderMemberLists === 'function') renderMemberLists();
             loadAttendanceForDate();
             updateSyncStatus('✅ Loaded from cloud');
@@ -750,17 +749,6 @@
             
             <div class="section-header" style="margin-top: 20px;">🌍 Occasional Attendees</div>
             <div id="occasionalAttendance" class="member-container-box"></div>
-            
-            <!-- Past Members Collapsible Section -->
-            <div style="margin-top: 20px;">
-                <div class="section-header collapsible-header" style="display: flex; justify-content: space-between; align-items: center;" onclick="togglePastMembers()">
-                    <span>📦 Past Members</span>
-                    <span id="pastMembersToggle">▼</span>
-                </div>
-                <div id="pastMembersSection" style="display: none; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; margin-top: 10px;">
-                    <div id="pastMembersList"></div>
-                </div>
-            </div>
         </div><!-- end #attendance tab -->
 
         <!-- Quarterly Report Tab -->
@@ -1045,7 +1033,6 @@
             cleanupOldAttendance();
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             renderAttendance();
-            renderPastMembers();
             renderMemberLists();
             renderPastMembersTable();
             populateMemberStatusDropdown();
@@ -1095,57 +1082,7 @@
             renderSection('femaleAttendance', members.female);
             renderSection('maleAttendance', members.male);
             renderSection('occasionalAttendance', members.occasional);
-            renderPastMembers();
             updateTotalPresent();
-        }
-        
-        function togglePastMembers() {
-            const section = document.getElementById('pastMembersSection');
-            const toggle = document.getElementById('pastMembersToggle');
-            if (section.style.display === 'none') {
-                section.style.display = 'block';
-                toggle.textContent = '▲';
-            } else {
-                section.style.display = 'none';
-                toggle.textContent = '▼';
-            }
-        }
-        
-        function renderPastMembers() {
-            const container = document.getElementById('pastMembersList');
-            if (!container) return;
-            
-            if (!pastMembers || pastMembers.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 16px; font-size: 0.9rem;">No past members in archive</p>';
-                return;
-            }
-
-            const sortedPast = [...pastMembers].sort((a, b) => {
-                const dateA = a.leaveDate ? new Date(a.leaveDate).getTime() : 0;
-                const dateB = b.leaveDate ? new Date(b.leaveDate).getTime() : 0;
-                return dateB - dateA;
-            });
-            
-            container.innerHTML = sortedPast.map((member, idx) => {
-                const joinDate = member.joinDate ? new Date(member.joinDate + (member.joinDate.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : '';
-                const leaveDate = member.leaveDate ? new Date(member.leaveDate + (member.leaveDate.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A';
-                const period = joinDate ? `${joinDate} – ${leaveDate}` : leaveDate;
-                
-                return `
-                    <div style="padding: 12px 0; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="member-idx-badge">${idx + 1}</span>
-                            <div>
-                                <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">${escapeHtml(member.name)}</div>
-                                <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 3px;">
-                                    <span>🗓️ ${period}</span>
-                                    ${member.notes ? `<span style="margin-left: 8px; color: var(--accent-primary);">• ${escapeHtml(member.notes)}</span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
         }
         
         function updateTotalPresent() {
