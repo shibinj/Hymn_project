@@ -1136,6 +1136,7 @@
         let clipCurrentTime = 0;
         let currentClipStart = 0;
         let currentClipEnd = 0;
+        let currentIsClipped = false;
 
         function clearClipTimer() {
             if (clipProgressTimer) {
@@ -1196,17 +1197,21 @@
         }
 
         function updateClipTimeUI(cur, startTime, endTime) {
+            if (!currentIsClipped) return;
             const scrubber = document.getElementById('clipScrubber');
             const curTime = document.getElementById('clipCurTime');
             if (scrubber && document.activeElement !== scrubber) {
-                scrubber.value = cur;
+                scrubber.value = Math.max(startTime, Math.min(endTime, cur));
             }
             if (curTime) {
-                curTime.textContent = formatDuration(cur - startTime);
+                const elapsed = Math.max(0, cur - startTime);
+                curTime.textContent = formatDuration(elapsed);
             }
         }
 
         function handleClipStateChange(state, startTime, endTime) {
+            if (!currentIsClipped) return;
+
             if (state === 1) { // PLAYING
                 setClipPlayState(true);
                 startClipTicker(startTime, endTime);
@@ -1223,7 +1228,14 @@
 
         function startClipTicker(startTime, endTime) {
             clearClipTimer();
+            if (!currentIsClipped || !endTime || endTime <= startTime) return;
+
             clipProgressTimer = setInterval(() => {
+                if (!currentIsClipped) {
+                    clearClipTimer();
+                    return;
+                }
+
                 if (activeYtPlayer && typeof activeYtPlayer.getCurrentTime === 'function') {
                     try {
                         const cur = activeYtPlayer.getCurrentTime();
@@ -1233,7 +1245,7 @@
                     } catch (e) {}
                 }
 
-                if (clipCurrentTime >= endTime) {
+                if (currentIsClipped && endTime > startTime && clipCurrentTime >= endTime) {
                     clearClipTimer();
                     sendYtCommand('seekTo', [startTime || 0, true]);
                     sendYtCommand('pauseVideo');
@@ -1248,6 +1260,8 @@
         // Global listener for YouTube iframe postMessage notifications
         window.addEventListener('message', function(event) {
             if (!event.origin || !event.origin.includes('youtube.com')) return;
+            if (!currentIsClipped) return; // Only process custom controls for clipped videos!
+
             try {
                 const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
                 if (!data) return;
@@ -1346,10 +1360,12 @@
         };
 
         function initYoutubeEndReset(startTime, endTime, isClipped) {
+            currentIsClipped = !!isClipped;
             currentClipStart = startTime || 0;
             currentClipEnd = endTime || 0;
             clipCurrentTime = startTime || 0;
             isClipPlaying = false;
+            clearClipTimer();
 
             const bindPlayer = () => {
                 const iframe = document.getElementById('ytPlayer');
@@ -1359,7 +1375,7 @@
                     activeYtPlayer = new YT.Player('ytPlayer', {
                         events: {
                             'onStateChange': function(event) {
-                                if (isClipped) {
+                                if (currentIsClipped) {
                                     handleClipStateChange(event.data, startTime, endTime);
                                 } else if (event.data === 0) {
                                     try {
@@ -1381,15 +1397,17 @@
                 pendingYtInit = bindPlayer;
             }
 
-            // Register listening state with iframe for postMessage events
-            setTimeout(() => {
-                const iframe = document.getElementById('ytPlayer');
-                if (iframe && iframe.contentWindow) {
-                    try {
-                        iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
-                    } catch (e) {}
-                }
-            }, 300);
+            // Register listening state with iframe for postMessage events only if clipped
+            if (currentIsClipped) {
+                setTimeout(() => {
+                    const iframe = document.getElementById('ytPlayer');
+                    if (iframe && iframe.contentWindow) {
+                        try {
+                            iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+                        } catch (e) {}
+                    }
+                }, 300);
+            }
         }
 
         function renderReader(song) {
@@ -1398,6 +1416,12 @@
             const isFav = favorites.includes(song.number);
 
             clearClipTimer();
+            currentIsClipped = false;
+            currentClipStart = 0;
+            currentClipEnd = 0;
+            clipCurrentTime = 0;
+            isClipPlaying = false;
+
             if (activeYtPlayer && typeof activeYtPlayer.destroy === 'function') {
                 try { activeYtPlayer.destroy(); } catch (e) {}
                 activeYtPlayer = null;
