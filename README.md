@@ -12,17 +12,17 @@ A modern, fast, and feature-rich web platform for Malayalam Christian hymns, con
 
 ---
 
-## 🎼 Song Collections (691+ Songs)
+## 🎼 Song Collections (695+ Songs)
 
 | Collection | Songs | Description |
 |---|:---:|---|
 | **📕 Kristheeya Keerthanangal** | **517** | Complete Malayalam Christian Hymn Book with 40 liturgical themes & doxology |
-| **🎪 Maramon Convention** | **96** | Choir collections across 6 years (2013, 2021, 2023, 2024, 2025, 2026) |
+| **🎪 Maramon Convention** | **98** | Choir collections across 8 years (2006, 2008, 2013, 2021, 2023, 2024, 2025, 2026) |
 | **✝️ Passion Week Songs** | **23** | Hosanna (Palm Sunday), Good Friday, and Resurrection hymns |
 | **🍞 Holy Communion Songs** | **22** | Eucharistic liturgy and sacramental meditation songs |
 | **⛺ Kottarakara Convention** | **18** | Official choir selections (2025 – 2026) |
 | **🎉 Birthday & Anniversary Songs** | **15** | Special occasion prayers, thanksgiving hymns, and anniversary songs |
-| **Total Available** | **691+** | **12 Collections across all seasons** |
+| **Total Available** | **695+** | **14 Collections across all seasons** |
 
 ---
 
@@ -82,7 +82,7 @@ Hymn_project/
 │
 ├── 🎼 Data & Media (data/ & assets/)
 │   ├── data/kristheeya-keerthanangal.json   # 517 Hymns
-│   ├── data/maramon-20XX.json              # 2013, 2021, 2023, 2024, 2025, 2026
+│   ├── data/maramon-20XX.json              # 2006, 2008, 2013, 2021, 2023, 2024, 2025, 2026
 │   ├── data/kottarakara-20XX.json          # 2025, 2026
 │   ├── data/holy-communion.json            # 22 Holy Communion Songs
 │   ├── data/passion-week.json              # 23 Passion Week Songs

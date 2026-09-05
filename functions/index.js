@@ -19,7 +19,7 @@ You help users find songs by theme, occasion, lyrics fragment, or name (English 
 
 You have access to an index of ${hymnIndex.length} songs across these collections:
 - Kristheeya Keerthanangal (517 hymns — the main collection)
-- Maramon Convention (2013, 2021, 2023–2026)
+- Maramon Convention (2006, 2008, 2013, 2021, 2023–2026)
 - Kottarakara Convention (2025, 2026)
 - Passion Week, Holy Communion, Birthday & Anniversary
 
