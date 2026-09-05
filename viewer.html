@@ -985,24 +985,47 @@
                 const iframe = document.getElementById('ytPlayer');
                 if (!iframe || !window.YT || !window.YT.Player) return;
 
-                try {
-                    activeYtPlayer = new YT.Player('ytPlayer', {
-                        events: {
-                            'onStateChange': function(event) {
-                                // 0 represents YT.PlayerState.ENDED
-                                if (event.data === 0 || (window.YT && window.YT.PlayerState && event.data === window.YT.PlayerState.ENDED)) {
-                                    try {
-                                        activeYtPlayer.seekTo(startTime || 0, true);
-                                        activeYtPlayer.pauseVideo();
-                                    } catch (err) {
-                                        console.warn('Could not reset YouTube player on end:', err);
+                let bound = false;
+                const attachYT = () => {
+                    if (bound) return;
+                    bound = true;
+                    try {
+                        activeYtPlayer = new YT.Player('ytPlayer', {
+                            events: {
+                                'onStateChange': function(event) {
+                                    // 0 represents YT.PlayerState.ENDED
+                                    if (event.data === 0 || (window.YT && window.YT.PlayerState && event.data === window.YT.PlayerState.ENDED)) {
+                                        try {
+                                            activeYtPlayer.seekTo(startTime || 0, true);
+                                            activeYtPlayer.pauseVideo();
+                                        } catch (err) {
+                                            console.warn('Could not reset YouTube player on end:', err);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                    } catch (e) {
+                        console.warn('Failed to bind YT.Player:', e);
+                    }
+                };
+
+                // Check if iframe has already navigated cross-origin to YouTube
+                let alreadyNavigated = false;
+                try {
+                    if (iframe.contentWindow && iframe.contentWindow.location.href !== 'about:blank') {
+                        alreadyNavigated = false;
+                    }
                 } catch (e) {
-                    console.warn('Failed to bind YT.Player:', e);
+                    // SecurityError indicates cross-origin navigation to youtube.com is complete
+                    alreadyNavigated = true;
+                }
+
+                if (alreadyNavigated) {
+                    attachYT();
+                } else {
+                    iframe.addEventListener('load', attachYT, { once: true });
+                    setTimeout(attachYT, 2000);
                 }
             };
 
