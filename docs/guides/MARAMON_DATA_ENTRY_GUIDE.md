@@ -1,11 +1,16 @@
 # Maramon Convention Songs Data Entry Guide
 
-## Files Created
+## Maramon Convention Files
 
-Three new JSON files have been created in the `data/` folder:
+The collection files in the `data/` folder include 8 years:
+- `data/maramon-2006.json`
+- `data/maramon-2008.json`
+- `data/maramon-2013.json`
 - `data/maramon-2021.json`
 - `data/maramon-2023.json`
 - `data/maramon-2024.json`
+- `data/maramon-2025.json`
+- `data/maramon-2026.json`
 
 ## JSON Format
 

@@ -20,7 +20,7 @@ A modern, fast, and feature-rich web platform for Malayalam Christian hymns, con
 | **🎪 Maramon Convention** | **98** | Choir collections across 8 years (2006, 2008, 2013, 2021, 2023, 2024, 2025, 2026) |
 | **✝️ Passion Week Songs** | **23** | Hosanna (Palm Sunday), Good Friday, and Resurrection hymns |
 | **🍞 Holy Communion Songs** | **22** | Eucharistic liturgy and sacramental meditation songs |
-| **⛺ Kottarakara Convention** | **18** | Official choir selections (2025 – 2026) |
+| **⛺ Kottarakara Convention** | **20** | Official choir selections across 2 years (2025 – 2026) |
 | **🎉 Birthday & Anniversary Songs** | **15** | Special occasion prayers, thanksgiving hymns, and anniversary songs |
 | **Total Available** | **695+** | **14 Collections across all seasons** |
 
@@ -32,7 +32,10 @@ A modern, fast, and feature-rich web platform for Malayalam Christian hymns, con
 - **🔍 Instant Hymn Search**: Lightning-fast search by number (`#104`), title in English / Malayalam, or lyrics snippet with real-time dropdown autocomplete.
 - **🏷️ 40+ Liturgical Themes**: Categorized by *Worship & Praise*, *Morning*, *Evening*, *Passion Week*, *Christmas*, *Holy Communion*, *Faith & Trust*, *Comfort & Hope*, *Second Coming*, etc.
 - **🎵 Modern Glassmorphic Song Player**:
-  - Embedded YouTube video playback in frosted glass container.
+  - Embedded YouTube video playback in a sacred dark-glass container.
+  - **Custom Clip Player Controls**: For timestamp-bounded hymns (e.g., Maramon 2008 `?end=256`), YouTube's native duration (e.g., 12:54) is hidden and replaced with custom controls scoped strictly to the song's duration (`0:00 / 4:16`).
+  - **Distraction-Free Playback**: Completely eliminates YouTube's "More videos" / related videos overlay grid on pause and end using branded pause masks and server-end decoupling.
+  - **Dual-Dispatch Controls**: Instant play/pause/scrub response powered by YouTube IFrame API and direct `postMessage` command pipelines.
   - In-place collection switcher dropdown to jump across hymnals without navigating away.
   - Vector WhatsApp lyrics sharing, printable song sheets, and 1-click clipboard copy.
   - Previous / Next hymn navigation (`←` / `→` keyboard arrow shortcuts).
