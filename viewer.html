@@ -1045,6 +1045,12 @@
             document.getElementById('emptyPlaceholder').style.display = 'none';
             document.getElementById('songReaderContent').style.display = 'block';
             document.getElementById('songDisplayPane').scrollTop = 0;
+
+            // Sync URL query params without reloading
+            try {
+                const newUrl = `viewer.html?collection=${encodeURIComponent(currentCollection)}&song=${encodeURIComponent(song.number)}`;
+                window.history.replaceState({ collection: currentCollection, song: song.number }, '', newUrl);
+            } catch (e) {}
         }
 
         function formatDuration(sec) {
@@ -1459,21 +1465,58 @@
             if (e.key === 'ArrowRight') nextSong();
         });
 
+        // Build Direct Share Link for Current Hymn
+        function getSongShareUrl(song) {
+            if (!song) return 'https://shibinj.github.io/Hymn_project/';
+            const origin = (window.location.origin && window.location.origin !== 'null')
+                ? window.location.origin
+                : 'https://shibinj.github.io';
+            let path = window.location.pathname || '/';
+            if (!path.endsWith('viewer.html')) {
+                path = path.replace(/\/?$/, '/viewer.html');
+            }
+            return `${origin}${path}?collection=${encodeURIComponent(currentCollection)}&song=${encodeURIComponent(song.number)}`;
+        }
+
         // Copy Lyrics
         function copyLyrics() {
             const song = filteredSongs[currentSongIndex];
             if (!song) return;
-            const text = `${song.name} (${song.name2 || ''})\n\n${song.lyrics || ''}\n\nVia Holy Hymns: https://shibinj.github.io/Hymn_project/`;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('📋 Lyrics copied to clipboard!');
-            });
+            const shareUrl = getSongShareUrl(song);
+            const title = song.name2 ? `${song.name} (${song.name2})` : song.name;
+            const text = `${title}\nHymn #${song.number}\n\n${song.lyrics || ''}\n\n🔗 Open Hymn: ${shareUrl}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('📋 Lyrics & direct link copied to clipboard!');
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('📋 Lyrics & direct link copied to clipboard!');
+            } catch (e) {
+                alert('Unable to copy to clipboard.');
+            }
+            document.body.removeChild(textarea);
         }
 
         // WhatsApp Share
         function shareWhatsApp() {
             const song = filteredSongs[currentSongIndex];
             if (!song) return;
-            const text = `🎵 *${song.name}* ${song.name2 ? '(' + song.name2 + ')' : ''}\n\n${song.lyrics || ''}\n\nMore Hymns found at: https://shibinj.github.io/Hymn_project/`;
+            const shareUrl = getSongShareUrl(song);
+            const title = song.name2 ? `*${song.name}* (${song.name2})` : `*${song.name}*`;
+            const text = `🎵 ${title}\nHymn #${song.number}\n\n${song.lyrics || ''}\n\n🔗 Open Hymn: ${shareUrl}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
