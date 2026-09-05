@@ -606,6 +606,83 @@
             border: none;
         }
 
+        /* ── Custom Clip Player Controls ────────────────────────────────── */
+        .clip-player-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: rgba(10, 15, 30, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            user-select: none;
+        }
+
+        .clip-ctrl-btn {
+            background: transparent;
+            border: none;
+            color: #38bdf8;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .clip-ctrl-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            color: #7dd3fc;
+            transform: scale(1.05);
+        }
+
+        .clip-time-display {
+            font-size: 0.85rem;
+            font-family: monospace;
+            color: #94a3b8;
+            min-width: 34px;
+            text-align: center;
+        }
+
+        .clip-scrubber {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clip-scrubber::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .clip-scrubber::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .clip-scrubber::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            border: none;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            cursor: pointer;
+        }
+
         /* ── Bottom Prev / Next Float Bar ──────────────────────────────── */
         .bottom-nav-bar {
             display: flex;
@@ -970,8 +1047,140 @@
             document.getElementById('songDisplayPane').scrollTop = 0;
         }
 
+        function formatDuration(sec) {
+            const s = Math.max(0, Math.floor(sec || 0));
+            const m = Math.floor(s / 60);
+            const rem = s % 60;
+            return `${m}:${rem < 10 ? '0' : ''}${rem}`;
+        }
+
         let activeYtPlayer = null;
         let pendingYtInit = null;
+        let clipProgressTimer = null;
+
+        function clearClipTimer() {
+            if (clipProgressTimer) {
+                clearInterval(clipProgressTimer);
+                clipProgressTimer = null;
+            }
+        }
+
+        function setClipPlayState(isPlaying) {
+            const playIcon = document.getElementById('clipPlayIcon');
+            const pauseIcon = document.getElementById('clipPauseIcon');
+            if (playIcon && pauseIcon) {
+                playIcon.style.display = isPlaying ? 'none' : 'block';
+                pauseIcon.style.display = isPlaying ? 'block' : 'none';
+            }
+        }
+
+        function updateClipUIOnEnd(startTime) {
+            setClipPlayState(false);
+            const scrubber = document.getElementById('clipScrubber');
+            const curTime = document.getElementById('clipCurTime');
+            if (scrubber) scrubber.value = startTime;
+            if (curTime) curTime.textContent = '0:00';
+        }
+
+        function startClipTicker(startTime, endTime) {
+            clearClipTimer();
+            clipProgressTimer = setInterval(() => {
+                if (!activeYtPlayer || typeof activeYtPlayer.getCurrentTime !== 'function') return;
+                try {
+                    const cur = activeYtPlayer.getCurrentTime();
+                    if (cur >= endTime) {
+                        clearClipTimer();
+                        activeYtPlayer.seekTo(startTime, true);
+                        activeYtPlayer.pauseVideo();
+                        updateClipUIOnEnd(startTime);
+                        return;
+                    }
+                    const scrubber = document.getElementById('clipScrubber');
+                    const curTime = document.getElementById('clipCurTime');
+                    if (scrubber && document.activeElement !== scrubber) {
+                        scrubber.value = cur;
+                    }
+                    if (curTime) {
+                        curTime.textContent = formatDuration(cur - startTime);
+                    }
+                } catch (e) {}
+            }, 200);
+        }
+
+        function setupClipControls(startTime, endTime) {
+            const playBtn = document.getElementById('clipPlayBtn');
+            const scrubber = document.getElementById('clipScrubber');
+            const curTime = document.getElementById('clipCurTime');
+            const muteBtn = document.getElementById('clipMuteBtn');
+            const fsBtn = document.getElementById('clipFsBtn');
+
+            if (!playBtn || !scrubber) return;
+
+            playBtn.onclick = function() {
+                if (!activeYtPlayer || typeof activeYtPlayer.getPlayerState !== 'function') return;
+                try {
+                    const state = activeYtPlayer.getPlayerState();
+                    if (state === 1) { // playing
+                        activeYtPlayer.pauseVideo();
+                    } else {
+                        const cur = activeYtPlayer.getCurrentTime();
+                        if (cur >= endTime || cur < startTime) {
+                            activeYtPlayer.seekTo(startTime, true);
+                        }
+                        activeYtPlayer.playVideo();
+                    }
+                } catch (e) {
+                    console.warn('Play button error:', e);
+                }
+            };
+
+            scrubber.oninput = function() {
+                const val = parseFloat(this.value);
+                if (curTime) {
+                    curTime.textContent = formatDuration(val - startTime);
+                }
+            };
+
+            scrubber.onchange = function() {
+                const val = parseFloat(this.value);
+                if (activeYtPlayer && typeof activeYtPlayer.seekTo === 'function') {
+                    activeYtPlayer.seekTo(val, true);
+                }
+            };
+
+            if (muteBtn) {
+                muteBtn.onclick = function() {
+                    if (!activeYtPlayer || typeof activeYtPlayer.isMuted !== 'function') return;
+                    const volOn = document.getElementById('clipVolOn');
+                    const volOff = document.getElementById('clipVolOff');
+                    try {
+                        if (activeYtPlayer.isMuted()) {
+                            activeYtPlayer.unMute();
+                            if (volOn) volOn.style.display = 'block';
+                            if (volOff) volOff.style.display = 'none';
+                        } else {
+                            activeYtPlayer.mute();
+                            if (volOn) volOn.style.display = 'none';
+                            if (volOff) volOff.style.display = 'block';
+                        }
+                    } catch (e) {}
+                };
+            }
+
+            if (fsBtn) {
+                fsBtn.onclick = function() {
+                    const iframe = document.getElementById('ytPlayer');
+                    if (!iframe) return;
+                    if (iframe.requestFullscreen) {
+                        iframe.requestFullscreen();
+                    } else if (iframe.webkitRequestFullscreen) {
+                        iframe.webkitRequestFullscreen();
+                    } else if (iframe.msRequestFullscreen) {
+                        iframe.msRequestFullscreen();
+                    }
+                };
+            }
+        }
 
         window.onYouTubeIframeAPIReady = function() {
             if (typeof pendingYtInit === 'function') {
@@ -980,7 +1189,7 @@
             }
         };
 
-        function initYoutubeEndReset(startTime) {
+        function initYoutubeEndReset(startTime, endTime, isClipped) {
             const bindPlayer = () => {
                 const iframe = document.getElementById('ytPlayer');
                 if (!iframe || !window.YT || !window.YT.Player) return;
@@ -992,19 +1201,43 @@
                     try {
                         activeYtPlayer = new YT.Player('ytPlayer', {
                             events: {
+                                'onReady': function() {
+                                    if (isClipped) {
+                                        setupClipControls(startTime, endTime);
+                                    }
+                                },
                                 'onStateChange': function(event) {
+                                    const state = event.data;
                                     // 0 represents YT.PlayerState.ENDED
-                                    if (event.data === 0 || (window.YT && window.YT.PlayerState && event.data === window.YT.PlayerState.ENDED)) {
+                                    if (state === 0 || (window.YT && window.YT.PlayerState && state === window.YT.PlayerState.ENDED)) {
+                                        clearClipTimer();
                                         try {
                                             activeYtPlayer.seekTo(startTime || 0, true);
                                             activeYtPlayer.pauseVideo();
                                         } catch (err) {
                                             console.warn('Could not reset YouTube player on end:', err);
                                         }
+                                        if (isClipped) {
+                                            updateClipUIOnEnd(startTime);
+                                        }
+                                    } else if (state === 1) { // PLAYING
+                                        if (isClipped) {
+                                            setClipPlayState(true);
+                                            startClipTicker(startTime, endTime);
+                                        }
+                                    } else if (state === 2) { // PAUSED
+                                        if (isClipped) {
+                                            setClipPlayState(false);
+                                            clearClipTimer();
+                                        }
                                     }
                                 }
                             }
                         });
+
+                        if (isClipped) {
+                            setupClipControls(startTime, endTime);
+                        }
                     } catch (e) {
                         console.warn('Failed to bind YT.Player:', e);
                     }
@@ -1041,6 +1274,7 @@
             const favorites = getFavorites();
             const isFav = favorites.includes(song.number);
 
+            clearClipTimer();
             if (activeYtPlayer && typeof activeYtPlayer.destroy === 'function') {
                 try { activeYtPlayer.destroy(); } catch (e) {}
                 activeYtPlayer = null;
@@ -1048,6 +1282,8 @@
 
             let videoId = '';
             let startTime = 0;
+            let endTime = 0;
+            let isClipped = false;
             let embedUrl = '';
 
             if (song.youtubeId) {
@@ -1057,11 +1293,20 @@
                 if (searchParams.has('start')) {
                     startTime = parseInt(searchParams.get('start'), 10) || 0;
                 }
+                if (searchParams.has('end')) {
+                    endTime = parseInt(searchParams.get('end'), 10) || 0;
+                    if (endTime > startTime) {
+                        isClipped = true;
+                    }
+                }
                 searchParams.set('enablejsapi', '1');
                 searchParams.set('rel', '0');
                 searchParams.set('modestbranding', '1');
                 searchParams.set('iv_load_policy', '3');
                 searchParams.set('playsinline', '1');
+                if (isClipped) {
+                    searchParams.set('controls', '0');
+                }
                 if (window.location.origin && window.location.origin !== 'null') {
                     searchParams.set('origin', window.location.origin);
                 }
@@ -1099,6 +1344,24 @@
                         <div class="video-inner">
                             <iframe id="ytPlayer" src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
+                        ${isClipped ? `
+                            <div class="clip-player-controls" id="clipControls">
+                                <button class="clip-ctrl-btn" id="clipPlayBtn" title="Play / Pause" aria-label="Play / Pause">
+                                    <svg id="clipPlayIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                    <svg id="clipPauseIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                </button>
+                                <span class="clip-time-display" id="clipCurTime">0:00</span>
+                                <input type="range" class="clip-scrubber" id="clipScrubber" min="${startTime}" max="${endTime}" value="${startTime}" step="0.5">
+                                <span class="clip-time-display" id="clipTotalTime">${formatDuration(endTime - startTime)}</span>
+                                <button class="clip-ctrl-btn" id="clipMuteBtn" title="Mute / Unmute" aria-label="Mute / Unmute">
+                                    <svg id="clipVolOn" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                                    <svg id="clipVolOff" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                                </button>
+                                <button class="clip-ctrl-btn" id="clipFsBtn" title="Fullscreen" aria-label="Fullscreen">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 ` : ''}
 
@@ -1113,7 +1376,7 @@
             `;
 
             if (song.youtubeId) {
-                initYoutubeEndReset(startTime);
+                initYoutubeEndReset(startTime, endTime, isClipped);
             }
         }
 
