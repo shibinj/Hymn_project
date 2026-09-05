@@ -1547,8 +1547,7 @@
         function shareWhatsApp() {
             const song = filteredSongs[currentSongIndex];
             if (!song) return;
-            const videoUrl = song.youtubeId ? `https://youtube.com/watch?v=${song.youtubeId}` : '';
-            const text = `🎵 *${song.name}* ${song.name2 ? '(' + song.name2 + ')' : ''}\n\n${song.lyrics || ''}\n\n▶ Watch: ${videoUrl}\n\n📖 Holy Hymns: https://shibinj.github.io/Hymn_project/`;
+            const text = `🎵 *${song.name}* ${song.name2 ? '(' + song.name2 + ')' : ''}\n\n${song.lyrics || ''}\n\nMore Hymns found at: https://shibinj.github.io/Hymn_project/`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
