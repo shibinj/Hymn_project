@@ -1057,6 +1057,10 @@
         let activeYtPlayer = null;
         let pendingYtInit = null;
         let clipProgressTimer = null;
+        let isClipPlaying = false;
+        let clipCurrentTime = 0;
+        let currentClipStart = 0;
+        let currentClipEnd = 0;
 
         function clearClipTimer() {
             if (clipProgressTimer) {
@@ -1066,6 +1070,7 @@
         }
 
         function setClipPlayState(isPlaying) {
+            isClipPlaying = isPlaying;
             const playIcon = document.getElementById('clipPlayIcon');
             const pauseIcon = document.getElementById('clipPauseIcon');
             if (playIcon && pauseIcon) {
@@ -1076,36 +1081,108 @@
 
         function updateClipUIOnEnd(startTime) {
             setClipPlayState(false);
+            clipCurrentTime = startTime || 0;
             const scrubber = document.getElementById('clipScrubber');
             const curTime = document.getElementById('clipCurTime');
-            if (scrubber) scrubber.value = startTime;
+            if (scrubber) scrubber.value = startTime || 0;
             if (curTime) curTime.textContent = '0:00';
+        }
+
+        function sendYtCommand(func, args) {
+            if (activeYtPlayer && typeof activeYtPlayer[func] === 'function') {
+                try {
+                    if (Array.isArray(args)) {
+                        activeYtPlayer[func](...args);
+                    } else if (args !== undefined && args !== '') {
+                        activeYtPlayer[func](args);
+                    } else {
+                        activeYtPlayer[func]();
+                    }
+                } catch (e) {}
+            }
+
+            const iframe = document.getElementById('ytPlayer');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    const msg = JSON.stringify({
+                        event: 'command',
+                        func: func,
+                        args: args !== undefined ? args : ''
+                    });
+                    iframe.contentWindow.postMessage(msg, '*');
+                } catch (e) {}
+            }
+        }
+
+        function updateClipTimeUI(cur, startTime, endTime) {
+            const scrubber = document.getElementById('clipScrubber');
+            const curTime = document.getElementById('clipCurTime');
+            if (scrubber && document.activeElement !== scrubber) {
+                scrubber.value = cur;
+            }
+            if (curTime) {
+                curTime.textContent = formatDuration(cur - startTime);
+            }
+        }
+
+        function handleClipStateChange(state, startTime, endTime) {
+            if (state === 1) { // PLAYING
+                setClipPlayState(true);
+                startClipTicker(startTime, endTime);
+            } else if (state === 2) { // PAUSED
+                setClipPlayState(false);
+                clearClipTimer();
+            } else if (state === 0) { // ENDED
+                clearClipTimer();
+                sendYtCommand('seekTo', [startTime || 0, true]);
+                sendYtCommand('pauseVideo');
+                updateClipUIOnEnd(startTime);
+            }
         }
 
         function startClipTicker(startTime, endTime) {
             clearClipTimer();
             clipProgressTimer = setInterval(() => {
-                if (!activeYtPlayer || typeof activeYtPlayer.getCurrentTime !== 'function') return;
-                try {
-                    const cur = activeYtPlayer.getCurrentTime();
-                    if (cur >= endTime) {
-                        clearClipTimer();
-                        activeYtPlayer.seekTo(startTime, true);
-                        activeYtPlayer.pauseVideo();
-                        updateClipUIOnEnd(startTime);
-                        return;
-                    }
-                    const scrubber = document.getElementById('clipScrubber');
-                    const curTime = document.getElementById('clipCurTime');
-                    if (scrubber && document.activeElement !== scrubber) {
-                        scrubber.value = cur;
-                    }
-                    if (curTime) {
-                        curTime.textContent = formatDuration(cur - startTime);
-                    }
-                } catch (e) {}
-            }, 200);
+                if (activeYtPlayer && typeof activeYtPlayer.getCurrentTime === 'function') {
+                    try {
+                        const cur = activeYtPlayer.getCurrentTime();
+                        if (!isNaN(cur) && cur > 0) {
+                            clipCurrentTime = cur;
+                        }
+                    } catch (e) {}
+                }
+
+                if (clipCurrentTime >= endTime) {
+                    clearClipTimer();
+                    sendYtCommand('seekTo', [startTime || 0, true]);
+                    sendYtCommand('pauseVideo');
+                    updateClipUIOnEnd(startTime);
+                    return;
+                }
+
+                updateClipTimeUI(clipCurrentTime, startTime, endTime);
+            }, 250);
         }
+
+        // Global listener for YouTube iframe postMessage notifications
+        window.addEventListener('message', function(event) {
+            if (!event.origin || !event.origin.includes('youtube.com')) return;
+            try {
+                const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                if (!data) return;
+                if (data.event === 'infoDelivery' && data.info) {
+                    if (typeof data.info.playerState !== 'undefined') {
+                        handleClipStateChange(data.info.playerState, currentClipStart, currentClipEnd);
+                    }
+                    if (typeof data.info.currentTime !== 'undefined') {
+                        clipCurrentTime = data.info.currentTime;
+                        updateClipTimeUI(data.info.currentTime, currentClipStart, currentClipEnd);
+                    }
+                } else if (data.event === 'onStateChange') {
+                    handleClipStateChange(data.info, currentClipStart, currentClipEnd);
+                }
+            } catch (e) {}
+        });
 
         function setupClipControls(startTime, endTime) {
             const playBtn = document.getElementById('clipPlayBtn');
@@ -1117,25 +1194,24 @@
             if (!playBtn || !scrubber) return;
 
             playBtn.onclick = function() {
-                if (!activeYtPlayer || typeof activeYtPlayer.getPlayerState !== 'function') return;
-                try {
-                    const state = activeYtPlayer.getPlayerState();
-                    if (state === 1) { // playing
-                        activeYtPlayer.pauseVideo();
-                    } else {
-                        const cur = activeYtPlayer.getCurrentTime();
-                        if (cur >= endTime || cur < startTime) {
-                            activeYtPlayer.seekTo(startTime, true);
-                        }
-                        activeYtPlayer.playVideo();
+                if (isClipPlaying) {
+                    sendYtCommand('pauseVideo');
+                    setClipPlayState(false);
+                    clearClipTimer();
+                } else {
+                    if (clipCurrentTime >= endTime || clipCurrentTime < startTime) {
+                        clipCurrentTime = startTime;
+                        sendYtCommand('seekTo', [startTime || 0, true]);
                     }
-                } catch (e) {
-                    console.warn('Play button error:', e);
+                    sendYtCommand('playVideo');
+                    setClipPlayState(true);
+                    startClipTicker(startTime, endTime);
                 }
             };
 
             scrubber.oninput = function() {
                 const val = parseFloat(this.value);
+                clipCurrentTime = val;
                 if (curTime) {
                     curTime.textContent = formatDuration(val - startTime);
                 }
@@ -1143,27 +1219,19 @@
 
             scrubber.onchange = function() {
                 const val = parseFloat(this.value);
-                if (activeYtPlayer && typeof activeYtPlayer.seekTo === 'function') {
-                    activeYtPlayer.seekTo(val, true);
-                }
+                clipCurrentTime = val;
+                sendYtCommand('seekTo', [val, true]);
             };
 
+            let isMuted = false;
             if (muteBtn) {
                 muteBtn.onclick = function() {
-                    if (!activeYtPlayer || typeof activeYtPlayer.isMuted !== 'function') return;
+                    isMuted = !isMuted;
+                    sendYtCommand(isMuted ? 'mute' : 'unMute');
                     const volOn = document.getElementById('clipVolOn');
                     const volOff = document.getElementById('clipVolOff');
-                    try {
-                        if (activeYtPlayer.isMuted()) {
-                            activeYtPlayer.unMute();
-                            if (volOn) volOn.style.display = 'block';
-                            if (volOff) volOff.style.display = 'none';
-                        } else {
-                            activeYtPlayer.mute();
-                            if (volOn) volOn.style.display = 'none';
-                            if (volOff) volOff.style.display = 'block';
-                        }
-                    } catch (e) {}
+                    if (volOn) volOn.style.display = isMuted ? 'none' : 'block';
+                    if (volOff) volOff.style.display = isMuted ? 'block' : 'none';
                 };
             }
 
@@ -1190,75 +1258,32 @@
         };
 
         function initYoutubeEndReset(startTime, endTime, isClipped) {
+            currentClipStart = startTime || 0;
+            currentClipEnd = endTime || 0;
+            clipCurrentTime = startTime || 0;
+            isClipPlaying = false;
+
             const bindPlayer = () => {
                 const iframe = document.getElementById('ytPlayer');
                 if (!iframe || !window.YT || !window.YT.Player) return;
 
-                let bound = false;
-                const attachYT = () => {
-                    if (bound) return;
-                    bound = true;
-                    try {
-                        activeYtPlayer = new YT.Player('ytPlayer', {
-                            events: {
-                                'onReady': function() {
-                                    if (isClipped) {
-                                        setupClipControls(startTime, endTime);
-                                    }
-                                },
-                                'onStateChange': function(event) {
-                                    const state = event.data;
-                                    // 0 represents YT.PlayerState.ENDED
-                                    if (state === 0 || (window.YT && window.YT.PlayerState && state === window.YT.PlayerState.ENDED)) {
-                                        clearClipTimer();
-                                        try {
-                                            activeYtPlayer.seekTo(startTime || 0, true);
-                                            activeYtPlayer.pauseVideo();
-                                        } catch (err) {
-                                            console.warn('Could not reset YouTube player on end:', err);
-                                        }
-                                        if (isClipped) {
-                                            updateClipUIOnEnd(startTime);
-                                        }
-                                    } else if (state === 1) { // PLAYING
-                                        if (isClipped) {
-                                            setClipPlayState(true);
-                                            startClipTicker(startTime, endTime);
-                                        }
-                                    } else if (state === 2) { // PAUSED
-                                        if (isClipped) {
-                                            setClipPlayState(false);
-                                            clearClipTimer();
-                                        }
-                                    }
+                try {
+                    activeYtPlayer = new YT.Player('ytPlayer', {
+                        events: {
+                            'onStateChange': function(event) {
+                                if (isClipped) {
+                                    handleClipStateChange(event.data, startTime, endTime);
+                                } else if (event.data === 0) {
+                                    try {
+                                        activeYtPlayer.seekTo(startTime || 0, true);
+                                        activeYtPlayer.pauseVideo();
+                                    } catch (err) {}
                                 }
                             }
-                        });
-
-                        if (isClipped) {
-                            setupClipControls(startTime, endTime);
                         }
-                    } catch (e) {
-                        console.warn('Failed to bind YT.Player:', e);
-                    }
-                };
-
-                // Check if iframe has already navigated cross-origin to YouTube
-                let alreadyNavigated = false;
-                try {
-                    if (iframe.contentWindow && iframe.contentWindow.location.href !== 'about:blank') {
-                        alreadyNavigated = false;
-                    }
+                    });
                 } catch (e) {
-                    // SecurityError indicates cross-origin navigation to youtube.com is complete
-                    alreadyNavigated = true;
-                }
-
-                if (alreadyNavigated) {
-                    attachYT();
-                } else {
-                    iframe.addEventListener('load', attachYT, { once: true });
-                    setTimeout(attachYT, 2000);
+                    console.warn('Failed to bind YT.Player:', e);
                 }
             };
 
@@ -1267,6 +1292,16 @@
             } else {
                 pendingYtInit = bindPlayer;
             }
+
+            // Register listening state with iframe for postMessage events
+            setTimeout(() => {
+                const iframe = document.getElementById('ytPlayer');
+                if (iframe && iframe.contentWindow) {
+                    try {
+                        iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+                    } catch (e) {}
+                }
+            }, 300);
         }
 
         function renderReader(song) {
@@ -1376,6 +1411,9 @@
             `;
 
             if (song.youtubeId) {
+                if (isClipped) {
+                    setupClipControls(startTime, endTime);
+                }
                 initYoutubeEndReset(startTime, endTime, isClipped);
             }
         }
