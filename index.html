@@ -7,14 +7,14 @@
     <title>Holy Hymns | Malayalam Christian Songs & Hymnal Collection</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos. 693+ songs including Kristheeya Keerthanangal, Maramon Convention, Passion Week, and Holy Communion songs.">
+    <meta name="description" content="Complete collection of Malayalam Christian hymns, convention songs, and worship music with lyrics and videos. 695+ songs including Kristheeya Keerthanangal, Maramon Convention, Passion Week, and Holy Communion songs.">
     <meta name="keywords" content="Malayalam Christian hymns, ക്രിസ്തീയ കീർത്തനങ്ങൾ, Maramon convention songs, Kottarakara convention, worship songs, Malayalam worship, Christian keerthanangal, Holy Communion songs">
     <link rel="canonical" href="https://shibinj.github.io/Hymn_project/">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Holy Hymns | Malayalam Christian Songs Collection">
-    <meta property="og:description" content="693+ Malayalam Christian hymns with lyrics, YouTube videos, and thematic search. Kristheeya Keerthanangal, Maramon Convention, Passion Week, and more.">
+    <meta property="og:description" content="695+ Malayalam Christian hymns with lyrics, YouTube videos, and thematic search. Kristheeya Keerthanangal, Maramon Convention, Passion Week, and more.">
     <meta property="og:url" content="https://shibinj.github.io/Hymn_project/">
     <meta property="og:image" content="https://shibinj.github.io/Hymn_project/favicon.ico">
     <meta property="og:site_name" content="Holy Hymns">
@@ -22,7 +22,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Holy Hymns | Malayalam Christian Songs">
-    <meta name="twitter:description" content="693+ Malayalam Christian hymns with lyrics and videos">
+    <meta name="twitter:description" content="695+ Malayalam Christian hymns with lyrics and videos">
     <meta name="twitter:image" content="https://shibinj.github.io/Hymn_project/favicon.ico">
     
     <!-- Structured Data (JSON-LD) -->
@@ -1344,7 +1344,7 @@
         <!-- ── Hero Section ──────────────────────────────────────────── -->
         <section class="hero">
             <div class="hero-badge-pill">
-                <span>✨</span> 693+ Malayalam Christian Hymns &amp; Liturgical Music
+                <span>✨</span> 695+ Malayalam Christian Hymns &amp; Liturgical Music
             </div>
             
             <h1 class="hero-title">
@@ -1357,7 +1357,7 @@
             </p>
             
             <p class="hero-desc">
-                Browse 693+ Malayalam Christian hymns with complete lyrics, YouTube video recordings, and liturgical theme categories.
+                Browse 695+ Malayalam Christian hymns with complete lyrics, YouTube video recordings, and liturgical theme categories.
             </p>
 
             <!-- ── Direct Interactive Instant Search Bar ──────────────── -->
@@ -1389,7 +1389,7 @@
             <!-- ── Stats Strip ───────────────────────────────────────── -->
             <div class="stats-strip">
                 <div class="stat-badge-box">
-                    <div class="stat-digit">693</div>
+                    <div class="stat-digit">695+</div>
                     <div class="stat-text">Hymns</div>
                 </div>
                 <div class="stat-badge-box">
@@ -1420,7 +1420,7 @@
 
             <div class="categories-scroll" id="themeChipsContainer">
                 <a href="javascript:void(0)" class="category-chip active" onclick="filterByTheme('all', this, event)">
-                    <span>✨</span> All Hymns (693)
+                    <span>✨</span> All Hymns (<span id="allHymnsCount">695</span>)
                 </a>
                 <a href="javascript:void(0)" class="category-chip" onclick="filterByTheme('Worship & Praise', this, event)">
                     <span>🙌</span> Worship &amp; Praise (112)
@@ -1748,6 +1748,10 @@
                 if (res.ok) {
                     hymnIndex = await res.json();
                     searchIndexLoaded = true;
+                    const allCountEl = document.getElementById('allHymnsCount');
+                    if (allCountEl && hymnIndex.length) {
+                        allCountEl.textContent = hymnIndex.length;
+                    }
                 }
             } catch (err) {
                 console.warn('Index load error:', err);
