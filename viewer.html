@@ -35,6 +35,9 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api" async></script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -967,14 +970,80 @@
             document.getElementById('songDisplayPane').scrollTop = 0;
         }
 
+        let activeYtPlayer = null;
+        let pendingYtInit = null;
+
+        window.onYouTubeIframeAPIReady = function() {
+            if (typeof pendingYtInit === 'function') {
+                pendingYtInit();
+                pendingYtInit = null;
+            }
+        };
+
+        function initYoutubeEndReset(startTime) {
+            const bindPlayer = () => {
+                const iframe = document.getElementById('ytPlayer');
+                if (!iframe || !window.YT || !window.YT.Player) return;
+
+                try {
+                    activeYtPlayer = new YT.Player('ytPlayer', {
+                        events: {
+                            'onStateChange': function(event) {
+                                // 0 represents YT.PlayerState.ENDED
+                                if (event.data === 0 || (window.YT && window.YT.PlayerState && event.data === window.YT.PlayerState.ENDED)) {
+                                    try {
+                                        activeYtPlayer.seekTo(startTime || 0, true);
+                                        activeYtPlayer.pauseVideo();
+                                    } catch (err) {
+                                        console.warn('Could not reset YouTube player on end:', err);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Failed to bind YT.Player:', e);
+                }
+            };
+
+            if (window.YT && window.YT.Player) {
+                bindPlayer();
+            } else {
+                pendingYtInit = bindPlayer;
+            }
+        }
+
         function renderReader(song) {
             const container = document.getElementById('songReaderContent');
             const favorites = getFavorites();
             const isFav = favorites.includes(song.number);
 
-            const videoId = song.youtubeId ? song.youtubeId.split('?')[0] : '';
-            const params = song.youtubeId && song.youtubeId.includes('?') ? song.youtubeId.split('?')[1] : '';
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?${params}&rel=0&modestbranding=1`;
+            if (activeYtPlayer && typeof activeYtPlayer.destroy === 'function') {
+                try { activeYtPlayer.destroy(); } catch (e) {}
+                activeYtPlayer = null;
+            }
+
+            let videoId = '';
+            let startTime = 0;
+            let embedUrl = '';
+
+            if (song.youtubeId) {
+                const parts = song.youtubeId.split('?');
+                videoId = parts[0];
+                const searchParams = new URLSearchParams(parts[1] || '');
+                if (searchParams.has('start')) {
+                    startTime = parseInt(searchParams.get('start'), 10) || 0;
+                }
+                searchParams.set('enablejsapi', '1');
+                searchParams.set('rel', '0');
+                searchParams.set('modestbranding', '1');
+                searchParams.set('iv_load_policy', '3');
+                searchParams.set('playsinline', '1');
+                if (window.location.origin && window.location.origin !== 'null') {
+                    searchParams.set('origin', window.location.origin);
+                }
+                embedUrl = `https://www.youtube.com/embed/${videoId}?${searchParams.toString()}`;
+            }
 
             container.innerHTML = `
                 <div class="song-reader-header">
@@ -1005,7 +1074,7 @@
                 ${song.youtubeId ? `
                     <div class="video-wrapper-box">
                         <div class="video-inner">
-                            <iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe id="ytPlayer" src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
                 ` : ''}
@@ -1019,6 +1088,10 @@
                     </button>
                 </div>
             `;
+
+            if (song.youtubeId) {
+                initYoutubeEndReset(startTime);
+            }
         }
 
         function prevSong() {
