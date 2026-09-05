@@ -353,38 +353,75 @@
 
     import { firebaseConfig, ALLOWED_ADMINS } from "./firebase-config.js";
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
-    window._db   = db;
-    window._auth = auth;
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
 
-    // ── Auth ──────────────────────────────────────────────────────────────────
-    onAuthStateChanged(auth, async (user) => {
-        if (user && ALLOWED_ADMINS.includes(user.email)) {
-            isAuthenticated = true;
-            currentUser = user.email;
-            const bar = document.getElementById('authBar');
-            bar.className = 'auth-bar signed-in';
-            bar.innerHTML = `
-                <span style="color:#155724; font-weight:600;">✅ Signed in as ${user.displayName} (${user.email})</span>
-                <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:6px 12px;
-                    border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
-            `;
-            await loadDraftsFromFirestore();
-        } else if (user) {
-            signOut(auth);
-            document.getElementById('authMessage').textContent = `❌ ${user.email} is not an authorized admin.`;
-        } else {
-            isAuthenticated = false;
-            currentUser = null;
+    let app = null, auth = null, db = null;
+    const hasValidKey = firebaseConfig && 
+                        typeof firebaseConfig.apiKey === 'string' && 
+                        firebaseConfig.apiKey.trim() !== '' && 
+                        firebaseConfig.apiKey !== 'YOUR_API_KEY';
+
+    if (hasValidKey) {
+        try {
+            app  = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db   = getFirestore(app);
+            window._db   = db;
+            window._auth = auth;
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user && Array.isArray(ALLOWED_ADMINS) && ALLOWED_ADMINS.includes(user.email)) {
+                    isAuthenticated = true;
+                    currentUser = user.email;
+                    const bar = document.getElementById('authBar');
+                    if (bar) {
+                        bar.className = 'auth-bar signed-in';
+                        bar.innerHTML = `
+                            <span style="color:#155724; font-weight:600;">✅ Signed in as ${escapeHtml(user.displayName || user.email)} (${escapeHtml(user.email)})</span>
+                            <button onclick="window._auth.signOut()" style="background:#dc3545; color:white; padding:6px 12px;
+                                border:none; border-radius:5px; cursor:pointer; font-size:12px;">Sign Out</button>
+                        `;
+                    }
+                    await loadDraftsFromFirestore();
+                } else if (user) {
+                    signOut(auth);
+                    const authMsg = document.getElementById('authMessage');
+                    if (authMsg) authMsg.textContent = `❌ ${user.email} is not an authorized admin.`;
+                } else {
+                    isAuthenticated = false;
+                    currentUser = null;
+                }
+            });
+        } catch (e) {
+            console.warn('Firebase initialization error in lyrics editor:', e);
+            const authMsg = document.getElementById('authMessage');
+            if (authMsg) authMsg.textContent = '⚠️ Firebase initialization failed: ' + e.message;
         }
-    });
+    } else {
+        console.warn('Firebase is not configured with an API key on this environment.');
+        const authMsg = document.getElementById('authMessage');
+        if (authMsg) authMsg.textContent = '⚠️ Cloud configuration (Firebase API key) is missing on this environment.';
+    }
 
+    // Always define signInWithGoogle so clicking the button never throws ReferenceError
     window.signInWithGoogle = async function() {
+        if (!auth) {
+            const msg = '⚠️ Firebase is not configured with an API key on this environment.\n\nTo enable cloud syncing on preview, please set FIREBASE_API_KEY and other Firebase variables in Cloudflare Dashboard.';
+            const authMsg = document.getElementById('authMessage');
+            if (authMsg) authMsg.textContent = msg;
+            alert(msg);
+            return;
+        }
         const provider = new GoogleAuthProvider();
-        try { await signInWithPopup(auth, provider); }
-        catch(err) { document.getElementById('authMessage').textContent = 'Sign-in failed: ' + err.message; }
+        try { 
+            await signInWithPopup(auth, provider); 
+        } catch(err) { 
+            const authMsg = document.getElementById('authMessage');
+            if (authMsg) authMsg.textContent = 'Sign-in failed: ' + err.message; 
+        }
     };
 
     // ── Firestore: load all drafts for current collection ────────────────────
