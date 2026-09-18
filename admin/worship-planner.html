@@ -303,10 +303,15 @@
         .song-tags-row { display: flex; gap: 6px; margin-top: 6px; }
         .song-col-badge { font-size: 0.75rem; font-weight: 700; background: rgba(255, 255, 255, 0.08); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; }
 
-        .edit-pill-btn { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); border: 1px solid rgba(245, 158, 11, 0.3); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .edit-pill-btn { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); border: 1px solid rgba(245, 158, 11, 0.3); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+        .edit-pill-btn:hover { background: rgba(245, 158, 11, 0.25); transform: translateY(-1px); }
+        .reroll-pill-btn { background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); border: 1px solid rgba(56, 189, 248, 0.35); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 4px; }
+        .reroll-pill-btn:hover { background: rgba(56, 189, 248, 0.28); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25); }
         .remove-pill-btn { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
         .suggestion-pill-btn { background: rgba(56, 189, 248, 0.12); color: var(--accent-primary); border: 1px solid var(--badge-border); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin: 2px; }
         .warning-chip { display: inline-block; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-top: 10px; }
+        .song-theme-badge { font-size: 0.72rem; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 6px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
+        .song-cat-badge { font-size: 0.72rem; color: var(--text-secondary); background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border); padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
         .badge-optional { font-size: 0.75rem; background: rgba(255, 255, 255, 0.08); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-weight: 700; }
         .smart-suggestions-row { margin-top: 10px; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 
@@ -597,12 +602,91 @@
         let hymns = [];
         let conventions = {};
         let celebrationSongs = [];
+        let hymnIndex = [];
         let lastConvention = 'kottarakara';
         let serviceHistory = [];
 
         // Auth state — managed by Firebase module script above
         let isAuthenticated = false;
         let currentUser = null;
+
+        // Helper to safely escape HTML strings
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Liturgical theme matching rules (covers English, Malayalam transliterations & concepts)
+        const THEME_CATEGORY_RULES = [
+            { pattern: /\b(resurrection|easter|risen|living\s*lord|uyirpu|uyirthezhunnettu|victory\s*over\s*death)\b/i, categories: ["Resurrection"], seasonalOpening: true },
+            { pattern: /\b(palm\s*sunday|entry\s*of\s*the\s*king|hosanna|oliva)\b/i, categories: ["Palm Sunday"], seasonalOpening: true },
+            { pattern: /\b(good\s*friday|cross|passion|crucifix|crucified|calvary|kalvary|kashtanubhavam|maranam)\b/i, categories: ["Passion Week"], seasonalOpening: true },
+            { pattern: /\b(holy\s*spirit|pentecost|paraclete|comforter|aathmav|athmav|parisudhatmav)\b/i, categories: ["Holy Spirit"], seasonalOpening: true },
+            { pattern: /\b(christmas|incarnat|emmanuel|advent|manger|bethlehem|piravi|jananam|yule)\b/i, categories: ["Christmas Songs"], seasonalOpening: true },
+            { pattern: /\b(new\s*year|pudhuvalsar|puthuvalsar|watch\s*night|year\s*end)\b/i, categories: ["New Year", "Thanksgiving"], seasonalOpening: true },
+            { pattern: /\b(communion|qurbana|eucharist|table\s*of\s*reconciliation|lord'?s\s*supper|bread\s*and\s*wine|dine|table)\b/i, categories: ["Holy Communion"] },
+            { pattern: /\b(grace|kripa|kiruba|sufficiency\s*of\s*god'?s\s*grace|unmerited)\b/i, categories: ["God's Grace", "Belief"] },
+            { pattern: /\b(faith|trust|trusting|unshaken|viswasam|vishwasam|reliance|my\s*lord\s*and\s*my\s*god)\b/i, categories: ["Belief", "Comfort"] },
+            { pattern: /\b(hope|adversity|transcend|prathyasha|future)\b/i, categories: ["Hope", "Comfort", "Belief"] },
+            { pattern: /\b(comfort|crises|crisis|burden|burdens|sorrow|dukham|aashwasam|ashwasam|trouble|suffering|pain)\b/i, categories: ["Comfort", "Prayer in Times of Sorrow"] },
+            { pattern: /\b(love|compassion|compassionate|loving|sneham|anpu|karuna|kindness|mercy)\b/i, categories: ["Love", "God's Grace"] },
+            { pattern: /\b(mission|witness|gospel|evangel|suvishesham|sakshi|send|harvest)\b/i, categories: ["Gospel Work", "Service"] },
+            { pattern: /\b(reformation|renewal|revival|navikaranam|pudukkam|awaken)\b/i, categories: ["Longing of Revival", "Consecration", "Repentance"] },
+            { pattern: /\b(word|wisdom|discernment|scripture|bible|vedapusthakam|upadesham|education|theological)\b/i, categories: ["Word of God", "Counsel and Correction"] },
+            { pattern: /\b(marriage|family|relationship|kudumbam|vivaham|husband|wife|home)\b/i, categories: ["Wedding", "Christian Family"] },
+            { pattern: /\b(worship|praise|aradhana|sthuthi|stothram|glorious|glory|presence|majesty)\b/i, categories: ["Worship & Praise", "Presence of Christ"] },
+            { pattern: /\b(creation|sabbath|nature|earth|srishti|creator)\b/i, categories: ["Psalms", "Worship & Praise"] },
+            { pattern: /\b(ordained|ministry|minister|ministers|sacrifice|shepherd|pastor|priesthood)\b/i, categories: ["Ordination Service", "Service", "Consecration"] },
+            { pattern: /\b(ecumenical|unity|united|oneness|communion|inclusive|together|reconciliation|migrants?|refugees?)\b/i, categories: ["Ecumenical Sunday", "Christ and Church", "Love"] },
+            { pattern: /\b(second\s*coming|glorious\s*appearance|maranatha|rapture|judgment|reign)\b/i, categories: ["Second Coming of Christ"] },
+            { pattern: /\b(prayer|praying|prarthana|intercession|petition)\b/i, categories: ["Prayer"] },
+            { pattern: /\b(thanksgiving|thankful|fruitful|sharing|gift|nandi|sthuthi|productive)\b/i, categories: ["Thanksgiving", "Bliss of Salvation"] },
+            { pattern: /\b(salvation|salvific|savior|saviour|raksha|rakshakan|liberative|freedom|deliver)\b/i, categories: ["Bliss of Salvation", "Call to Christ"] },
+            { pattern: /\b(consecration|surrender|dedication|samarppanam|light|children\s*of\s*light|transforms?|transform|plan|baptism|influencer|follow)\b/i, categories: ["Consecration", "Belief", "Call to Christ"] },
+            { pattern: /\b(peace|shanthi|samadhanam|reconcil)\b/i, categories: ["Comfort", "Belief"] }
+        ];
+
+        function getThemeContext(themeStr) {
+            if (!themeStr) return { categories: [], keywords: [], seasonalOpeningCats: [] };
+            const matchedCategories = [];
+            const seasonalOpeningCats = [];
+            THEME_CATEGORY_RULES.forEach(r => {
+                if (r.pattern.test(themeStr)) {
+                    matchedCategories.push(...r.categories);
+                    if (r.seasonalOpening) seasonalOpeningCats.push(...r.categories);
+                }
+            });
+            const stopWords = new Set(["the", "and", "for", "with", "from", "that", "this", "our", "all", "are", "sunday", "week", "day", "call", "into", "unto", "who"]);
+            const words = themeStr.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, " ")
+                .split(/\s+/)
+                .filter(w => w.length > 2 && !stopWords.has(w));
+            return {
+                categories: [...new Set(matchedCategories)],
+                seasonalOpeningCats: [...new Set(seasonalOpeningCats)],
+                keywords: [...new Set(words)]
+            };
+        }
+
+        function songMatchesThemeKeywords(song, keywords) {
+            if (!song || !keywords || keywords.length === 0) return false;
+            const target = ((song.name || '') + ' ' + (song.name2 || '') + ' ' + (song.lyrics || '')).toLowerCase();
+            return keywords.some(kw => target.includes(kw));
+        }
+
+        function isSongThemeMatch(song, themeStr) {
+            if (!song || !themeStr) return false;
+            const ctx = getThemeContext(themeStr);
+            if (song.cat && Array.isArray(song.cat)) {
+                if (ctx.categories.length > 0 && song.cat.some(c => ctx.categories.includes(c))) return true;
+                if (ctx.seasonalOpeningCats.length > 0 && song.cat.some(c => ctx.seasonalOpeningCats.includes(c))) return true;
+            }
+            return songMatchesThemeKeywords(song, ctx.keywords);
+        }
 
         // Song categories
         const categories = {
@@ -613,13 +697,39 @@
         };
 
         async function loadData() {
-            hymns = await fetch('../data/kristheeya-keerthanangal.json').then(r => r.json());
-            celebrationSongs = await fetch('../data/birthday-anniversary.json').then(r => r.json());
-            categories.celebration = celebrationSongs.map(s => s.number);
-            conventions['maramon-2025'] = await fetch('../data/maramon-2025.json').then(r => r.json());
-            conventions['maramon-2026'] = await fetch('../data/maramon-2026.json').then(r => r.json());
-            conventions['kottarakara-2025'] = await fetch('../data/kottarakara-2025.json').then(r => r.json());
-            conventions['kottarakara-2026'] = await fetch('../data/kottarakara-2026.json').then(r => r.json());
+            try {
+                const [hymnsData, celebrationData, m25Data, m26Data, k25Data, k26Data, indexData] = await Promise.all([
+                    fetch('../data/kristheeya-keerthanangal.json').then(r => r.json()),
+                    fetch('../data/birthday-anniversary.json').then(r => r.json()),
+                    fetch('../data/maramon-2025.json').then(r => r.json()),
+                    fetch('../data/maramon-2026.json').then(r => r.json()),
+                    fetch('../data/kottarakara-2025.json').then(r => r.json()),
+                    fetch('../data/kottarakara-2026.json').then(r => r.json()),
+                    fetch('../data/hymn-index.json').then(r => r.json()).catch(() => [])
+                ]);
+
+                hymns = hymnsData;
+                celebrationSongs = celebrationData;
+                categories.celebration = celebrationSongs.map(s => s.number);
+                conventions['maramon-2025'] = m25Data;
+                conventions['maramon-2026'] = m26Data;
+                conventions['kottarakara-2025'] = k25Data;
+                conventions['kottarakara-2026'] = k26Data;
+                hymnIndex = indexData || [];
+
+                // Attach category tags to KK hymns from hymn-index
+                const kkCatMap = new Map();
+                hymnIndex.forEach(item => {
+                    if (item.col === 'kristheeya-keerthanangal' && item.cat) {
+                        kkCatMap.set(item.n, item.cat);
+                    }
+                });
+                hymns.forEach(h => {
+                    h.cat = kkCatMap.get(h.number) || [];
+                });
+            } catch (err) {
+                console.error('Error loading hymn data in worship planner:', err);
+            }
 
             // Load from localStorage as fallback (Firestore loads after Google sign-in)
             if (serviceHistory.length === 0) {
@@ -641,17 +751,65 @@
             await loadFromFirestore();
         }
 
-        function checkUnconfirmedHistory(songNum, category) {
+        function isSameSong(candidateNum, candidateCategory, candidateCollection, historySong) {
+            if (!historySong || historySong.number === undefined || candidateNum === undefined || candidateNum === null) return false;
+            
+            const numA = String(candidateNum).trim().toLowerCase();
+            const numB = String(historySong.number).trim().toLowerCase();
+            if (numA !== numB) return false;
+
+            const normalizeColl = (cat, coll, num) => {
+                if (coll && coll !== 'Unknown' && coll !== 'Custom') {
+                    const c = String(coll).toLowerCase();
+                    if (c.includes('maramon')) return 'maramon';
+                    if (c.includes('kottarakara')) return 'kottarakara';
+                    if (c.includes('birthday') || c.includes('anniversary') || c.includes('celebration')) return 'celebration';
+                    if (c.includes('kristheeya') || c.includes('keerthanangal') || c.includes('hymn') || c.includes('doxology')) return 'hymnal';
+                    return c;
+                }
+                const n = String(num).toUpperCase();
+                if (n.startsWith('SS')) return 'celebration';
+                if (n.startsWith('DOX')) return 'hymnal';
+                if (['opening', 'bibleReading', 'qurbana1', 'qurbana2', 'qurbana3', 'doxology'].includes(cat)) {
+                    return 'hymnal';
+                }
+                if (cat === 'celebration') return 'celebration';
+                if (cat === 'offertory') return 'convention';
+                return 'unknown';
+            };
+
+            const collA = normalizeColl(candidateCategory, candidateCollection, candidateNum);
+            const collB = normalizeColl(historySong.category, historySong.collection, historySong.number);
+
+            // If either collection is unknown, match if both are numeric (likely hymns) or categories match
+            if (collA === 'unknown' || collB === 'unknown') {
+                return true;
+            }
+
+            // Both conventions (e.g. offertory convention songs)
+            if ((collA === 'maramon' || collA === 'kottarakara' || collA === 'convention') &&
+                (collB === 'maramon' || collB === 'kottarakara' || collB === 'convention')) {
+                // If specific conventions are known (maramon vs kottarakara), ensure they match
+                if ((collA === 'maramon' && collB === 'kottarakara') || (collA === 'kottarakara' && collB === 'maramon')) {
+                    return false;
+                }
+                return true;
+            }
+
+            return collA === collB;
+        }
+
+        function checkUnconfirmedHistory(songNum, category, collection) {
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
             const today = Date.now();
 
             // Find past services (date already passed) that are unconfirmed and contain this song
-            const pending = serviceHistory.filter(service =>
-                service.confirmed !== true &&
-                service.date < today &&
-                service.date > twoMonthsAgo &&
-                service.songs.some(s => s.number === songNum && s.category === category)
-            );
+            const pending = serviceHistory.filter(service => {
+                if (service.confirmed === true) return false;
+                const serviceTime = typeof service.date === 'number' ? service.date : new Date(service.date).getTime();
+                if (isNaN(serviceTime) || serviceTime >= today || serviceTime <= twoMonthsAgo) return false;
+                return service.songs && service.songs.some(s => isSameSong(songNum, category, collection, s));
+            });
 
             if (pending.length === 0) return;
 
@@ -694,7 +852,14 @@
             document.getElementById('unconfirmedModal').style.display = 'none';
         }
 
-        function wasRecentlyUsed(songNum, category) {
+        function wasRecentlyUsed(songOrNum, category, collection) {
+            let songNum = songOrNum;
+            if (songOrNum && typeof songOrNum === 'object') {
+                songNum = songOrNum.number;
+                if (!collection && songOrNum.collection) collection = songOrNum.collection;
+            }
+            if (songNum === undefined || songNum === null || songNum === '') return false;
+
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
 
             // Exclude the service currently being edited
@@ -702,14 +867,15 @@
                 ? serviceHistory[window.editingServiceIndex]?.date
                 : undefined;
 
-            // Any saved service (confirmed or not) counts — confirmed check was
-            // preventing warnings for services saved before being marked as sung
-            return serviceHistory.some(service =>
-                service.confirmed !== false &&
-                service.date !== editingDate &&
-                service.date > twoMonthsAgo &&
-                service.songs.some(s => s.number === songNum && s.category === category)
-            );
+            return serviceHistory.some(service => {
+                if (service.confirmed === false) return false;
+                if (editingDate !== undefined && service.date === editingDate) return false;
+
+                const serviceTime = typeof service.date === 'number' ? service.date : new Date(service.date).getTime();
+                if (isNaN(serviceTime) || serviceTime <= twoMonthsAgo) return false;
+
+                return service.songs && service.songs.some(s => isSameSong(songNum, category, collection, s));
+            });
         }
 
         function getFrequentSongs(category, count = 5) {
@@ -735,96 +901,192 @@
                 .slice(0, count);
         }
 
-        function getRandomSong(numbers, category) {
-            // First try frequent picks from history
-            const frequentPicks = getFrequentSongs(category, 3);
-            const validFrequent = frequentPicks.filter(num => numbers.includes(num));
-            
-            if (validFrequent.length > 0 && Math.random() > 0.3) {
-                // 70% chance to use a frequent pick
-                const num = validFrequent[Math.floor(Math.random() * validFrequent.length)];
-                return hymns.find(s => s.number === num);
+        function pickWeightedCandidate(list, category) {
+            if (!list || list.length === 0) return null;
+            if (list.length === 1) return list[0];
+
+            // Give frequent songs a modest extra chance (+1 entry), but never a 70% monopoly
+            const frequentPicks = getFrequentSongs(category, 5);
+            const pool = [];
+            list.forEach(song => {
+                pool.push(song);
+                if (frequentPicks.includes(song.number)) {
+                    pool.push(song);
+                }
+            });
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function pickThemedSong(category, themeStr, excludeNumbers = [], existingSelectedNumbers = []) {
+            const ctx = getThemeContext(themeStr);
+            const excludeSet = new Set([...excludeNumbers, ...existingSelectedNumbers]);
+
+            let primaryHymns = [];
+            let fallbackHymns = [];
+
+            if (category === 'opening') {
+                if (ctx.seasonalOpeningCats.length > 0) {
+                    primaryHymns = hymns.filter(s => s.cat && s.cat.some(c => ctx.seasonalOpeningCats.includes(c)));
+                }
+                const wpSongs = hymns.filter(s => (s.cat && (s.cat.includes('Worship & Praise') || s.cat.includes('Morning Songs'))) || categories.opening.includes(s.number));
+                const themedWp = wpSongs.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
+                if (themedWp.length > 0) {
+                    primaryHymns = [...primaryHymns, ...themedWp];
+                }
+                fallbackHymns = wpSongs;
+            } else if (category === 'bibleReading') {
+                if (ctx.categories.length > 0) {
+                    primaryHymns = hymns.filter(s => s.cat && s.cat.some(c => ctx.categories.includes(c)));
+                }
+                const kwMatches = hymns.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
+                primaryHymns = [...new Set([...primaryHymns, ...kwMatches])];
+                fallbackHymns = hymns.filter(s => categories.bibleReading.includes(s.number));
+            } else if (category === 'qurbana1' || category === 'qurbana2' || category === 'qurbana3' || category === 'qurbana') {
+                const communionSongs = hymns.filter(s => (s.cat && s.cat.includes('Holy Communion')) || categories.qurbana.includes(s.number));
+                if (ctx.categories.length > 0) {
+                    primaryHymns = communionSongs.filter(s => s.cat && s.cat.some(c => ctx.categories.includes(c)));
+                }
+                const kwMatches = communionSongs.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
+                primaryHymns = [...new Set([...primaryHymns, ...kwMatches])];
+                fallbackHymns = communionSongs;
             }
-            
-            // Otherwise pick randomly from available songs
-            let availableSongs = numbers.filter(num => !wasRecentlyUsed(num, category));
-            if (availableSongs.length === 0) availableSongs = numbers;
-            
-            const num = availableSongs[Math.floor(Math.random() * availableSongs.length)];
-            return hymns.find(s => s.number === num) || hymns[Math.floor(Math.random() * hymns.length)];
+
+            // 1. Primary theme matches (strictly NOT recently used in last 2 months, not in excludeSet)
+            const availablePrimary = primaryHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
+            if (availablePrimary.length > 0) {
+                return pickWeightedCandidate(availablePrimary, category);
+            }
+
+            // 2. Fallback category hymns (strictly NOT recently used in last 2 months, not in excludeSet)
+            const availableFallback = fallbackHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
+            if (availableFallback.length > 0) {
+                return pickWeightedCandidate(availableFallback, category);
+            }
+
+            // 3. Any general hymn (strictly NOT recently used in last 2 months, not in excludeSet)
+            const availableAny = hymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
+            if (availableAny.length > 0) {
+                return availableAny[Math.floor(Math.random() * availableAny.length)];
+            }
+
+            // 4. Absolute emergency fallback only if entire hymnal was used in last 2 months
+            const primaryRelaxed = primaryHymns.filter(s => !excludeSet.has(s.number));
+            if (primaryRelaxed.length > 0) return pickWeightedCandidate(primaryRelaxed, category);
+
+            const fallbackRelaxed = fallbackHymns.filter(s => !excludeSet.has(s.number));
+            if (fallbackRelaxed.length > 0) return pickWeightedCandidate(fallbackRelaxed, category);
+
+            const anyRelaxed = hymns.filter(s => !excludeSet.has(s.number));
+            if (anyRelaxed.length > 0) return anyRelaxed[Math.floor(Math.random() * anyRelaxed.length)];
+
+            return hymns[0] || null;
+        }
+
+        function pickCelebrationSong(excludeNumbers = []) {
+            if (celebrationSongs.length === 0) return null;
+            const excludeSet = new Set(excludeNumbers);
+
+            // 1. Birthday/Anniversary songs NOT used in the last 2 months
+            const available = celebrationSongs.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'celebration', 'Birthday/Anniversary'));
+            if (available.length > 0) {
+                return pickWeightedCandidate(available, 'celebration');
+            }
+
+            // 2. Fallback only if all celebration songs have been used in the last 2 months
+            const availableRelaxed = celebrationSongs.filter(s => !excludeSet.has(s.number));
+            if (availableRelaxed.length > 0) {
+                return pickWeightedCandidate(availableRelaxed, 'celebration');
+            }
+
+            return celebrationSongs[Math.floor(Math.random() * celebrationSongs.length)];
+        }
+
+        function pickOffertorySong(collectionKey, themeStr, excludeNumbers = []) {
+            const list = conventions[collectionKey] || conventions['maramon-2026'] || [];
+            if (list.length === 0) return null;
+            const excludeSet = new Set(excludeNumbers);
+            const ctx = getThemeContext(themeStr);
+
+            // 1. Themed convention songs NOT used in the last 2 months
+            const themed = list.filter(s => !excludeSet.has(s.number) && songMatchesThemeKeywords(s, ctx.keywords) && !wasRecentlyUsed(s.number, 'offertory', collectionKey));
+            if (themed.length > 0) {
+                return pickWeightedCandidate(themed, 'offertory');
+            }
+
+            // 2. General convention songs in collection NOT used in the last 2 months
+            const available = list.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'offertory', collectionKey));
+            if (available.length > 0) {
+                return pickWeightedCandidate(available, 'offertory');
+            }
+
+            // 3. Fallback only if all convention songs in collection were used in the last 2 months
+            const themedRelaxed = list.filter(s => !excludeSet.has(s.number) && songMatchesThemeKeywords(s, ctx.keywords));
+            if (themedRelaxed.length > 0) {
+                return pickWeightedCandidate(themedRelaxed, 'offertory');
+            }
+
+            const availableRelaxed = list.filter(s => !excludeSet.has(s.number));
+            if (availableRelaxed.length > 0) {
+                return pickWeightedCandidate(availableRelaxed, 'offertory');
+            }
+
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function pickDoxologySong(excludeNumbers = []) {
+            const doxSongs = hymns.filter(s => typeof s.number === 'string' && s.number.startsWith('DOX'));
+            if (doxSongs.length === 0) return null;
+            const excludeSet = new Set(excludeNumbers);
+
+            // 1. Doxology songs NOT used in the last 2 months
+            const available = doxSongs.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'doxology', 'Kristheeya Keerthanangal'));
+            if (available.length > 0) {
+                return pickWeightedCandidate(available, 'doxology');
+            }
+
+            // 2. Fallback only if all 13 doxologies were used in the last 2 months
+            const availableRelaxed = doxSongs.filter(s => !excludeSet.has(s.number));
+            if (availableRelaxed.length > 0) {
+                return pickWeightedCandidate(availableRelaxed, 'doxology');
+            }
+
+            return doxSongs[Math.floor(Math.random() * doxSongs.length)];
+        }
+
+        function getOffertoryConvention(offertoryPref) {
+            if (offertoryPref === 'alternate') {
+                const year = new Date().getFullYear();
+                const lastSaved = serviceHistory
+                    .flatMap(s => s.songs || [])
+                    .find(s => s.category === 'offertory' && s.collection);
+                if (lastSaved) {
+                    lastConvention = lastSaved.collection.startsWith('maramon') ? 'maramon' : 'kottarakara';
+                }
+                lastConvention = lastConvention === 'kottarakara' ? 'maramon' : 'kottarakara';
+                let convention = `${lastConvention}-${year}`;
+                if (!conventions[convention]) {
+                    convention = `${lastConvention}-2025`;
+                }
+                return convention;
+            }
+            return offertoryPref;
+        }
+
+        // Backward compatibility wrappers
+        function getRandomSong(numbers, category, theme = '', exclude = []) {
+            return pickThemedSong(category, theme || document.getElementById('serviceTheme')?.value || '', exclude);
         }
 
         function getRandomConventionSong(collection) {
-            const songs = conventions[collection];
-            
-            // Check history for frequently used offertory songs from this collection
-            const frequentPicks = getFrequentSongs('offertory', 5);
-            const validFrequent = songs.filter(s => frequentPicks.includes(s.number));
-            
-            if (validFrequent.length > 0 && Math.random() > 0.3) {
-                return validFrequent[Math.floor(Math.random() * validFrequent.length)];
-            }
-            
-            let availableSongs = songs.filter(s => !wasRecentlyUsed(s.number, 'offertory'));
-            if (availableSongs.length === 0) availableSongs = songs;
-            
-            return availableSongs[Math.floor(Math.random() * availableSongs.length)];
+            return pickOffertorySong(collection, document.getElementById('serviceTheme')?.value || '');
         }
 
         function getRandomCelebrationSong() {
-            if (celebrationSongs.length === 0) return null;
-            
-            // Only use confirmed services for frequency and recency
-            const confirmedHistory = serviceHistory.filter(s => s.confirmed === true);
-
-            const usedSongs = confirmedHistory
-                .flatMap(s => s.songs.filter(song => song.category === 'celebration'))
-                .map(s => s.number);
-            
-            const frequency = {};
-            usedSongs.forEach(num => {
-                frequency[num] = (frequency[num] || 0) + 1;
-            });
-            
-            const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
-            const recentlyUsed = confirmedHistory
-                .filter(s => s.date > twoMonthsAgo)
-                .flatMap(s => s.songs.filter(song => song.category === 'celebration'))
-                .map(s => s.number);
-            
-            const availableSongs = celebrationSongs.filter(s => !recentlyUsed.includes(s.number));
-            const songsToChooseFrom = availableSongs.length > 0 ? availableSongs : celebrationSongs;
-            
-            if (Math.random() < 0.7 && Object.keys(frequency).length > 0) {
-                const frequentSongs = Object.entries(frequency)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 5)
-                    .map(([num]) => isNaN(num) ? num : parseInt(num));
-                
-                const frequentAvailable = songsToChooseFrom.filter(s => frequentSongs.includes(s.number));
-                if (frequentAvailable.length > 0) {
-                    return frequentAvailable[Math.floor(Math.random() * frequentAvailable.length)];
-                }
-            }
-            
-            return songsToChooseFrom[Math.floor(Math.random() * songsToChooseFrom.length)];
+            return pickCelebrationSong();
         }
 
         function getDoxology() {
-            const doxSongs = hymns.filter(s => typeof s.number === 'string' && s.number.startsWith('DOX'));
-            
-            // Check for frequently used doxology
-            const frequentPicks = getFrequentSongs('doxology', 3);
-            const validFrequent = doxSongs.filter(s => frequentPicks.includes(s.number));
-            
-            if (validFrequent.length > 0 && Math.random() > 0.3) {
-                return validFrequent[Math.floor(Math.random() * validFrequent.length)];
-            }
-            
-            let availableSongs = doxSongs.filter(s => !wasRecentlyUsed(s.number, 'doxology'));
-            if (availableSongs.length === 0) availableSongs = doxSongs;
-            
-            return availableSongs[Math.floor(Math.random() * availableSongs.length)];
+            return pickDoxologySong();
         }
 
         function reconstructServiceFromHistory(service, existingIndex) {
@@ -909,60 +1171,119 @@
             });
         }
 
-        function generateService() {
+        function generateService(force = false) {
             // Check if user is generating for a date that already has a saved plan
             const selectedDateStr = document.getElementById('serviceDate').value;
-            if (selectedDateStr) {
-                const existingIndex = findServiceByDate(selectedDateStr);
-                if (existingIndex !== -1 && !window.forceRegenerate) {
-                    reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
-                    const dateLabel = new Date(selectedDateStr + (selectedDateStr.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-                    const banner = document.createElement('div');
-                    banner.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 8px;';
-                    banner.innerHTML = `<span>📋</span> Loaded existing saved worship service for <strong>${dateLabel}</strong>`;
-                    const order = document.getElementById('serviceOrder');
-                    if (order) {
-                        order.insertBefore(banner, order.firstChild);
-                        setTimeout(() => { if (banner) banner.remove(); }, 5000);
-                    }
-                    return;
+            const existingIndex = selectedDateStr ? findServiceByDate(selectedDateStr) : -1;
+
+            if (existingIndex !== -1 && !window.currentService && !window.forceRegenerate && !force) {
+                reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
+                const dateLabel = new Date(selectedDateStr + (selectedDateStr.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                const banner = document.createElement('div');
+                banner.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 8px;';
+                banner.innerHTML = `<span>📋</span> Loaded existing saved worship service for <strong>${dateLabel}</strong>`;
+                const order = document.getElementById('serviceOrder');
+                if (order) {
+                    order.insertBefore(banner, order.firstChild);
+                    setTimeout(() => { if (banner) banner.remove(); }, 5000);
                 }
+                return;
             }
 
+            const theme = document.getElementById('serviceTheme')?.value?.trim() || '';
             const offertoryPref = document.getElementById('offertoryConvention').value;
+            const offertoryConvention = getOffertoryConvention(offertoryPref);
 
-            let offertoryConvention;
-            if (offertoryPref === 'alternate') {
-                const year = new Date().getFullYear();
-                // Determine last used convention from saved history so alternation
-                // survives page reloads and sessions
-                const lastSaved = serviceHistory
-                    .flatMap(s => s.songs)
-                    .find(s => s.category === 'offertory' && s.collection);
-                if (lastSaved) {
-                    lastConvention = lastSaved.collection.startsWith('maramon') ? 'maramon' : 'kottarakara';
-                }
-                lastConvention = lastConvention === 'kottarakara' ? 'maramon' : 'kottarakara';
-                offertoryConvention = `${lastConvention}-${year}`;
-                if (!conventions[offertoryConvention]) {
-                    offertoryConvention = `${lastConvention}-2025`;
-                }
-            } else {
-                offertoryConvention = offertoryPref;
-            }
+            // Previous songs currently displayed on screen — strictly exclude each from its slot so ALL songs rotate
+            const prevOpening = window.currentService ? window.currentService[0]?.song?.number : null;
+            const prevBible = window.currentService ? window.currentService[1]?.song?.number : null;
+            const prevCelebration = window.currentService ? window.currentService[2]?.song?.number : null;
+            const prevOffertory = window.currentService ? window.currentService[3]?.song?.number : null;
+            const prevQurbana1 = window.currentService ? window.currentService[4]?.song?.number : null;
+            const prevQurbana2 = window.currentService ? window.currentService[5]?.song?.number : null;
+            const prevDoxology = window.currentService ? window.currentService[7]?.song?.number : null;
+
+            const chosenInPlan = [];
+
+            const openingSong = pickThemedSong('opening', theme, prevOpening ? [prevOpening] : [], chosenInPlan);
+            if (openingSong) chosenInPlan.push(openingSong.number);
+
+            const bibleSong = pickThemedSong('bibleReading', theme, prevBible ? [prevBible] : [], chosenInPlan);
+            if (bibleSong) chosenInPlan.push(bibleSong.number);
+
+            const celebrationSong = pickCelebrationSong(prevCelebration ? [prevCelebration] : []);
+            if (celebrationSong) chosenInPlan.push(celebrationSong.number);
+
+            const offertorySong = pickOffertorySong(offertoryConvention, theme, prevOffertory ? [prevOffertory] : []);
+            if (offertorySong) chosenInPlan.push(offertorySong.number);
+
+            const qurbana1Song = pickThemedSong('qurbana1', theme, prevQurbana1 ? [prevQurbana1] : [], chosenInPlan);
+            if (qurbana1Song) chosenInPlan.push(qurbana1Song.number);
+
+            const qurbana2Song = pickThemedSong('qurbana2', theme, prevQurbana2 ? [prevQurbana2] : [], chosenInPlan);
+            if (qurbana2Song) chosenInPlan.push(qurbana2Song.number);
+
+            const doxologySong = pickDoxologySong(prevDoxology ? [prevDoxology] : []);
 
             window.currentService = [
-                { title: '1. Opening Hymn', song: getRandomSong(categories.opening, 'opening'), collection: 'Kristheeya Keerthanangal', category: 'opening' },
-                { title: '2. Song for Bible Reading', song: getRandomSong(categories.bibleReading, 'bibleReading'), collection: 'Kristheeya Keerthanangal', category: 'bibleReading' },
-                { title: '3. Birthday/Anniversary Song', song: getRandomCelebrationSong(), collection: 'Birthday/Anniversary', category: 'celebration' },
-                { title: '4. Offertory Song', song: getRandomConventionSong(offertoryConvention), collection: offertoryConvention, category: 'offertory' },
-                { title: '5. Holy Qurbana - Song 1', song: getRandomSong(categories.qurbana, 'qurbana1'), collection: 'Kristheeya Keerthanangal', category: 'qurbana1' },
-                { title: '6. Holy Qurbana - Song 2', song: getRandomSong(categories.qurbana, 'qurbana2'), collection: 'Kristheeya Keerthanangal', category: 'qurbana2' },
+                { title: '1. Opening Hymn', song: openingSong, collection: 'Kristheeya Keerthanangal', category: 'opening' },
+                { title: '2. Song for Bible Reading', song: bibleSong, collection: 'Kristheeya Keerthanangal', category: 'bibleReading' },
+                { title: '3. Birthday/Anniversary Song', song: celebrationSong, collection: 'Birthday/Anniversary', category: 'celebration' },
+                { title: '4. Offertory Song', song: offertorySong, collection: offertoryConvention, category: 'offertory' },
+                { title: '5. Holy Qurbana - Song 1', song: qurbana1Song, collection: 'Kristheeya Keerthanangal', category: 'qurbana1' },
+                { title: '6. Holy Qurbana - Song 2', song: qurbana2Song, collection: 'Kristheeya Keerthanangal', category: 'qurbana2' },
                 { title: '7. Holy Qurbana - Song 3 (Optional)', song: null, collection: 'Kristheeya Keerthanangal', category: 'qurbana3', optional: true },
-                { title: '8. Doxology', song: getDoxology(), collection: 'Doxology', category: 'doxology' }
+                { title: '8. Doxology', song: doxologySong, collection: 'Doxology', category: 'doxology' }
             ];
 
             displayService(window.currentService);
+        }
+
+        function rerollSingleSong(index) {
+            if (!window.currentService || !window.currentService[index]) return;
+            const item = window.currentService[index];
+            const currentSongNum = item.song ? item.song.number : null;
+            const theme = document.getElementById('serviceTheme')?.value?.trim() || '';
+            const offertoryPref = document.getElementById('offertoryConvention')?.value || 'alternate';
+
+            // Collect numbers of songs currently chosen in all OTHER slots to avoid intra-service duplicates
+            const otherSelected = window.currentService
+                .map((s, i) => (i !== index && s.song) ? s.song.number : null)
+                .filter(Boolean);
+
+            let newSong = null;
+            let collection = item.collection;
+
+            if (item.category === 'opening') {
+                newSong = pickThemedSong('opening', theme, [currentSongNum], otherSelected);
+                collection = 'Kristheeya Keerthanangal';
+            } else if (item.category === 'bibleReading') {
+                newSong = pickThemedSong('bibleReading', theme, [currentSongNum], otherSelected);
+                collection = 'Kristheeya Keerthanangal';
+            } else if (item.category === 'celebration') {
+                newSong = pickCelebrationSong([currentSongNum]);
+                collection = 'Birthday/Anniversary';
+            } else if (item.category === 'offertory') {
+                let coll = item.collection;
+                if (!conventions[coll]) {
+                    coll = getOffertoryConvention(offertoryPref);
+                }
+                newSong = pickOffertorySong(coll, theme, [currentSongNum]);
+                collection = coll;
+            } else if (item.category === 'qurbana1' || item.category === 'qurbana2' || item.category === 'qurbana3') {
+                newSong = pickThemedSong(item.category, theme, [currentSongNum], otherSelected);
+                collection = 'Kristheeya Keerthanangal';
+            } else if (item.category === 'doxology') {
+                newSong = pickDoxologySong([currentSongNum]);
+                collection = 'Doxology';
+            }
+
+            if (newSong) {
+                window.currentService[index].song = newSong;
+                window.currentService[index].collection = collection;
+                displayService(window.currentService);
+                checkUnconfirmedHistory(newSong.number, item.category, collection);
+            }
         }
 
         function getSuggestedCelebrationSongs() {
@@ -996,7 +1317,7 @@
             const rangeSongs = hymns
                 .filter(s => typeof s.number === 'number' && 
                             Math.abs(s.number - avgNum) < 50 &&
-                            !wasRecentlyUsed(s.number, 'celebration'))
+                            !wasRecentlyUsed(s.number, 'celebration', 'Kristheeya Keerthanangal'))
                 .map(s => s.number)
                 .slice(0, 3);
             
@@ -1040,7 +1361,7 @@
                 window.currentService[index].song = song;
                 window.currentService[index].collection = collection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, window.currentService[index].category);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category, collection);
             } else {
                 const customName = prompt(
                     `Song #${songNum} not found in any collection.\n\n` +
@@ -1088,7 +1409,7 @@
                     'Kristheeya Keerthanangal' :
                     selectedCollection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, window.currentService[index].category);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category, window.currentService[index].collection);
             } else {
                 // Song not found - offer to create custom entry
                 const customName = prompt(
@@ -1132,7 +1453,7 @@
             if (song) {
                 window.currentService[index].song = song;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, window.currentService[index].category);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category, 'Kristheeya Keerthanangal');
             } else {
                 const customName = prompt(
                     `Song #${songNum} not found in Kristheeya Keerthanangal.\n\n` +
@@ -1153,6 +1474,13 @@
         }
 
                 function displayService(service) {
+            const currentTheme = document.getElementById('serviceTheme')?.value || '';
+            const btnGen = document.getElementById('btnGenerate');
+            if (btnGen) {
+                const span = btnGen.querySelector('span');
+                if (span) span.textContent = 'Regenerate Service';
+            }
+
             const html = service.map((item, index) => {
                 // Handle optional fields (no song set)
                 if ((item.manual || item.optional) && !item.song) {
@@ -1208,20 +1536,39 @@
                     }
                 }
                 
-                const recentWarning = wasRecentlyUsed(item.song.number, item.category) ? 
+                const recentWarning = wasRecentlyUsed(item.song.number, item.category, item.collection) ? 
                     '<div class="warning-chip">⚠️ Used in last 2 months</div>' : '';
-                
+
+                const rerollButton = (!item.optional || item.song) ? `
+                    <button onclick="rerollSingleSong(${index})" class="reroll-pill-btn" title="Rotate this song suggestion">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>Reroll
+                    </button>
+                ` : '';
+
                 const editButton = item.category === 'celebration' ? 
                     `<button onclick="editCelebrationSong(${index})" class="edit-pill-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>Edit</button>` :
                     item.optional ?
                     `<button onclick="removeOptionalSong(${index})" class="remove-pill-btn"><span style="font-size:11px; margin-right:2px;">✕</span> Remove</button>` :
                     `<button onclick="editSong(${index})" class="edit-pill-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>Edit</button>`;
-                
+
+                const isMatched = item.song ? isSongThemeMatch(item.song, currentTheme) : false;
+                const themeBadgeHtml = isMatched ? `<span class="song-theme-badge">✨ Theme Match</span>` : '';
+                const catBadgeHtml = (item.song && item.song.cat && item.song.cat.length > 0)
+                    ? `<span class="song-cat-badge">🏷️ ${escapeHtml(item.song.cat[0])}</span>`
+                    : '';
+
                 return `
                     <div class="service-section">
                         <div class="section-title">
                             <span>${item.title}</span>
-                            ${editButton}
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                ${rerollButton}
+                                ${editButton}
+                            </div>
                         </div>
                         <div class="song-card-content">
                             <div class="song-num-badge">#${item.song.number}</div>
@@ -1230,6 +1577,8 @@
                                 ${item.song.name2 ? `<div class="song-name-ml ml">${item.song.name2}</div>` : ''}
                                 <div class="song-tags-row">
                                     <span class="song-col-badge">${item.collection}</span>
+                                    ${catBadgeHtml}
+                                    ${themeBadgeHtml}
                                 </div>
                             </div>
                         </div>
@@ -1288,7 +1637,7 @@
                     window.currentService[index].song = song;
                     window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     displayService(window.currentService);
-                    checkUnconfirmedHistory(song.number, 'offertory');
+                    checkUnconfirmedHistory(song.number, 'offertory', window.currentService[index].collection);
                 } else {
                     const collectionLabel = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     const customName = prompt(
@@ -1333,7 +1682,7 @@
                     if (song) {
                         window.currentService[index].song = song;
                         displayService(window.currentService);
-                        checkUnconfirmedHistory(song.number, 'doxology');
+                        checkUnconfirmedHistory(song.number, 'doxology', 'Kristheeya Keerthanangal');
                     } else {
                         alert(`Doxology ${doxNumber} not found!`);
                     }
@@ -1374,7 +1723,7 @@
                     window.currentService[index].song = song;
                     window.currentService[index].collection = collection;
                     displayService(window.currentService);
-                    checkUnconfirmedHistory(song.number, 'celebration');
+                    checkUnconfirmedHistory(song.number, 'celebration', collection);
                 } else {
                     alert(`Song #${input} not found in any collection!`);
                 }
@@ -1448,7 +1797,7 @@
                     'Kristheeya Keerthanangal' :
                     selectedCollection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, 'celebration');
+                checkUnconfirmedHistory(song.number, 'celebration', window.currentService[index].collection);
             } else {
                 // Song not found - offer to create custom entry
                 const customName = prompt(
@@ -1574,6 +1923,11 @@
                         // Clear previous service when switching to a date with no existing plan
                         window.currentService = null;
                         delete window.editingServiceIndex;
+                        const btnGen = document.getElementById('btnGenerate');
+                        if (btnGen) {
+                            const span = btnGen.querySelector('span');
+                            if (span) span.textContent = 'Generate Service';
+                        }
                         const order = document.getElementById('serviceOrder');
                         if (order) {
                             order.innerHTML = `
@@ -1585,6 +1939,13 @@
                             `;
                         }
                     }
+                }
+            });
+
+            // Re-render theme matches if user manually edits theme
+            document.getElementById('serviceTheme').addEventListener('input', () => {
+                if (window.currentService && window.currentService.length > 0) {
+                    displayService(window.currentService);
                 }
             });
             
