@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, interactive-widget=resizes-content">
     <meta name="google-site-verification" content="E5y7IUSrWB-JDbrB8h3NCEqLZN0KTAsJzBlqWWKqDJE" />
     <title>Holy Hymns | Malayalam Christian Songs & Hymnal Collection</title>
     
@@ -1222,6 +1222,7 @@
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
             overscroll-behavior: contain;
+            position: relative;
             padding: 14px;
             display: flex;
             flex-direction: column;
@@ -1258,16 +1259,20 @@
             display: flex;
             gap: 8px;
             padding: 12px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
             border-top: 1px solid var(--card-border);
             background: var(--dropdown-bg);
         }
 
         #chatInput {
             flex: 1;
+            min-width: 0;
             padding: 10px 14px;
             border: 1px solid var(--input-border);
             border-radius: 9999px;
-            font-size: 13.5px;
+            font-size: 16px;
+            touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
             outline: none;
             background: var(--input-bg);
             color: var(--text-primary);
@@ -1277,13 +1282,15 @@
         #chatInput:focus { border-color: var(--accent-primary); }
 
         #chatSend {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
             border-radius: 50%;
             background: var(--accent-gradient);
             border: none;
             color: white;
-            font-size: 15px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -1315,24 +1322,46 @@
                 position: fixed !important;
                 right: 0 !important;
                 left: 0 !important;
-                bottom: 0 !important;
+                bottom: var(--mobile-chat-bottom, 0px) !important;
                 top: auto !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 height: 80vh !important;
-                height: 80dvh !important;
+                height: var(--mobile-chat-height, 80dvh) !important;
                 max-height: 85vh !important;
-                max-height: 85dvh !important;
+                max-height: var(--mobile-chat-max-height, 85dvh) !important;
                 border-radius: 20px 20px 0 0 !important;
                 box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.45) !important;
                 z-index: 1001 !important;
                 transform: none !important;
             }
             .chat-drag-handle { display: none !important; }
+            .chat-close {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 18px !important;
+                flex-shrink: 0 !important;
+            }
             .chat-messages {
                 max-height: none !important;
                 flex: 1 1 auto;
                 min-height: 0;
+            }
+            .chat-input-row {
+                padding: 10px 14px !important;
+                padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+            }
+            #chatInput {
+                font-size: 16px !important;
+                min-width: 0 !important;
+            }
+            #chatSend {
+                width: 42px !important;
+                height: 42px !important;
+                min-width: 42px !important;
+                min-height: 42px !important;
+                font-size: 16px !important;
+                flex-shrink: 0 !important;
             }
         }
     </style>
@@ -1917,6 +1946,26 @@
         let chatHistory = [];
         let chatOpen = false;
 
+        // Mobile Viewport and Keyboard Adaptation
+        function updateMobileChatViewport() {
+            if (window.innerWidth > 768 || !chatOpen) return;
+            const panel = document.getElementById('chatPanel');
+            if (!panel) return;
+
+            if (window.visualViewport) {
+                const vv = window.visualViewport;
+                const keyboardHeight = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+                panel.style.setProperty('--mobile-chat-bottom', `${keyboardHeight}px`);
+                const visibleHeight = Math.min(vv.height, window.innerHeight * 0.85);
+                panel.style.setProperty('--mobile-chat-height', `${visibleHeight}px`);
+                panel.style.setProperty('--mobile-chat-max-height', `${vv.height}px`);
+            } else {
+                panel.style.setProperty('--mobile-chat-bottom', '0px');
+                panel.style.setProperty('--mobile-chat-height', '80dvh');
+                panel.style.setProperty('--mobile-chat-max-height', '85dvh');
+            }
+        }
+
         // Position & Smart Placement
         function positionChatPanel() {
             const btn = document.getElementById('chatBtn');
@@ -1932,6 +1981,7 @@
                 panel.style.width = '';
                 panel.style.height = '';
                 panel.style.transform = '';
+                updateMobileChatViewport();
                 return;
             }
 
@@ -1976,12 +2026,23 @@
                 dismissGreeting(false);
                 positionChatPanel();
                 // On mobile, hide floating trigger button so it never covers the message list or intercepts scroll
-                if (window.innerWidth <= 768 && btn) {
-                    btn.style.display = 'none';
+                if (window.innerWidth <= 768) {
+                    if (btn) btn.style.display = 'none';
+                    document.body.style.overflow = 'hidden';
+                    updateMobileChatViewport();
+                } else {
+                    document.getElementById('chatInput').focus();
                 }
-                document.getElementById('chatInput').focus();
             } else {
                 if (btn) btn.style.display = 'flex';
+                document.body.style.overflow = '';
+                if (window.innerWidth <= 768) {
+                    panel.style.removeProperty('--mobile-chat-bottom');
+                    panel.style.removeProperty('--mobile-chat-height');
+                    panel.style.removeProperty('--mobile-chat-max-height');
+                    const input = document.getElementById('chatInput');
+                    if (input) input.blur();
+                }
             }
         }
 
@@ -2161,7 +2222,10 @@
                 });
 
                 panelHeader.addEventListener('touchstart', onPanelStart, { passive: true });
-                panelHeader.addEventListener('touchmove', onPanelMove, { passive: false });
+                panelHeader.addEventListener('touchmove', (e) => {
+                    if (window.innerWidth <= 768 && e.cancelable) e.preventDefault();
+                    else onPanelMove(e);
+                }, { passive: false });
                 panelHeader.addEventListener('touchend', onPanelEnd);
             }
 
@@ -2185,11 +2249,43 @@
                     positionChatPanel();
                     if (window.innerWidth <= 768) {
                         btn.style.display = 'none';
+                        updateMobileChatViewport();
                     } else {
                         btn.style.display = 'flex';
+                        const p = document.getElementById('chatPanel');
+                        if (p) {
+                            p.style.removeProperty('--mobile-chat-bottom');
+                            p.style.removeProperty('--mobile-chat-height');
+                            p.style.removeProperty('--mobile-chat-max-height');
+                        }
                     }
                 }
             });
+
+            // Handle mobile visual viewport changes (virtual keyboard open/close)
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    if (chatOpen && window.innerWidth <= 768) updateMobileChatViewport();
+                });
+                window.visualViewport.addEventListener('scroll', () => {
+                    if (chatOpen && window.innerWidth <= 768) updateMobileChatViewport();
+                });
+            }
+
+            const chatInp = document.getElementById('chatInput');
+            if (chatInp) {
+                chatInp.addEventListener('focus', () => {
+                    if (window.innerWidth <= 768) {
+                        setTimeout(updateMobileChatViewport, 100);
+                        setTimeout(updateMobileChatViewport, 300);
+                    }
+                });
+                chatInp.addEventListener('blur', () => {
+                    if (window.innerWidth <= 768) {
+                        setTimeout(updateMobileChatViewport, 100);
+                    }
+                });
+            }
         })();
 
         let greetingTimer = null;
@@ -2258,7 +2354,11 @@
                 appendBubble('bot', 'Could not reach the assistant. Check your connection.');
             } finally {
                 document.getElementById('chatSend').disabled = false;
-                input.focus();
+                if (window.innerWidth <= 768) {
+                    input.blur();
+                } else {
+                    input.focus();
+                }
             }
         }
 
@@ -2305,8 +2405,11 @@
             });
 
             msgs.appendChild(wrapper);
-            // Smoothly bring the start of the results into view so user can read them and scroll through the rest
-            wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Smoothly bring the start of the results into view inside chat messages container
+            msgs.scrollTo({
+                top: Math.max(0, wrapper.offsetTop - 12),
+                behavior: 'smooth'
+            });
         }
     </script>
 </body>
