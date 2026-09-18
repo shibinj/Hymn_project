@@ -1167,7 +1167,7 @@
             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
             display: none;
             flex-direction: column;
-            z-index: 99;
+            z-index: 1000;
             overflow: hidden;
             animation: chatSlideIn 0.2s ease;
         }
@@ -1185,6 +1185,14 @@
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
+        }
+
+        .chat-drag-handle {
+            font-size: 11px;
+            opacity: 0.85;
+            margin-bottom: 2px;
+            user-select: none;
+            letter-spacing: 0.3px;
         }
 
         .chat-header-title { font-weight: 700; font-size: 15px; }
@@ -1210,6 +1218,10 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
             padding: 14px;
             display: flex;
             flex-direction: column;
@@ -1300,12 +1312,27 @@
             .year-pill-card { padding: 12px 14px; }
             .search-kbd { display: none; }
             #chatPanel {
-                right: 0;
-                left: 0;
-                bottom: 0;
-                width: 100%;
-                border-radius: 20px 20px 0 0;
-                max-height: 75vh;
+                position: fixed !important;
+                right: 0 !important;
+                left: 0 !important;
+                bottom: 0 !important;
+                top: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 80vh !important;
+                height: 80dvh !important;
+                max-height: 85vh !important;
+                max-height: 85dvh !important;
+                border-radius: 20px 20px 0 0 !important;
+                box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.45) !important;
+                z-index: 1001 !important;
+                transform: none !important;
+            }
+            .chat-drag-handle { display: none !important; }
+            .chat-messages {
+                max-height: none !important;
+                flex: 1 1 auto;
+                min-height: 0;
             }
         }
     </style>
@@ -1896,6 +1923,18 @@
             const panel = document.getElementById('chatPanel');
             if (!btn || !panel) return;
 
+            // On mobile devices (<=768px), keep docked as a bottom sheet with full width and clear any inline positioning
+            if (window.innerWidth <= 768) {
+                panel.style.top = '';
+                panel.style.left = '';
+                panel.style.bottom = '';
+                panel.style.right = '';
+                panel.style.width = '';
+                panel.style.height = '';
+                panel.style.transform = '';
+                return;
+            }
+
             const btnRect = btn.getBoundingClientRect();
             const panelWidth = Math.min(380, window.innerWidth - 32);
             const panelHeight = Math.min(560, window.innerHeight - 100);
@@ -1924,20 +1963,29 @@
             panel.style.left = left + 'px';
             panel.style.bottom = 'auto';
             panel.style.right = 'auto';
+            panel.style.width = panelWidth + 'px';
+            panel.style.height = '';
         }
 
         function toggleChat() {
             chatOpen = !chatOpen;
             const panel = document.getElementById('chatPanel');
+            const btn = document.getElementById('chatBtn');
             panel.style.display = chatOpen ? 'flex' : 'none';
             if (chatOpen) {
                 dismissGreeting(false);
                 positionChatPanel();
+                // On mobile, hide floating trigger button so it never covers the message list or intercepts scroll
+                if (window.innerWidth <= 768 && btn) {
+                    btn.style.display = 'none';
+                }
                 document.getElementById('chatInput').focus();
+            } else {
+                if (btn) btn.style.display = 'flex';
             }
         }
 
-        // ── Draggable Floating Button Logic ───────────────────────────
+        // ── Draggable Floating Button & Panel Logic ───────────────────
         (function initDraggableChat() {
             const btn = document.getElementById('chatBtn');
             const greeting = document.getElementById('chatGreeting');
@@ -1947,9 +1995,9 @@
             let startX, startY, initialLeft, initialTop;
             let hasMoved = false;
 
-            // Load saved position
+            // Load saved position ONLY on desktop
             const savedPos = localStorage.getItem('hymn_chat_btn_pos');
-            if (savedPos) {
+            if (savedPos && window.innerWidth > 768) {
                 try {
                     const pos = JSON.parse(savedPos);
                     const maxLeft = window.innerWidth - 70;
@@ -1989,7 +2037,7 @@
                 const dx = clientX - startX;
                 const dy = clientY - startY;
 
-                if (Math.hypot(dx, dy) > 5) {
+                if (Math.hypot(dx, dy) > 8) {
                     hasMoved = true;
                     if (e.cancelable) e.preventDefault();
                 }
@@ -2016,7 +2064,7 @@
             function onEnd(e) {
                 if (!isDragging) return;
                 isDragging = false;
-                if (hasMoved) {
+                if (hasMoved && window.innerWidth > 768) {
                     const rect = btn.getBoundingClientRect();
                     localStorage.setItem('hymn_chat_btn_pos', JSON.stringify({ left: rect.left, top: rect.top }));
                 }
@@ -2044,12 +2092,12 @@
                 }
             });
 
-            // Touch Events
+            // Touch Events for floating button
             btn.addEventListener('touchstart', onStart, { passive: true });
             btn.addEventListener('touchmove', onMove, { passive: false });
             btn.addEventListener('touchend', onEnd);
 
-            // ── Draggable Chat Panel Header ───────────────────────────
+            // ── Draggable Chat Panel Header (Desktop Only) ───────────────
             const panelHeader = document.getElementById('chatPanelHeader');
             const panel = document.getElementById('chatPanel');
             if (panelHeader && panel) {
@@ -2057,6 +2105,8 @@
                 let pStartX, pStartY, pInitialLeft, pInitialTop;
 
                 function onPanelStart(e) {
+                    // Strictly disable panel dragging on mobile devices (<=768px)
+                    if (window.innerWidth <= 768) return;
                     if (e.target.closest('.chat-close')) return;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -2069,6 +2119,7 @@
                 }
 
                 function onPanelMove(e) {
+                    if (window.innerWidth <= 768) return;
                     if (!pDragging) return;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -2096,6 +2147,7 @@
                 }
 
                 panelHeader.addEventListener('mousedown', (e) => {
+                    if (window.innerWidth <= 768) return;
                     if (e.target.closest('.chat-close')) return;
                     onPanelStart(e);
                     const handlePanelMove = (ev) => onPanelMove(ev);
@@ -2113,7 +2165,14 @@
                 panelHeader.addEventListener('touchend', onPanelEnd);
             }
 
-            // Reposition on window resize so it never goes off-screen
+            // Isolate message scroll events so they never bubble up to any parent drag handlers
+            const chatMsgs = document.getElementById('chatMessages');
+            if (chatMsgs) {
+                chatMsgs.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+                chatMsgs.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+            }
+
+            // Reposition on window resize so it stays in valid viewport bounds
             window.addEventListener('resize', () => {
                 const rect = btn.getBoundingClientRect();
                 const maxLeft = window.innerWidth - btn.offsetWidth - 16;
@@ -2122,7 +2181,14 @@
                     btn.style.left = Math.max(16, Math.min(rect.left, maxLeft)) + 'px';
                     btn.style.top = Math.max(16, Math.min(rect.top, maxTop)) + 'px';
                 }
-                if (chatOpen) positionChatPanel();
+                if (chatOpen) {
+                    positionChatPanel();
+                    if (window.innerWidth <= 768) {
+                        btn.style.display = 'none';
+                    } else {
+                        btn.style.display = 'flex';
+                    }
+                }
             });
         })();
 
@@ -2148,6 +2214,13 @@
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendChatMessage();
+            }
+        });
+
+        // Close chat with Escape key for keyboard accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && chatOpen) {
+                toggleChat();
             }
         });
 
@@ -2232,7 +2305,8 @@
             });
 
             msgs.appendChild(wrapper);
-            msgs.scrollTop = msgs.scrollHeight;
+            // Smoothly bring the start of the results into view so user can read them and scroll through the rest
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     </script>
 </body>
