@@ -681,8 +681,9 @@
         function isSongThemeMatch(song, themeStr) {
             if (!song || !themeStr) return false;
             const ctx = getThemeContext(themeStr);
-            if (song.cat && Array.isArray(song.cat) && ctx.categories.length > 0) {
-                if (song.cat.some(c => ctx.categories.includes(c))) return true;
+            if (song.cat && Array.isArray(song.cat)) {
+                if (ctx.categories.length > 0 && song.cat.some(c => ctx.categories.includes(c))) return true;
+                if (ctx.seasonalOpeningCats.length > 0 && song.cat.some(c => ctx.seasonalOpeningCats.includes(c))) return true;
             }
             return songMatchesThemeKeywords(song, ctx.keywords);
         }
@@ -750,17 +751,65 @@
             await loadFromFirestore();
         }
 
-        function checkUnconfirmedHistory(songNum, category) {
+        function isSameSong(candidateNum, candidateCategory, candidateCollection, historySong) {
+            if (!historySong || historySong.number === undefined || candidateNum === undefined || candidateNum === null) return false;
+            
+            const numA = String(candidateNum).trim().toLowerCase();
+            const numB = String(historySong.number).trim().toLowerCase();
+            if (numA !== numB) return false;
+
+            const normalizeColl = (cat, coll, num) => {
+                if (coll && coll !== 'Unknown' && coll !== 'Custom') {
+                    const c = String(coll).toLowerCase();
+                    if (c.includes('maramon')) return 'maramon';
+                    if (c.includes('kottarakara')) return 'kottarakara';
+                    if (c.includes('birthday') || c.includes('anniversary') || c.includes('celebration')) return 'celebration';
+                    if (c.includes('kristheeya') || c.includes('keerthanangal') || c.includes('hymn') || c.includes('doxology')) return 'hymnal';
+                    return c;
+                }
+                const n = String(num).toUpperCase();
+                if (n.startsWith('SS')) return 'celebration';
+                if (n.startsWith('DOX')) return 'hymnal';
+                if (['opening', 'bibleReading', 'qurbana1', 'qurbana2', 'qurbana3', 'doxology'].includes(cat)) {
+                    return 'hymnal';
+                }
+                if (cat === 'celebration') return 'celebration';
+                if (cat === 'offertory') return 'convention';
+                return 'unknown';
+            };
+
+            const collA = normalizeColl(candidateCategory, candidateCollection, candidateNum);
+            const collB = normalizeColl(historySong.category, historySong.collection, historySong.number);
+
+            // If either collection is unknown, match if both are numeric (likely hymns) or categories match
+            if (collA === 'unknown' || collB === 'unknown') {
+                return true;
+            }
+
+            // Both conventions (e.g. offertory convention songs)
+            if ((collA === 'maramon' || collA === 'kottarakara' || collA === 'convention') &&
+                (collB === 'maramon' || collB === 'kottarakara' || collB === 'convention')) {
+                // If specific conventions are known (maramon vs kottarakara), ensure they match
+                if ((collA === 'maramon' && collB === 'kottarakara') || (collA === 'kottarakara' && collB === 'maramon')) {
+                    return false;
+                }
+                return true;
+            }
+
+            return collA === collB;
+        }
+
+        function checkUnconfirmedHistory(songNum, category, collection) {
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
             const today = Date.now();
 
             // Find past services (date already passed) that are unconfirmed and contain this song
-            const pending = serviceHistory.filter(service =>
-                service.confirmed !== true &&
-                service.date < today &&
-                service.date > twoMonthsAgo &&
-                service.songs.some(s => s.number === songNum && s.category === category)
-            );
+            const pending = serviceHistory.filter(service => {
+                if (service.confirmed === true) return false;
+                const serviceTime = typeof service.date === 'number' ? service.date : new Date(service.date).getTime();
+                if (isNaN(serviceTime) || serviceTime >= today || serviceTime <= twoMonthsAgo) return false;
+                return service.songs && service.songs.some(s => isSameSong(songNum, category, collection, s));
+            });
 
             if (pending.length === 0) return;
 
@@ -803,7 +852,14 @@
             document.getElementById('unconfirmedModal').style.display = 'none';
         }
 
-        function wasRecentlyUsed(songNum, category) {
+        function wasRecentlyUsed(songOrNum, category, collection) {
+            let songNum = songOrNum;
+            if (songOrNum && typeof songOrNum === 'object') {
+                songNum = songOrNum.number;
+                if (!collection && songOrNum.collection) collection = songOrNum.collection;
+            }
+            if (songNum === undefined || songNum === null || songNum === '') return false;
+
             const twoMonthsAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
 
             // Exclude the service currently being edited
@@ -811,14 +867,15 @@
                 ? serviceHistory[window.editingServiceIndex]?.date
                 : undefined;
 
-            // Any saved service (confirmed or not) counts — confirmed check was
-            // preventing warnings for services saved before being marked as sung
-            return serviceHistory.some(service =>
-                service.confirmed !== false &&
-                service.date !== editingDate &&
-                service.date > twoMonthsAgo &&
-                service.songs.some(s => s.number === songNum && s.category === category)
-            );
+            return serviceHistory.some(service => {
+                if (service.confirmed === false) return false;
+                if (editingDate !== undefined && service.date === editingDate) return false;
+
+                const serviceTime = typeof service.date === 'number' ? service.date : new Date(service.date).getTime();
+                if (isNaN(serviceTime) || serviceTime <= twoMonthsAgo) return false;
+
+                return service.songs && service.songs.some(s => isSameSong(songNum, category, collection, s));
+            });
         }
 
         function getFrequentSongs(category, count = 5) {
@@ -894,35 +951,33 @@
                 fallbackHymns = communionSongs;
             }
 
-            // 1. Primary theme matches (not recently used, not in excludeSet)
-            const availablePrimary = primaryHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category));
+            // 1. Primary theme matches (strictly NOT recently used in last 2 months, not in excludeSet)
+            const availablePrimary = primaryHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
             if (availablePrimary.length > 0) {
                 return pickWeightedCandidate(availablePrimary, category);
             }
 
-            // 2. Primary theme matches (relax recency, keep strict exclusion of current/selected songs)
-            const primaryRelaxed = primaryHymns.filter(s => !excludeSet.has(s.number));
-            if (primaryRelaxed.length > 0) {
-                return pickWeightedCandidate(primaryRelaxed, category);
-            }
-
-            // 3. Fallback category hymns (not recently used, not in excludeSet)
-            const availableFallback = fallbackHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category));
+            // 2. Fallback category hymns (strictly NOT recently used in last 2 months, not in excludeSet)
+            const availableFallback = fallbackHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
             if (availableFallback.length > 0) {
                 return pickWeightedCandidate(availableFallback, category);
             }
 
-            // 4. Fallback category hymns (relax recency, keep strict exclusion)
-            const fallbackRelaxed = fallbackHymns.filter(s => !excludeSet.has(s.number));
-            if (fallbackRelaxed.length > 0) {
-                return pickWeightedCandidate(fallbackRelaxed, category);
+            // 3. Any general hymn (strictly NOT recently used in last 2 months, not in excludeSet)
+            const availableAny = hymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
+            if (availableAny.length > 0) {
+                return availableAny[Math.floor(Math.random() * availableAny.length)];
             }
 
-            // 5. Any hymn not in excludeSet
-            const anyAvailable = hymns.filter(s => !excludeSet.has(s.number));
-            if (anyAvailable.length > 0) {
-                return anyAvailable[Math.floor(Math.random() * anyAvailable.length)];
-            }
+            // 4. Absolute emergency fallback only if entire hymnal was used in last 2 months
+            const primaryRelaxed = primaryHymns.filter(s => !excludeSet.has(s.number));
+            if (primaryRelaxed.length > 0) return pickWeightedCandidate(primaryRelaxed, category);
+
+            const fallbackRelaxed = fallbackHymns.filter(s => !excludeSet.has(s.number));
+            if (fallbackRelaxed.length > 0) return pickWeightedCandidate(fallbackRelaxed, category);
+
+            const anyRelaxed = hymns.filter(s => !excludeSet.has(s.number));
+            if (anyRelaxed.length > 0) return anyRelaxed[Math.floor(Math.random() * anyRelaxed.length)];
 
             return hymns[0] || null;
         }
@@ -931,11 +986,13 @@
             if (celebrationSongs.length === 0) return null;
             const excludeSet = new Set(excludeNumbers);
 
-            const available = celebrationSongs.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'celebration'));
+            // 1. Birthday/Anniversary songs NOT used in the last 2 months
+            const available = celebrationSongs.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'celebration', 'Birthday/Anniversary'));
             if (available.length > 0) {
                 return pickWeightedCandidate(available, 'celebration');
             }
 
+            // 2. Fallback only if all celebration songs have been used in the last 2 months
             const availableRelaxed = celebrationSongs.filter(s => !excludeSet.has(s.number));
             if (availableRelaxed.length > 0) {
                 return pickWeightedCandidate(availableRelaxed, 'celebration');
@@ -950,20 +1007,22 @@
             const excludeSet = new Set(excludeNumbers);
             const ctx = getThemeContext(themeStr);
 
-            // Filter convention songs matching theme keywords
-            const themed = list.filter(s => !excludeSet.has(s.number) && songMatchesThemeKeywords(s, ctx.keywords) && !wasRecentlyUsed(s.number, 'offertory'));
+            // 1. Themed convention songs NOT used in the last 2 months
+            const themed = list.filter(s => !excludeSet.has(s.number) && songMatchesThemeKeywords(s, ctx.keywords) && !wasRecentlyUsed(s.number, 'offertory', collectionKey));
             if (themed.length > 0) {
                 return pickWeightedCandidate(themed, 'offertory');
             }
 
+            // 2. General convention songs in collection NOT used in the last 2 months
+            const available = list.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'offertory', collectionKey));
+            if (available.length > 0) {
+                return pickWeightedCandidate(available, 'offertory');
+            }
+
+            // 3. Fallback only if all convention songs in collection were used in the last 2 months
             const themedRelaxed = list.filter(s => !excludeSet.has(s.number) && songMatchesThemeKeywords(s, ctx.keywords));
             if (themedRelaxed.length > 0) {
                 return pickWeightedCandidate(themedRelaxed, 'offertory');
-            }
-
-            const available = list.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'offertory'));
-            if (available.length > 0) {
-                return pickWeightedCandidate(available, 'offertory');
             }
 
             const availableRelaxed = list.filter(s => !excludeSet.has(s.number));
@@ -979,11 +1038,13 @@
             if (doxSongs.length === 0) return null;
             const excludeSet = new Set(excludeNumbers);
 
-            const available = doxSongs.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'doxology'));
+            // 1. Doxology songs NOT used in the last 2 months
+            const available = doxSongs.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, 'doxology', 'Kristheeya Keerthanangal'));
             if (available.length > 0) {
                 return pickWeightedCandidate(available, 'doxology');
             }
 
+            // 2. Fallback only if all 13 doxologies were used in the last 2 months
             const availableRelaxed = doxSongs.filter(s => !excludeSet.has(s.number));
             if (availableRelaxed.length > 0) {
                 return pickWeightedCandidate(availableRelaxed, 'doxology');
@@ -1221,7 +1282,7 @@
                 window.currentService[index].song = newSong;
                 window.currentService[index].collection = collection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(newSong.number, item.category);
+                checkUnconfirmedHistory(newSong.number, item.category, collection);
             }
         }
 
@@ -1256,7 +1317,7 @@
             const rangeSongs = hymns
                 .filter(s => typeof s.number === 'number' && 
                             Math.abs(s.number - avgNum) < 50 &&
-                            !wasRecentlyUsed(s.number, 'celebration'))
+                            !wasRecentlyUsed(s.number, 'celebration', 'Kristheeya Keerthanangal'))
                 .map(s => s.number)
                 .slice(0, 3);
             
@@ -1300,7 +1361,7 @@
                 window.currentService[index].song = song;
                 window.currentService[index].collection = collection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, window.currentService[index].category);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category, collection);
             } else {
                 const customName = prompt(
                     `Song #${songNum} not found in any collection.\n\n` +
@@ -1348,7 +1409,7 @@
                     'Kristheeya Keerthanangal' :
                     selectedCollection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, window.currentService[index].category);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category, window.currentService[index].collection);
             } else {
                 // Song not found - offer to create custom entry
                 const customName = prompt(
@@ -1392,7 +1453,7 @@
             if (song) {
                 window.currentService[index].song = song;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, window.currentService[index].category);
+                checkUnconfirmedHistory(song.number, window.currentService[index].category, 'Kristheeya Keerthanangal');
             } else {
                 const customName = prompt(
                     `Song #${songNum} not found in Kristheeya Keerthanangal.\n\n` +
@@ -1475,7 +1536,7 @@
                     }
                 }
                 
-                const recentWarning = wasRecentlyUsed(item.song.number, item.category) ? 
+                const recentWarning = wasRecentlyUsed(item.song.number, item.category, item.collection) ? 
                     '<div class="warning-chip">⚠️ Used in last 2 months</div>' : '';
 
                 const rerollButton = (!item.optional || item.song) ? `
@@ -1576,7 +1637,7 @@
                     window.currentService[index].song = song;
                     window.currentService[index].collection = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     displayService(window.currentService);
-                    checkUnconfirmedHistory(song.number, 'offertory');
+                    checkUnconfirmedHistory(song.number, 'offertory', window.currentService[index].collection);
                 } else {
                     const collectionLabel = selectedCollection === 'kristheeya-keerthanangal' ? 'Kristheeya Keerthanangal' : selectedCollection;
                     const customName = prompt(
@@ -1621,7 +1682,7 @@
                     if (song) {
                         window.currentService[index].song = song;
                         displayService(window.currentService);
-                        checkUnconfirmedHistory(song.number, 'doxology');
+                        checkUnconfirmedHistory(song.number, 'doxology', 'Kristheeya Keerthanangal');
                     } else {
                         alert(`Doxology ${doxNumber} not found!`);
                     }
@@ -1662,7 +1723,7 @@
                     window.currentService[index].song = song;
                     window.currentService[index].collection = collection;
                     displayService(window.currentService);
-                    checkUnconfirmedHistory(song.number, 'celebration');
+                    checkUnconfirmedHistory(song.number, 'celebration', collection);
                 } else {
                     alert(`Song #${input} not found in any collection!`);
                 }
@@ -1736,7 +1797,7 @@
                     'Kristheeya Keerthanangal' :
                     selectedCollection;
                 displayService(window.currentService);
-                checkUnconfirmedHistory(song.number, 'celebration');
+                checkUnconfirmedHistory(song.number, 'celebration', window.currentService[index].collection);
             } else {
                 // Song not found - offer to create custom entry
                 const customName = prompt(
