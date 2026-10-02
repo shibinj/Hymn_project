@@ -639,10 +639,12 @@
 
         .clip-time-display {
             font-size: 0.85rem;
-            font-family: monospace;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, monospace;
+            font-variant-numeric: tabular-nums;
             color: #94a3b8;
-            min-width: 34px;
+            min-width: 42px;
             text-align: center;
+            font-weight: 600;
         }
 
         .clip-scrubber {
@@ -650,11 +652,11 @@
             -webkit-appearance: none;
             appearance: none;
             height: 6px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.18);
             outline: none;
             cursor: pointer;
-            transition: background 0.2s;
+            position: relative;
         }
 
         .clip-scrubber::-webkit-slider-thumb {
@@ -664,13 +666,16 @@
             height: 14px;
             border-radius: 50%;
             background: #38bdf8;
-            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
             cursor: pointer;
-            transition: transform 0.1s ease;
+            transition: transform 0.15s ease, background 0.15s ease;
         }
 
-        .clip-scrubber::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+        .clip-scrubber::-webkit-slider-thumb:hover,
+        .clip-scrubber:active::-webkit-slider-thumb {
+            transform: scale(1.25);
+            background: #7dd3fc;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.9);
         }
 
         .clip-scrubber::-moz-range-thumb {
@@ -679,8 +684,26 @@
             border-radius: 50%;
             background: #38bdf8;
             border: none;
-            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
             cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .clip-scrubber::-moz-range-thumb:hover {
+            transform: scale(1.25);
+            background: #7dd3fc;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.9);
+        }
+
+        @media (max-width: 600px) {
+            .clip-player-controls {
+                padding: 8px 12px;
+                gap: 8px;
+            }
+            .clip-time-display {
+                font-size: 0.78rem;
+                min-width: 36px;
+            }
         }
 
         /* ── Bottom Prev / Next Float Bar ──────────────────────────────── */
@@ -1064,6 +1087,7 @@
         let pendingYtInit = null;
         let clipProgressTimer = null;
         let isClipPlaying = false;
+        let isUserScrubbing = false;
         let clipCurrentTime = 0;
         let currentClipStart = 0;
         let currentClipEnd = 0;
@@ -1086,16 +1110,20 @@
             }
         }
 
-        function updateClipUIOnEnd(startTime) {
+        function updateClipUIOnEnd(startTime, endTime) {
             setClipPlayState(false);
             clipCurrentTime = startTime || 0;
             const scrubber = document.getElementById('clipScrubber');
             const curTime = document.getElementById('clipCurTime');
-            if (scrubber) scrubber.value = startTime || 0;
+            if (scrubber) {
+                scrubber.value = 0;
+                scrubber.style.background = 'rgba(255, 255, 255, 0.18)';
+            }
             if (curTime) curTime.textContent = '0:00';
         }
 
         function sendYtCommand(func, args) {
+            let executed = false;
             if (activeYtPlayer && typeof activeYtPlayer[func] === 'function') {
                 try {
                     if (Array.isArray(args)) {
@@ -1105,19 +1133,23 @@
                     } else {
                         activeYtPlayer[func]();
                     }
+                    executed = true;
                 } catch (e) {}
             }
 
-            const iframe = document.getElementById('ytPlayer');
-            if (iframe && iframe.contentWindow) {
-                try {
-                    const msg = JSON.stringify({
-                        event: 'command',
-                        func: func,
-                        args: args !== undefined ? args : ''
-                    });
-                    iframe.contentWindow.postMessage(msg, '*');
-                } catch (e) {}
+            // Fallback to raw postMessage only if activeYtPlayer wrapper is not available
+            if (!executed) {
+                const iframe = document.getElementById('ytPlayer');
+                if (iframe && iframe.contentWindow) {
+                    try {
+                        const msg = JSON.stringify({
+                            event: 'command',
+                            func: func,
+                            args: args !== undefined ? args : ''
+                        });
+                        iframe.contentWindow.postMessage(msg, '*');
+                    } catch (e) {}
+                }
             }
         }
 
@@ -1125,11 +1157,15 @@
             if (!currentIsClipped) return;
             const scrubber = document.getElementById('clipScrubber');
             const curTime = document.getElementById('clipCurTime');
-            if (scrubber && document.activeElement !== scrubber) {
-                scrubber.value = Math.max(startTime, Math.min(endTime, cur));
+            const duration = Math.max(0, endTime - startTime);
+            const elapsed = Math.max(0, Math.min(duration, (cur || startTime) - startTime));
+
+            if (scrubber && !isUserScrubbing) {
+                scrubber.value = elapsed;
+                const pct = duration > 0 ? (elapsed / duration) * 100 : 0;
+                scrubber.style.background = `linear-gradient(to right, #38bdf8 0%, #38bdf8 ${pct}%, rgba(255, 255, 255, 0.18) ${pct}%, rgba(255, 255, 255, 0.18) 100%)`;
             }
             if (curTime) {
-                const elapsed = Math.max(0, cur - startTime);
                 curTime.textContent = formatDuration(elapsed);
             }
         }
@@ -1138,16 +1174,20 @@
             if (!currentIsClipped) return;
 
             if (state === 1) { // PLAYING
-                setClipPlayState(true);
-                startClipTicker(startTime, endTime);
+                if (!isClipPlaying) {
+                    setClipPlayState(true);
+                    startClipTicker(startTime, endTime);
+                }
             } else if (state === 2) { // PAUSED
-                setClipPlayState(false);
-                clearClipTimer();
+                if (isClipPlaying) {
+                    setClipPlayState(false);
+                    clearClipTimer();
+                }
             } else if (state === 0) { // ENDED
                 clearClipTimer();
                 sendYtCommand('seekTo', [startTime || 0, true]);
                 sendYtCommand('pauseVideo');
-                updateClipUIOnEnd(startTime);
+                updateClipUIOnEnd(startTime, endTime);
             }
         }
 
@@ -1164,7 +1204,8 @@
                 if (activeYtPlayer && typeof activeYtPlayer.getCurrentTime === 'function') {
                     try {
                         const cur = activeYtPlayer.getCurrentTime();
-                        if (!isNaN(cur) && cur > 0) {
+                        // Ignore un-seeked initial times below startTime
+                        if (!isNaN(cur) && cur >= (startTime - 1)) {
                             clipCurrentTime = cur;
                         }
                     } catch (e) {}
@@ -1174,12 +1215,12 @@
                     clearClipTimer();
                     sendYtCommand('seekTo', [startTime || 0, true]);
                     sendYtCommand('pauseVideo');
-                    updateClipUIOnEnd(startTime);
+                    updateClipUIOnEnd(startTime, endTime);
                     return;
                 }
 
                 updateClipTimeUI(clipCurrentTime, startTime, endTime);
-            }, 250);
+            }, 100);
         }
 
         // Global listener for YouTube iframe postMessage notifications
@@ -1195,8 +1236,11 @@
                         handleClipStateChange(data.info.playerState, currentClipStart, currentClipEnd);
                     }
                     if (typeof data.info.currentTime !== 'undefined') {
-                        clipCurrentTime = data.info.currentTime;
-                        updateClipTimeUI(data.info.currentTime, currentClipStart, currentClipEnd);
+                        const cur = data.info.currentTime;
+                        if (!isNaN(cur) && cur >= (currentClipStart - 1)) {
+                            clipCurrentTime = cur;
+                            updateClipTimeUI(cur, currentClipStart, currentClipEnd);
+                        }
                     }
                 } else if (data.event === 'onStateChange') {
                     handleClipStateChange(data.info, currentClipStart, currentClipEnd);
@@ -1210,8 +1254,18 @@
             const curTime = document.getElementById('clipCurTime');
             const muteBtn = document.getElementById('clipMuteBtn');
             const fsBtn = document.getElementById('clipFsBtn');
+            const duration = Math.max(0, endTime - startTime);
 
             if (!playBtn || !scrubber) return;
+
+            // Reset scrubber to clip start
+            isUserScrubbing = false;
+            scrubber.min = 0;
+            scrubber.max = duration;
+            scrubber.value = 0;
+            scrubber.step = 'any';
+            scrubber.style.background = 'rgba(255, 255, 255, 0.18)';
+            if (curTime) curTime.textContent = '0:00';
 
             playBtn.onclick = function() {
                 if (isClipPlaying) {
@@ -1229,19 +1283,39 @@
                 }
             };
 
-            scrubber.oninput = function() {
-                const val = parseFloat(this.value);
-                clipCurrentTime = val;
+            const updateScrubberVisuals = (elapsed) => {
+                const pct = duration > 0 ? (elapsed / duration) * 100 : 0;
+                scrubber.style.background = `linear-gradient(to right, #38bdf8 0%, #38bdf8 ${pct}%, rgba(255, 255, 255, 0.18) ${pct}%, rgba(255, 255, 255, 0.18) 100%)`;
                 if (curTime) {
-                    curTime.textContent = formatDuration(val - startTime);
+                    curTime.textContent = formatDuration(elapsed);
                 }
             };
 
-            scrubber.onchange = function() {
-                const val = parseFloat(this.value);
-                clipCurrentTime = val;
-                sendYtCommand('seekTo', [val, true]);
+            scrubber.addEventListener('pointerdown', () => { isUserScrubbing = true; });
+            scrubber.addEventListener('touchstart', () => { isUserScrubbing = true; }, { passive: true });
+            scrubber.addEventListener('mousedown', () => { isUserScrubbing = true; });
+
+            scrubber.oninput = function() {
+                isUserScrubbing = true;
+                const elapsed = parseFloat(this.value) || 0;
+                clipCurrentTime = startTime + elapsed;
+                updateScrubberVisuals(elapsed);
             };
+
+            const commitSeek = function() {
+                if (!isUserScrubbing) return;
+                isUserScrubbing = false;
+                const elapsed = parseFloat(scrubber.value) || 0;
+                const target = startTime + elapsed;
+                clipCurrentTime = target;
+                sendYtCommand('seekTo', [target, true]);
+                updateScrubberVisuals(elapsed);
+            };
+
+            scrubber.onchange = commitSeek;
+            scrubber.addEventListener('pointerup', commitSeek);
+            scrubber.addEventListener('touchend', commitSeek);
+            scrubber.addEventListener('mouseup', commitSeek);
 
             let isMuted = false;
             if (muteBtn) {
@@ -1339,6 +1413,7 @@
             currentClipEnd = 0;
             clipCurrentTime = 0;
             isClipPlaying = false;
+            isUserScrubbing = false;
 
             if (activeYtPlayer && typeof activeYtPlayer.destroy === 'function') {
                 try { activeYtPlayer.destroy(); } catch (e) {}
@@ -1418,7 +1493,7 @@
                                     <svg id="clipPauseIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                                 </button>
                                 <span class="clip-time-display" id="clipCurTime">0:00</span>
-                                <input type="range" class="clip-scrubber" id="clipScrubber" min="${startTime}" max="${endTime}" value="${startTime}" step="0.5">
+                                <input type="range" class="clip-scrubber" id="clipScrubber" min="0" max="${endTime - startTime}" value="0" step="any" aria-label="Seek hymn audio">
                                 <span class="clip-time-display" id="clipTotalTime">${formatDuration(endTime - startTime)}</span>
                                 <button class="clip-ctrl-btn" id="clipMuteBtn" title="Mute / Unmute" aria-label="Mute / Unmute">
                                     <svg id="clipVolOn" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
