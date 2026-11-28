@@ -921,65 +921,48 @@
             const ctx = getThemeContext(themeStr);
             const excludeSet = new Set([...excludeNumbers, ...existingSelectedNumbers]);
 
-            let primaryHymns = [];
-            let fallbackHymns = [];
-
+            let scopedHymns = [];
             if (category === 'opening') {
-                if (ctx.seasonalOpeningCats.length > 0) {
-                    primaryHymns = hymns.filter(s => s.cat && s.cat.some(c => ctx.seasonalOpeningCats.includes(c)));
-                }
-                const wpSongs = hymns.filter(s => (s.cat && (s.cat.includes('Worship & Praise') || s.cat.includes('Morning Songs'))) || categories.opening.includes(s.number));
-                const themedWp = wpSongs.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
-                if (themedWp.length > 0) {
-                    primaryHymns = [...primaryHymns, ...themedWp];
-                }
-                fallbackHymns = wpSongs;
+                scopedHymns = hymns.filter(s => categories.opening.includes(s.number));
             } else if (category === 'bibleReading') {
-                if (ctx.categories.length > 0) {
-                    primaryHymns = hymns.filter(s => s.cat && s.cat.some(c => ctx.categories.includes(c)));
-                }
-                const kwMatches = hymns.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
-                primaryHymns = [...new Set([...primaryHymns, ...kwMatches])];
-                fallbackHymns = hymns.filter(s => categories.bibleReading.includes(s.number));
+                scopedHymns = hymns.filter(s => categories.bibleReading.includes(s.number));
             } else if (category === 'qurbana1' || category === 'qurbana2' || category === 'qurbana3' || category === 'qurbana') {
-                const communionSongs = hymns.filter(s => (s.cat && s.cat.includes('Holy Communion')) || categories.qurbana.includes(s.number));
-                if (ctx.categories.length > 0) {
-                    primaryHymns = communionSongs.filter(s => s.cat && s.cat.some(c => ctx.categories.includes(c)));
-                }
-                const kwMatches = communionSongs.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
-                primaryHymns = [...new Set([...primaryHymns, ...kwMatches])];
-                fallbackHymns = communionSongs;
+                scopedHymns = hymns.filter(s => categories.qurbana.includes(s.number));
+            } else {
+                scopedHymns = hymns;
             }
 
-            // 1. Primary theme matches (strictly NOT recently used in last 2 months, not in excludeSet)
+            let primaryHymns = [];
+            if (ctx.categories.length > 0 || ctx.seasonalOpeningCats.length > 0) {
+                const targetCats = category === 'opening' && ctx.seasonalOpeningCats.length > 0
+                    ? [...new Set([...ctx.seasonalOpeningCats, ...ctx.categories])]
+                    : ctx.categories;
+                primaryHymns = scopedHymns.filter(s => s.cat && s.cat.some(c => targetCats.includes(c)));
+            }
+            const kwMatches = scopedHymns.filter(s => songMatchesThemeKeywords(s, ctx.keywords));
+            primaryHymns = [...new Set([...primaryHymns, ...kwMatches])];
+            const fallbackHymns = scopedHymns;
+
+            // 1. Primary theme matches within designated section (NOT recently used in last 2 months, not in excludeSet)
             const availablePrimary = primaryHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
             if (availablePrimary.length > 0) {
                 return pickWeightedCandidate(availablePrimary, category);
             }
 
-            // 2. Fallback category hymns (strictly NOT recently used in last 2 months, not in excludeSet)
+            // 2. Any song within designated section (NOT recently used in last 2 months, not in excludeSet)
             const availableFallback = fallbackHymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
             if (availableFallback.length > 0) {
                 return pickWeightedCandidate(availableFallback, category);
             }
 
-            // 3. Any general hymn (strictly NOT recently used in last 2 months, not in excludeSet)
-            const availableAny = hymns.filter(s => !excludeSet.has(s.number) && !wasRecentlyUsed(s.number, category, 'Kristheeya Keerthanangal'));
-            if (availableAny.length > 0) {
-                return availableAny[Math.floor(Math.random() * availableAny.length)];
-            }
-
-            // 4. Absolute emergency fallback only if entire hymnal was used in last 2 months
+            // 3. Relax 2-month recency check within designated section (never go outside the section)
             const primaryRelaxed = primaryHymns.filter(s => !excludeSet.has(s.number));
             if (primaryRelaxed.length > 0) return pickWeightedCandidate(primaryRelaxed, category);
 
             const fallbackRelaxed = fallbackHymns.filter(s => !excludeSet.has(s.number));
             if (fallbackRelaxed.length > 0) return pickWeightedCandidate(fallbackRelaxed, category);
 
-            const anyRelaxed = hymns.filter(s => !excludeSet.has(s.number));
-            if (anyRelaxed.length > 0) return anyRelaxed[Math.floor(Math.random() * anyRelaxed.length)];
-
-            return hymns[0] || null;
+            return scopedHymns[0] || null;
         }
 
         function pickCelebrationSong(excludeNumbers = []) {
@@ -1891,9 +1874,50 @@
             document.getElementById('recentlyUsed').innerHTML = `<h3>Recently Used Services:</h3>${recent}`;
         }
 
+        function loadExistingOrEmptyState(dateStr) {
+            const existingIndex = dateStr ? findServiceByDate(dateStr) : -1;
+            if (existingIndex !== -1) {
+                reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
+                const dateLabel = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                const existingBanner = document.getElementById('historyLoadBanner');
+                if (existingBanner) existingBanner.remove();
+
+                const banner = document.createElement('div');
+                banner.id = 'historyLoadBanner';
+                banner.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 8px;';
+                banner.innerHTML = `<span>📋</span> Loaded existing saved worship service for <strong>${dateLabel}</strong>`;
+                const order = document.getElementById('serviceOrder');
+                if (order) {
+                    order.insertBefore(banner, order.firstChild);
+                    setTimeout(() => { if (banner) banner.remove(); }, 5000);
+                }
+            } else {
+                window.currentService = null;
+                delete window.editingServiceIndex;
+                const btnGen = document.getElementById('btnGenerate');
+                if (btnGen) {
+                    const span = btnGen.querySelector('span');
+                    if (span) span.textContent = 'Generate Service';
+                }
+                const order = document.getElementById('serviceOrder');
+                if (order) {
+                    order.innerHTML = `
+                        <div style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
+                            <div style="font-size: 2.2rem; margin-bottom: 10px;">📅</div>
+                            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">No saved service for this date</div>
+                            <div style="font-size: 0.88rem;">Click <strong>"🎲 Generate Service"</strong> above to create songs for this service.</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
         // Set today's date by default and setup auto-sync
         document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const today = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0');
             document.getElementById('serviceDate').value = today;
             populateTheme(today);
             
@@ -1901,44 +1925,8 @@
             document.getElementById('serviceDate').addEventListener('change', (e) => {
                 const dateStr = e.target.value;
                 populateTheme(dateStr);
-                
                 if (dateStr) {
-                    const existingIndex = findServiceByDate(dateStr);
-                    if (existingIndex !== -1) {
-                        reconstructServiceFromHistory(serviceHistory[existingIndex], existingIndex);
-                        const dateLabel = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-                        const existingBanner = document.getElementById('historyLoadBanner');
-                        if (existingBanner) existingBanner.remove();
-                        
-                        const banner = document.createElement('div');
-                        banner.id = 'historyLoadBanner';
-                        banner.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 8px;';
-                        banner.innerHTML = `<span>📋</span> Loaded existing saved worship service for <strong>${dateLabel}</strong>`;
-                        const order = document.getElementById('serviceOrder');
-                        if (order) {
-                            order.insertBefore(banner, order.firstChild);
-                            setTimeout(() => { if (banner) banner.remove(); }, 5000);
-                        }
-                    } else {
-                        // Clear previous service when switching to a date with no existing plan
-                        window.currentService = null;
-                        delete window.editingServiceIndex;
-                        const btnGen = document.getElementById('btnGenerate');
-                        if (btnGen) {
-                            const span = btnGen.querySelector('span');
-                            if (span) span.textContent = 'Generate Service';
-                        }
-                        const order = document.getElementById('serviceOrder');
-                        if (order) {
-                            order.innerHTML = `
-                                <div style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
-                                    <div style="font-size: 2.2rem; margin-bottom: 10px;">📅</div>
-                                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">No saved service for this date</div>
-                                    <div style="font-size: 0.88rem;">Click <strong>"🎲 Generate Service Plan"</strong> above to create songs for this service.</div>
-                                </div>
-                            `;
-                        }
-                    }
+                    loadExistingOrEmptyState(dateStr);
                 }
             });
 
@@ -2522,7 +2510,10 @@
             }
         };
 
-        loadData().then(() => generateService());
+        loadData().then(() => {
+            const dateStr = document.getElementById('serviceDate')?.value;
+            loadExistingOrEmptyState(dateStr);
+        });
     </script>
 
 <script>
